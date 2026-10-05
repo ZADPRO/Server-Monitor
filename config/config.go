@@ -215,6 +215,74 @@ func (cm *ConfigManager) DeleteTarget(id string) error {
 	return cm.saveUnlocked()
 }
 
+// GetUsers returns list of configured alert users
+func (cm *ConfigManager) GetUsers() []models.User {
+	cm.mu.RLock()
+	defer cm.mu.RUnlock()
+	users := make([]models.User, len(cm.config.Users))
+	copy(users, cm.config.Users)
+	return users
+}
+
+// AddUser adds a new user recipient
+func (cm *ConfigManager) AddUser(user models.User) error {
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+
+	for _, u := range cm.config.Users {
+		if u.ID == user.ID {
+			return fmt.Errorf("user with ID '%s' already exists", user.ID)
+		}
+	}
+
+	cm.config.Users = append(cm.config.Users, user)
+	return cm.saveUnlocked()
+}
+
+// UpdateUser updates an existing user
+func (cm *ConfigManager) UpdateUser(user models.User) error {
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+
+	found := false
+	for i, u := range cm.config.Users {
+		if u.ID == user.ID {
+			cm.config.Users[i] = user
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return fmt.Errorf("user with ID '%s' not found", user.ID)
+	}
+
+	return cm.saveUnlocked()
+}
+
+// DeleteUser removes a user by ID
+func (cm *ConfigManager) DeleteUser(id string) error {
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+
+	newUsers := make([]models.User, 0, len(cm.config.Users))
+	found := false
+	for _, u := range cm.config.Users {
+		if u.ID == id {
+			found = true
+			continue
+		}
+		newUsers = append(newUsers, u)
+	}
+
+	if !found {
+		return fmt.Errorf("user with ID '%s' not found", id)
+	}
+
+	cm.config.Users = newUsers
+	return cm.saveUnlocked()
+}
+
 func (cm *ConfigManager) saveUnlocked() error {
 	data, err := json.MarshalIndent(cm.config, "", "  ")
 	if err != nil {

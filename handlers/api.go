@@ -57,12 +57,15 @@ func (h *APIHandler) RegisterRoutes(mux *http.ServeMux) {
 	handleWithCORS("/api/check-now", h.handleCheckNow)
 	handleWithCORS("/api/targets", h.handleTargets)
 	handleWithCORS("/api/targets/", h.handleTargetByID)
+	handleWithCORS("/api/users", h.handleUsers)
+	handleWithCORS("/api/users/", h.handleUserByID)
 	handleWithCORS("/api/config", h.handleConfig)
 	handleWithCORS("/api/test-email", h.handleTestEmail)
 	handleWithCORS("/api/export-logs", h.handleExportLogs)
 	handleWithCORS("/api/firebase-status", h.handleFirebaseStatus)
 	handleWithCORS("/api/firebase-logs", h.handleFirebaseLogs)
 	handleWithCORS("/api/firebase-sync", h.handleFirebaseSync)
+	handleWithCORS("/api/purge-logs", h.handlePurgeLogs)
 }
 
 
@@ -152,6 +155,33 @@ func (h *APIHandler) handleCheckNow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	targetID := r.URL.Query().Get("target_id")
+	if targetID == "" {
+		var req struct {
+			TargetID string `json:"target_id"`
+		}
+		_ = json.NewDecoder(r.Body).Decode(&req)
+		targetID = req.TargetID
+	}
+
+	if targetID != "" {
+		res, err := h.scheduler.RunCheckForSingleTarget(targetID)
+		if err != nil {
+			writeJSON(w, http.StatusBadRequest, map[string]interface{}{
+				"success": false,
+				"error":   err.Error(),
+			})
+			return
+		}
+		summary := h.storage.GetSummary()
+		writeJSON(w, http.StatusOK, map[string]interface{}{
+			"success": true,
+			"results": []models.HealthCheckResult{*res},
+			"summary": summary,
+		})
+		return
+	}
+
 	results := h.scheduler.RunChecksNow()
 	summary := h.storage.GetSummary()
 
@@ -185,6 +215,9 @@ func (h *APIHandler) handleTargets(w http.ResponseWriter, r *http.Request) {
 		if target.Type == "" {
 			target.Type = "backend"
 		}
+		if target.IntervalMinutes <= 0 {
+			target.IntervalMinutes = 5
+		}
 
 		if err := h.cfgManager.AddTarget(target); err != nil {
 			writeJSON(w, http.StatusBadRequest, map[string]interface{}{"error": err.Error()})
@@ -199,12 +232,31 @@ func (h *APIHandler) handleTargets(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *APIHandler) handleTargetByID(w http.ResponseWriter, r *http.Request) {
-	id := strings.TrimPrefix(r.URL.Path, "/api/targets/")
-	if id == "" {
+	path := strings.TrimPrefix(r.URL.Path, "/api/targets/")
+	if path == "" {
 		http.Error(w, "Missing target ID", http.StatusBadRequest)
 		return
 	}
 
+	// Handle /api/targets/:id/check
+	if strings.HasSuffix(path, "/check") {
+		id := strings.TrimSuffix(path, "/check")
+		id = strings.TrimSuffix(id, "/")
+		if r.Method != http.MethodPost {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		res, err := h.scheduler.RunCheckForSingleTarget(id)
+		if err != nil {
+			writeJSON(w, http.StatusBadRequest, map[string]interface{}{"success": false, "error": err.Error()})
+			return
+		}
+		summary := h.storage.GetSummary()
+		writeJSON(w, http.StatusOK, map[string]interface{}{"success": true, "results": []models.HealthCheckResult{*res}, "summary": summary})
+		return
+	}
+
+	id := path
 	switch r.Method {
 	case http.MethodPut:
 		var target models.Target
@@ -213,6 +265,9 @@ func (h *APIHandler) handleTargetByID(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		target.ID = id
+		if target.IntervalMinutes <= 0 {
+			target.IntervalMinutes = 5
+		}
 
 		if err := h.cfgManager.UpdateTarget(target); err != nil {
 			writeJSON(w, http.StatusNotFound, map[string]interface{}{"error": err.Error()})
@@ -228,6 +283,75 @@ func (h *APIHandler) handleTargetByID(w http.ResponseWriter, r *http.Request) {
 		}
 
 		writeJSON(w, http.StatusOK, map[string]interface{}{"success": true, "message": "Target deleted"})
+
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func (h *APIHandler) handleUsers(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		users := h.cfgManager.GetUsers()
+		writeJSON(w, http.StatusOK, users)
+
+	case http.MethodPost:
+		var user models.User
+		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+			writeJSON(w, http.StatusBadRequest, map[string]interface{}{"error": "Invalid user JSON"})
+			return
+		}
+
+		if user.ID == "" {
+			user.ID = fmt.Sprintf("user_%d", time.Now().UnixNano())
+		}
+		if user.Name == "" || user.Email == "" {
+			writeJSON(w, http.StatusBadRequest, map[string]interface{}{"error": "Name and Email are required"})
+			return
+		}
+
+		if err := h.cfgManager.AddUser(user); err != nil {
+			writeJSON(w, http.StatusBadRequest, map[string]interface{}{"error": err.Error()})
+			return
+		}
+
+		writeJSON(w, http.StatusCreated, user)
+
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func (h *APIHandler) handleUserByID(w http.ResponseWriter, r *http.Request) {
+	id := strings.TrimPrefix(r.URL.Path, "/api/users/")
+	if id == "" {
+		http.Error(w, "Missing user ID", http.StatusBadRequest)
+		return
+	}
+
+	switch r.Method {
+	case http.MethodPut:
+		var user models.User
+		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+			writeJSON(w, http.StatusBadRequest, map[string]interface{}{"error": "Invalid user JSON"})
+			return
+		}
+		user.ID = id
+
+		if err := h.cfgManager.UpdateUser(user); err != nil {
+			writeJSON(w, http.StatusNotFound, map[string]interface{}{"error": err.Error()})
+			return
+		}
+
+		writeJSON(w, http.StatusOK, user)
+
+	case http.MethodDelete:
+		if err := h.cfgManager.DeleteUser(id); err != nil {
+			writeJSON(w, http.StatusNotFound, map[string]interface{}{"error": err.Error()})
+			return
+		}
+
+		writeJSON(w, http.StatusOK, map[string]interface{}{"success": true, "message": "User deleted"})
 
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -470,6 +594,43 @@ func (h *APIHandler) handleConsoleLogs(w http.ResponseWriter, r *http.Request) {
 		"total":   len(allLines),
 		"lines":   allLines,
 		"raw":     rawText,
+	})
+}
+
+func (h *APIHandler) handlePurgeLogs(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	daysStr := r.URL.Query().Get("days")
+	days := 0
+	if daysStr != "" {
+		days, _ = strconv.Atoi(daysStr)
+	}
+
+	if days <= 0 {
+		cfg := h.cfgManager.Get()
+		days = cfg.Firebase.AutoDeleteDays
+		if days <= 0 {
+			days = 7 // Default 7 days if unspecified
+		}
+	}
+
+	count, err := h.storage.PurgeOldLogs(days)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]interface{}{
+			"success": false,
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]interface{}{
+		"success":      true,
+		"purged_count": count,
+		"days":         days,
+		"message":      fmt.Sprintf("Successfully purged %d log(s) older than %d day(s)", count, days),
 	})
 }
 

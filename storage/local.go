@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"serverMonitoring/models"
 )
@@ -319,6 +320,38 @@ func (ls *LocalStorage) GetSummary() models.ServerSummary {
 		LastCheckTime:  lastCheck,
 		TargetStatuses: targetStatuses,
 	}
+}
+
+// PurgeOldLogs removes logs older than the specified number of days
+func (ls *LocalStorage) PurgeOldLogs(days int) (int, error) {
+	if days <= 0 {
+		return 0, nil
+	}
+
+	ls.mu.Lock()
+	defer ls.mu.Unlock()
+
+	cutoff := time.Now().AddDate(0, 0, -days).Unix()
+	newLogs := make([]models.HealthCheckResult, 0)
+	deletedCount := 0
+
+	for _, l := range ls.logs {
+		if l.Timestamp >= cutoff {
+			newLogs = append(newLogs, l)
+		} else {
+			deletedCount++
+		}
+	}
+
+	if deletedCount > 0 {
+		ls.logs = newLogs
+		if err := ls.persistUnlocked(); err != nil {
+			log.Printf("[STORAGE PURGE WARNING] Could not persist purged logs: %v", err)
+		}
+		log.Printf("[STORAGE PURGE] Successfully purged %d log(s) older than %d day(s)", deletedCount, days)
+	}
+
+	return deletedCount, nil
 }
 
 // Close persists remaining logs

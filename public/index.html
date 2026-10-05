@@ -12,6 +12,8 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
     rel="stylesheet">
+  <link rel="icon" type="image/png" href="/assets/FAV_ZA.png">
+  <link rel="shortcut icon" href="/assets/FAV_ZA.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="/css/styles.css">
 </head>
@@ -28,9 +30,8 @@
   <div id="loginView" class="auth-wrapper">
     <div class="auth-card">
       <div class="auth-header">
-        <div class="brand-badge">
-          <div class="pulse-ring"></div>
-          <i class="fa-solid fa-server-pulse brand-icon"></i>
+        <div class="brand-logo-container">
+          <img src="/assets/logo.png" alt="Zadroit Logo" class="login-logo-img">
         </div>
         <h1 class="brand-title">ZADROIT</h1>
         <p class="brand-subtitle">Server Health & API Monitoring System</p>
@@ -65,70 +66,55 @@
           <span>Sign In to Dashboard</span>
           <i class="fa-solid fa-arrow-right"></i>
         </button>
-
-        <!-- <div class="quick-credentials">
-          <span class="cred-label">Preset Credentials:</span>
-          <div class="cred-chips">
-            <span class="cred-chip" onclick="fillCredentials('Zadroit', 'ZadGugSlm06')">
-              <i class="fa-solid fa-key"></i> Auto-fill (Zadroit)
-            </span>
-          </div>
-        </div> -->
       </form>
 
       <div class="auth-footer">
-        <span>Protected Infrastructure • Automated 5-Min Watchdog</span>
+        <span>Protected Infrastructure • Automated Watchdog</span>
       </div>
     </div>
   </div>
 
   <!-- ============================================================== -->
-  <!-- 2. DASHBOARD VIEW -->
+  <!-- 2. MAIN APP VIEW -->
   <!-- ============================================================== -->
   <div id="dashboardView" class="dashboard-wrapper hidden">
     <!-- Top Navigation Header -->
     <header class="top-nav">
       <div class="nav-left">
         <div class="nav-brand">
-          <div class="brand-logo-icon">
-            <i class="fa-solid fa-shield-halved"></i>
+          <div class="brand-logo-container">
           </div>
           <div class="brand-meta">
             <div class="brand-row">
-              <span class="brand-name">ZADROIT</span>
+              <img src="/assets/logo.png" alt="Zadroit Logo" class="brand-logo-img">
               <span class="system-status-pill" id="globalStatusPill">
                 <span class="status-dot"></span>
                 <span id="globalStatusText">Operational</span>
               </span>
             </div>
-            <span class="brand-tagline">Infrastructure Watchdog & Log Hub</span>
           </div>
         </div>
       </div>
 
+      <!-- Main Navigation Tabs Switcher -->
       <div class="nav-center">
-        <div class="timer-widget" title="Scheduled check happens every 5 minutes">
-          <i class="fa-regular fa-clock"></i>
-          <span>Next check in:</span>
-          <strong id="nextCheckTimer">05:00</strong>
+        <div class="nav-tabs-group">
+          <button type="button" class="nav-tab-btn active" id="btnNavDashboard" onclick="switchPage('dashboardPage')">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span>Dashboard</span>
+          </button>
+          <button type="button" class="nav-tab-btn" id="btnNavSettings" onclick="switchPage('settingsPage')">
+            <i class="fa-solid fa-sliders"></i>
+            <span>Settings</span>
+          </button>
         </div>
       </div>
 
       <div class="nav-right">
         <button class="btn btn-action" id="btnCheckNow" onclick="triggerManualCheck()"
-          title="Run instant health check across all targets">
+          title="Run instant health check across all services">
           <i class="fa-solid fa-arrows-rotate" id="checkNowIcon"></i>
-          <span>Check Now</span>
-        </button>
-
-        <button class="btn btn-secondary" onclick="openTargetModal()" title="Manage Monitored Targets">
-          <i class="fa-solid fa-network-wired"></i>
-          <span>Targets (<span id="targetCountBadge">2</span>)</span>
-        </button>
-
-        <button class="btn btn-secondary" onclick="openSettingsModal()" title="Firebase & Alert Settings">
-          <i class="fa-solid fa-sliders"></i>
-          <span>Settings</span>
+          <span>Check All Now</span>
         </button>
 
         <button class="btn btn-danger-outline" onclick="handleLogout()" title="Sign Out">
@@ -141,267 +127,604 @@
     <!-- Main Content Container -->
     <main class="main-container">
 
-      <!-- Firebase Real-time Stream Banner -->
-      <div id="firebaseRealtimeBanner" class="firebase-live-banner connected">
-        <div class="banner-left">
-          <div class="firebase-live-dot"></div>
-          <div class="banner-text-wrap">
-            <span class="banner-title"><i class="fa-solid fa-fire-flame-curved text-amber"></i> Firebase Real-time Sync
-              Active</span>
-            <span class="banner-sub" id="firebaseEndpointLabel">Listening to
-              https://server-monitor-8ffb0-default-rtdb.firebaseio.com/</span>
+      <!-- ============================================================ -->
+      <!-- PAGE A: DASHBOARD VIEW -->
+      <!-- ============================================================ -->
+      <div id="pageDashboard" class="page-view">
+        <!-- Firebase Real-time Stream Banner -->
+        <div id="firebaseRealtimeBanner" class="firebase-live-banner connected">
+          <div class="banner-left">
+            <div class="firebase-live-dot"></div>
+            <div class="banner-text-wrap">
+              <span class="banner-title"><i class="fa-solid fa-fire-flame-curved text-amber"></i> Firebase Real-time
+                Sync
+                Active</span>
+              <span class="banner-sub" id="firebaseEndpointLabel">Listening to
+                https://server-monitor-8ffb0-default-rtdb.firebaseio.com/</span>
+            </div>
           </div>
-        </div>
-        <div class="banner-right">
-          <span class="stream-badge" id="firebaseStreamBadge"><i class="fa-solid fa-bolt"></i> Live Stream Active</span>
-          <button class="btn btn-xs btn-outline" onclick="syncNowFromFirebase()"
-            title="Force pull all historical logs from Firebase">
-            <i class="fa-solid fa-arrows-rotate" id="syncFbIcon"></i>
-            <span>Pull From Firebase</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Firebase Permission Warning Alert (if 401 Permission Denied) -->
-      <div id="firebaseAuthWarning" class="firebase-auth-alert hidden">
-        <div class="alert-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
-        <div class="alert-content">
-          <h4>Firebase Database: Permission Denied (401)</h4>
-          <p>Your Firebase Realtime Database rules currently block read/write access. To enable instant real-time
-            synchronization, open your Firebase Console Rules tab and set:</p>
-          <pre class="rules-snippet"><code>{
-  "rules": {
-    ".read": true,
-    ".write": true
-  }
-}</code></pre>
-          <div class="alert-action-row">
-            <a href="https://console.firebase.google.com/" target="_blank" rel="noopener noreferrer"
-              class="btn btn-sm btn-primary">
-              <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Firebase Console
-            </a>
-            <button class="btn btn-sm btn-secondary" onclick="checkFirebaseRealtime()">
-              <i class="fa-solid fa-rotate"></i> Re-check Firebase
+          <div class="banner-right">
+            <span class="stream-badge" id="firebaseStreamBadge"><i class="fa-solid fa-bolt"></i> Live Stream
+              Active</span>
+            <button class="btn btn-xs btn-outline" onclick="syncNowFromFirebase()"
+              title="Force pull all historical logs from Firebase">
+              <i class="fa-solid fa-arrows-rotate" id="syncFbIcon"></i>
+              <span>Pull From Firebase</span>
             </button>
           </div>
         </div>
-      </div>
 
-      <!-- Metrics Overview Cards -->
-      <section class="metrics-grid">
-        <div class="metric-card">
-          <div class="metric-icon-box bg-blue">
-            <i class="fa-solid fa-server"></i>
-          </div>
-          <div class="metric-data">
-            <span class="metric-label">Monitored Services</span>
-            <div class="metric-value-row">
-              <h2 id="metricTotalTargets" class="metric-val">0</h2>
-              <span class="metric-sub" id="metricTargetBreakdown">0 Backend • 0 Frontend</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="metric-card">
-          <div class="metric-icon-box bg-green">
-            <i class="fa-solid fa-circle-check"></i>
-          </div>
-          <div class="metric-data">
-            <span class="metric-label">Services Online</span>
-            <div class="metric-value-row">
-              <h2 id="metricOnlineTargets" class="metric-val text-green">0</h2>
-              <span class="metric-badge badge-green" id="metricUptimePercent">100% Uptime</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="metric-card">
-          <div class="metric-icon-box bg-red">
-            <i class="fa-solid fa-triangle-exclamation"></i>
-          </div>
-          <div class="metric-data">
-            <span class="metric-label">Incidents / Offline</span>
-            <div class="metric-value-row">
-              <h2 id="metricOfflineTargets" class="metric-val text-red">0</h2>
-              <span class="metric-sub" id="metricAlertState">Email alerts enabled</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="metric-card">
-          <div class="metric-icon-box bg-purple">
-            <i class="fa-solid fa-database"></i>
-          </div>
-          <div class="metric-data">
-            <span class="metric-label">Firebase DB Logs</span>
-            <div class="metric-value-row">
-              <h2 id="metricTotalChecks" class="metric-val">0</h2>
-              <span class="metric-sub" id="metricFirebaseStatus">Live Sync Active</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Active Services Status Ribbon -->
-      <!-- <section class="active-targets-section">
-        <div class="section-header-row">
-          <div class="section-title-wrap">
-            <i class="fa-solid fa-heart-pulse text-accent"></i>
-            <h3>Live Service Health</h3>
-          </div>
-          <span class="section-sub" id="lastCheckTimeText">Last Checked: Just now</span>
-        </div>
-
-        <div id="serviceCardsContainer" class="service-cards-grid">
-          <div class="card-skeleton">Loading monitored targets...</div>
-        </div>
-      </section> -->
-
-      <!-- Logs Data Table Section -->
-      <section class="logs-section">
-        <div class="logs-header-card">
-          <div class="logs-title-row">
-            <div class="title-with-count">
-              <i class="fa-solid fa-list-check text-cyan"></i>
-              <h3>Monitoring Logs & Audit Trail</h3>
-              <span class="records-pill" id="totalRecordsBadge">0 records</span>
-            </div>
-            <div class="table-actions">
-              <button class="btn btn-sm btn-outline" onclick="exportCSV()" title="Export current filtered view to CSV">
-                <i class="fa-solid fa-file-csv"></i>
-                <span>Export CSV</span>
-              </button>
-              <button class="btn btn-sm btn-outline" onclick="fetchLogs()" title="Refresh Table">
-                <i class="fa-solid fa-rotate-right" id="refreshTableIcon"></i>
-                <span>Refresh</span>
+        <!-- Firebase Permission Warning Alert -->
+        <div id="firebaseAuthWarning" class="firebase-auth-alert hidden">
+          <div class="alert-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <div class="alert-content">
+            <h4>Firebase Database: Permission Denied (401)</h4>
+            <p>Your Firebase Realtime Database rules currently block read/write access. Set rules to .read: true,
+              .write: true in Firebase Console.</p>
+            <div class="alert-action-row">
+              <a href="https://console.firebase.google.com/" target="_blank" rel="noopener noreferrer"
+                class="btn btn-sm btn-primary">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Firebase Console
+              </a>
+              <button class="btn btn-sm btn-secondary" onclick="checkFirebaseRealtime()">
+                <i class="fa-solid fa-rotate"></i> Re-check Firebase
               </button>
             </div>
           </div>
+        </div>
 
-          <!-- Filter Controls Bar -->
-          <div class="filters-bar">
-            <!-- Service Name Filter -->
-            <div class="filter-group">
-              <label><i class="fa-solid fa-layer-group"></i> Service Name</label>
-              <select id="filterService" onchange="onFilterChange()">
-                <option value="all">All Services</option>
-                <!-- Populated dynamically -->
-              </select>
+        <!-- Metrics Overview Cards -->
+        <section class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-icon-box bg-blue">
+              <i class="fa-solid fa-server"></i>
             </div>
-
-            <!-- Type Filter -->
-            <div class="filter-group">
-              <label><i class="fa-solid fa-diagram-project"></i> Type</label>
-              <select id="filterType" onchange="onFilterChange()">
-                <option value="all">All Types</option>
-                <option value="backend">Backend API</option>
-                <option value="frontend">Frontend Website</option>
-              </select>
-            </div>
-
-            <!-- Status Filter -->
-            <div class="filter-group">
-              <label><i class="fa-solid fa-traffic-light"></i> Status</label>
-              <select id="filterStatus" onchange="onFilterChange()">
-                <option value="all">All Statuses</option>
-                <option value="success">Success (Green)</option>
-                <option value="failure">Failure (Red)</option>
-              </select>
-            </div>
-
-            <!-- Date Filters -->
-            <div class="filter-group">
-              <label><i class="fa-regular fa-calendar"></i> From Date</label>
-              <input type="date" id="filterFromDate" onchange="onFilterChange()">
-            </div>
-
-            <div class="filter-group">
-              <label><i class="fa-regular fa-calendar"></i> To Date</label>
-              <input type="date" id="filterToDate" onchange="onFilterChange()">
-            </div>
-
-            <!-- Quick Date Presets -->
-            <div class="filter-group date-presets-group">
-              <label><i class="fa-solid fa-bolt"></i> Quick Range</label>
-              <div class="preset-buttons">
-                <button type="button" class="btn-preset active" onclick="setQuickDate('all', this)">All</button>
-                <button type="button" class="btn-preset" onclick="setQuickDate('today', this)">Today</button>
-                <button type="button" class="btn-preset" onclick="setQuickDate('7days', this)">7D</button>
+            <div class="metric-data">
+              <span class="metric-label">Monitored Services</span>
+              <div class="metric-value-row">
+                <h2 id="metricTotalTargets" class="metric-val">0</h2>
+                <span class="metric-sub" id="metricTargetBreakdown">0 Backend • 0 Frontend</span>
               </div>
             </div>
+          </div>
 
-            <!-- Search Filter -->
-            <div class="filter-group search-group">
-              <label><i class="fa-solid fa-magnifying-glass"></i> Search</label>
-              <div class="search-input-wrapper">
-                <input type="text" id="filterSearch" placeholder="Search URL, message, data..."
-                  onkeyup="debounceSearch()">
-                <button type="button" class="clear-search-btn" onclick="clearSearch()" id="clearSearchBtn">
-                  <i class="fa-solid fa-xmark"></i>
+          <div class="metric-card">
+            <div class="metric-icon-box bg-green">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div class="metric-data">
+              <span class="metric-label">Services Online</span>
+              <div class="metric-value-row">
+                <h2 id="metricOnlineTargets" class="metric-val text-green">0</h2>
+                <span class="metric-badge badge-green" id="metricUptimePercent">100% Uptime</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-icon-box bg-red">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div class="metric-data">
+              <span class="metric-label">Incidents / Offline</span>
+              <div class="metric-value-row">
+                <h2 id="metricOfflineTargets" class="metric-val text-red">0</h2>
+                <span class="metric-sub" id="metricAlertState">Email alerts enabled</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-icon-box bg-purple">
+              <i class="fa-solid fa-database"></i>
+            </div>
+            <div class="metric-data">
+              <span class="metric-label">Firebase DB Logs</span>
+              <div class="metric-value-row">
+                <h2 id="metricTotalChecks" class="metric-val">0</h2>
+                <span class="metric-sub" id="metricFirebaseStatus">Live Sync Active</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Logs Data Table Section -->
+        <section class="logs-section">
+          <div class="logs-header-card">
+            <div class="logs-title-row">
+              <div class="title-with-count">
+                <i class="fa-solid fa-list-check text-cyan"></i>
+                <h3>Monitoring Logs & Audit Trail</h3>
+                <span class="records-pill" id="totalRecordsBadge">0 records</span>
+              </div>
+              <div class="table-actions">
+                <button class="btn btn-sm btn-outline" onclick="exportCSV()"
+                  title="Export current filtered view to CSV">
+                  <i class="fa-solid fa-file-csv"></i>
+                  <span>Export CSV</span>
+                </button>
+                <button class="btn btn-sm btn-outline" onclick="fetchLogs()" title="Refresh Table">
+                  <i class="fa-solid fa-rotate-right" id="refreshTableIcon"></i>
+                  <span>Refresh</span>
                 </button>
               </div>
             </div>
 
-            <!-- Reset Filters -->
-            <div class="filter-group reset-group">
-              <button class="btn btn-ghost" onclick="resetAllFilters()" title="Reset all filters to default">
-                <i class="fa-solid fa-filter-circle-xmark"></i>
-                <span>Reset</span>
-              </button>
+            <!-- Filter Controls Bar -->
+            <div class="filters-bar">
+              <div class="filter-group">
+                <select id="filterService" onchange="onFilterChange()">
+                  <option value="all">All Services</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <select id="filterType" onchange="onFilterChange()">
+                  <option value="all">All Types</option>
+                  <option value="backend">Backend API</option>
+                  <option value="frontend">Frontend Website</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <select id="filterStatus" onchange="onFilterChange()">
+                  <option value="all">All Statuses</option>
+                  <option value="success">Success (Green)</option>
+                  <option value="failure">Failure (Red)</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <input type="date" id="filterFromDate" onchange="onFilterChange()" title="From Date">
+              </div>
+
+              <div class="filter-group">
+                <input type="date" id="filterToDate" onchange="onFilterChange()" title="To Date">
+              </div>
+
+              <div class="filter-group date-presets-group">
+                <div class="preset-buttons">
+                  <button type="button" class="btn-preset active" onclick="setQuickDate('all', this)">All</button>
+                  <button type="button" class="btn-preset" onclick="setQuickDate('today', this)">Today</button>
+                  <button type="button" class="btn-preset" onclick="setQuickDate('7days', this)">7D</button>
+                </div>
+              </div>
+
+              <div class="filter-group search-group">
+                <div class="search-input-wrapper">
+                  <input type="text" id="filterSearch" placeholder="Search service name, error, data..."
+                    onkeyup="debounceSearch()">
+                  <button type="button" class="clear-search-btn" onclick="clearSearch()" id="clearSearchBtn">
+                    <i class="fa-solid fa-xmark"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="filter-group reset-group">
+                <button class="btn btn-ghost" onclick="resetAllFilters()" title="Reset all filters to default">
+                  <i class="fa-solid fa-filter-circle-xmark"></i>
+                  <span>Reset</span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Data Table Wrapper -->
-        <div class="table-responsive">
-          <table class="data-table" id="logsTable">
-            <thead>
-              <tr>
-                <th width="60" class="text-center">S.No</th>
-                <th width="220">Service Name</th>
-                <th width="110">Type</th>
-                <th>Target URL</th>
-                <th width="130" class="text-center">Status</th>
-                <th width="170">Hit Time</th>
-                <th width="200">Message</th>
-                <th>Data</th>
-                <th width="80" class="text-center">Inspect</th>
-              </tr>
-            </thead>
-            <tbody id="logsTableBody">
-              <tr>
-                <td colspan="9" class="text-center table-loading">
-                  <div class="spinner-inline"></div>
-                  <span>Fetching logs from Firebase & server...</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Table Footer with Pagination -->
-        <div class="table-footer">
-          <div class="footer-left">
-            <span>Showing <strong id="showingRangeText">0-0</strong> of <strong id="totalCountText">0</strong>
-              logs</span>
-            <div class="rows-per-page">
-              <label for="limitSelect">Rows:</label>
-              <select id="limitSelect" onchange="onLimitChange()">
-                <option value="15">15</option>
-                <option value="25" selected>25</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-              </select>
-            </div>
+          <!-- Data Table Wrapper -->
+          <div class="table-responsive">
+            <table class="data-table" id="logsTable">
+              <thead>
+                <tr>
+                  <th width="60" class="text-center">S.No</th>
+                  <th width="240">Service Name</th>
+                  <th width="120">Type</th>
+                  <th width="140" class="text-center">Status</th>
+                  <th width="180">Hit Time</th>
+                  <th width="90" class="text-center">Inspect</th>
+                </tr>
+              </thead>
+              <tbody id="logsTableBody">
+                <tr>
+                  <td colspan="6" class="text-center table-loading">
+                    <div class="spinner-inline"></div>
+                    <span>Fetching logs from Firebase & server...</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
-          <div class="footer-right">
-            <div class="pagination-controls" id="paginationControls">
-              <!-- Rendered via JS -->
+          <!-- Table Footer with Pagination -->
+          <div class="table-footer">
+            <div class="footer-left">
+              <span>Showing <strong id="showingRangeText">0-0</strong> of <strong id="totalCountText">0</strong>
+                logs</span>
+              <div class="rows-per-page">
+                <label for="limitSelect">Rows:</label>
+                <select id="limitSelect" onchange="onLimitChange()">
+                  <option value="15">15</option>
+                  <option value="25" selected>25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="footer-right">
+              <div class="pagination-controls" id="paginationControls"></div>
             </div>
           </div>
+        </section>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- PAGE B: SETTINGS VIEW (WITH SIDE NAVBAR) -->
+      <!-- ============================================================ -->
+      <div id="pageSettings" class="page-view hidden">
+        <div class="settings-page-header">
+          <div class="title-wrap">
+            <i class="fa-solid fa-sliders text-accent"></i>
+            <h2>System Control & Configuration Center</h2>
+          </div>
+          <span class="sub-text">Manage Firebase database, user accounts, and service health check schedules.</span>
         </div>
-      </section>
+
+        <div class="settings-layout">
+          <!-- Left Side Navbar -->
+          <aside class="settings-sidenav">
+            <button type="button" class="settings-nav-item active" id="tabNavService"
+              onclick="switchSettingsTab('service')">
+              <i class="fa-solid fa-server text-purple"></i>
+              <span>Service</span>
+            </button>
+
+            <button type="button" class="settings-nav-item" id="tabNavUser" onclick="switchSettingsTab('user')">
+              <i class="fa-solid fa-users text-cyan"></i>
+              <span>User</span>
+            </button>
+
+            <button type="button" class="settings-nav-item" id="tabNavFirebase" onclick="switchSettingsTab('firebase')">
+              <i class="fa-solid fa-fire-flame-curved text-amber"></i>
+              <span>Firebase Configuration</span>
+            </button>
+          </aside>
+
+          <!-- Right Content Area -->
+          <div class="settings-content">
+
+            <!-- TAB 1: SERVICE MODULE -->
+            <div id="paneService" class="settings-pane">
+              <div class="pane-header flex-between">
+                <div>
+                  <h3><i class="fa-solid fa-server text-purple"></i> Service Target Management</h3>
+                  <p>Add, edit, enable/disable, set check frequency, select alert recipients from user list, and trigger
+                    single-service health checks.</p>
+                </div>
+                <button type="button" class="btn btn-primary btn-sm" onclick="showAddServiceForm()">
+                  <i class="fa-solid fa-plus-circle"></i> Add New Service
+                </button>
+              </div>
+
+              <!-- Add/Edit Target Form Card -->
+              <div id="serviceFormCard" class="service-form-card hidden">
+                <div class="form-card-title">
+                  <h4 id="serviceFormTitle"><i class="fa-solid fa-pen-to-square"></i> Add New Service Target</h4>
+                  <button type="button" class="btn-icon-close" onclick="hideServiceForm()"><i
+                      class="fa-solid fa-xmark"></i></button>
+                </div>
+
+                <form id="targetForm" onsubmit="handleSaveServiceTarget(event)">
+                  <input type="hidden" id="targetFormId">
+
+                  <div class="form-row-2">
+                    <div class="form-group">
+                      <label>Service Name *</label>
+                      <input type="text" id="targetFormName" placeholder="e.g. Nivas App Product Management" required>
+                    </div>
+
+                    <div class="form-group">
+                      <label>Service Type *</label>
+                      <select id="targetFormType">
+                        <option value="backend">Backend API (JSON check)</option>
+                        <option value="frontend">Frontend Website (HTTP Status check)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="form-row-2">
+                    <div class="form-group">
+                      <label>HTTP Method</label>
+                      <select id="targetFormMethod">
+                        <option value="GET">GET</option>
+                        <option value="POST">POST</option>
+                        <option value="HEAD">HEAD</option>
+                      </select>
+                    </div>
+
+                    <div class="form-group">
+                      <label>Check Frequency (Hitting Time Interval) *</label>
+                      <select id="targetFormInterval">
+                        <option value="5">5 Mins</option>
+                        <option value="15">15 Mins</option>
+                        <option value="30">30 Mins</option>
+                        <option value="45">45 Mins</option>
+                        <option value="60">1 Hour (60 Mins)</option>
+                        <option value="360">6 Hours (360 Mins)</option>
+                        <option value="720">12 Hours (720 Mins)</option>
+                        <option value="1440">24 Hours (1440 Mins)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Target URL *</label>
+                    <input type="url" id="targetFormURL" placeholder="https://example.com/checkserver" required>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Expected JSON Keys (Backend only, comma-separated)</label>
+                    <input type="text" id="targetFormKeys" placeholder="e.g. service, db">
+                  </div>
+
+                  <!-- Alert Recipient Users Checkboxes -->
+                  <div class="form-group service-users-picker">
+                    <label class="picker-label">
+                      <i class="fa-solid fa-user-check text-cyan"></i>
+                      <span>Failure Alert Email Recipients (Select from User List)</span>
+                    </label>
+                    <p class="picker-sub">Selected users will receive immediate SMTP email alerts whenever this service
+                      check fails.</p>
+
+                    <div id="targetUserCheckboxes" class="user-checkboxes-grid">
+                      <!-- Dynamically rendered checkboxes -->
+                    </div>
+                  </div>
+
+                  <!-- Custom Email Chips Input (Optional) -->
+                  <div class="form-group">
+                    <label>Additional Custom Alert Emails (Optional)</label>
+                    <div class="email-input-chip-bar">
+                      <input type="email" id="targetEmailInput" placeholder="Add custom email and press Enter..."
+                        onkeydown="handleTargetEmailKey(event)">
+                      <button type="button" class="btn btn-secondary btn-sm" onclick="addTargetEmailFromInput()">
+                        <i class="fa-solid fa-plus"></i> Add
+                      </button>
+                    </div>
+                    <div id="targetEmailChipsList" class="chips-container" style="margin-top:8px;"></div>
+                  </div>
+
+                  <div class="form-group" style="margin-top:12px;">
+                    <label class="checkbox-label">
+                      <input type="checkbox" id="targetFormEnabled" checked>
+                      <span>Enable Health Check Monitoring for this target</span>
+                    </label>
+                  </div>
+
+                  <div class="btn-group-row" style="margin-top:16px;">
+                    <button type="submit" class="btn btn-primary">
+                      <i class="fa-solid fa-floppy-disk"></i> Save Service Target
+                    </button>
+                    <button type="button" class="btn btn-ghost" onclick="hideServiceForm()">
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Service Targets Data Table -->
+              <div class="table-responsive" style="margin-top:16px;">
+                <table class="data-table" id="servicesTable">
+                  <thead>
+                    <tr>
+                      <th width="50" class="text-center">S.No</th>
+                      <th width="240">Service Name</th>
+                      <th width="100">Type</th>
+                      <th width="130">Frequency</th>
+                      <th width="110" class="text-center">Status</th>
+                      <th width="110" class="text-center">Trigger</th>
+                      <th width="90" class="text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="servicesTableBody">
+                    <tr>
+                      <td colspan="7" class="text-center table-loading">
+                        <div class="spinner-inline"></div>
+                        <span>Loading service list...</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- TAB 2: USER MANAGEMENT -->
+            <div id="paneUser" class="settings-pane hidden">
+              <div class="pane-header flex-between">
+                <div>
+                  <h3><i class="fa-solid fa-users text-cyan"></i> User Management</h3>
+                  <p>Add and manage users (Name, Email Id) who can be selected to receive failure email alerts for
+                    services.</p>
+                </div>
+                <button type="button" class="btn btn-primary btn-sm" onclick="showAddUserForm()">
+                  <i class="fa-solid fa-user-plus"></i> Add New User
+                </button>
+              </div>
+
+              <!-- Add/Edit User Form Card -->
+              <div id="userFormCard" class="service-form-card hidden">
+                <div class="form-card-title">
+                  <h4 id="userFormTitle"><i class="fa-solid fa-user-plus"></i> Add New User</h4>
+                  <button type="button" class="btn-icon-close" onclick="hideUserForm()"><i
+                      class="fa-solid fa-xmark"></i></button>
+                </div>
+
+                <form id="userForm" onsubmit="handleSaveUser(event)">
+                  <input type="hidden" id="userFormId">
+
+                  <div class="form-row-2">
+                    <div class="form-group">
+                      <label>Name *</label>
+                      <input type="text" id="userFormName" placeholder="e.g. Indumathi R" required>
+                    </div>
+
+                    <div class="form-group">
+                      <label>Email Id *</label>
+                      <input type="email" id="userFormEmail" placeholder="e.g. indumathi.r@zadroit.com" required>
+                    </div>
+                  </div>
+
+                  <div class="btn-group-row" style="margin-top:10px;">
+                    <button type="submit" class="btn btn-primary">
+                      <i class="fa-solid fa-floppy-disk"></i> Save User
+                    </button>
+                    <button type="button" class="btn btn-ghost" onclick="hideUserForm()">
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Users Data Table -->
+              <div class="table-responsive" style="margin-top:16px;">
+                <table class="data-table" id="usersTable">
+                  <thead>
+                    <tr>
+                      <th width="60" class="text-center">S.No</th>
+                      <th width="220">Name</th>
+                      <th>Email Id</th>
+                      <th width="140" class="text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="usersTableBody">
+                    <tr>
+                      <td colspan="4" class="text-center table-loading">
+                        <div class="spinner-inline"></div>
+                        <span>Loading user list...</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Dashboard Credentials Sub-Section -->
+              <div class="settings-section"
+                style="margin-top:32px; border-top:1px solid var(--border-subtle); padding-top:20px;">
+                <div class="section-title-sm">
+                  <i class="fa-solid fa-lock text-purple"></i>
+                  <h4>Dashboard Login Credentials</h4>
+                </div>
+                <form onsubmit="handleSaveUserSettings(event)" class="settings-card-form" style="margin-top:12px;">
+                  <div class="form-row-2">
+                    <div class="form-group">
+                      <label>Username</label>
+                      <input type="text" id="setAuthUsername" placeholder="Username (default: Zadroit)" required>
+                    </div>
+                    <div class="form-group">
+                      <label>Password</label>
+                      <div class="input-wrapper">
+                        <input type="password" id="setAuthPassword" placeholder="Enter new password">
+                        <button type="button" class="btn-toggle-pwd"
+                          onclick="togglePasswordVisibility('setAuthPassword')">
+                          <i class="fa-regular fa-eye"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="pane-actions">
+                    <button type="submit" class="btn btn-secondary btn-sm">
+                      <i class="fa-solid fa-shield-halved"></i> Update Login Password
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <!-- TAB 3: FIREBASE CONFIGURATION -->
+            <div id="paneFirebase" class="settings-pane hidden">
+              <div class="pane-header">
+                <h3><i class="fa-solid fa-fire-flame-curved text-amber"></i> Firebase Realtime Database Configuration
+                </h3>
+                <p>Sync all health check probes instantly to Firebase Realtime Database node and manage automated log
+                  deletion retention policies.</p>
+              </div>
+
+              <form onsubmit="handleSaveFirebaseSettings(event)" class="settings-card-form">
+                <div class="form-group">
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="setFirebaseEnabled" checked>
+                    <span>Enable Real-time Firebase Synchronization</span>
+                  </label>
+                </div>
+
+                <div class="form-group">
+                  <label>Firebase Database URL</label>
+                  <input type="url" id="setFirebaseURL" placeholder="https://<project-id>-default-rtdb.firebaseio.com"
+                    required>
+                </div>
+
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label>Database Node / Collection</label>
+                    <input type="text" id="setFirebaseCollection" placeholder="server_monitoring_logs" required>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Auth Secret / Token (Optional)</label>
+                    <input type="password" id="setFirebaseAuth" placeholder="Optional database secret">
+                  </div>
+                </div>
+
+                <!-- Auto Deletion / Log Retention Sub-Section -->
+                <div class="auto-delete-card">
+                  <div class="auto-delete-header">
+                    <i class="fa-solid fa-clock-rotate-left text-amber"></i>
+                    <div>
+                      <h4>Auto Deletion & Data Retention</h4>
+                      <p>Automatically purge old health check logs after a specific number of days.</p>
+                    </div>
+                  </div>
+
+                  <div class="form-group" style="margin-top:14px;">
+                    <label class="checkbox-label">
+                      <input type="checkbox" id="setFirebaseAutoDeleteEnabled" checked>
+                      <span>Enable Auto Deletion of Old Logs</span>
+                    </label>
+                  </div>
+
+                  <div class="form-group" style="margin-top:12px;">
+                    <label>Auto Delete Logs Older Than (Days)</label>
+                    <div class="auto-delete-input-group">
+                      <input type="number" id="setFirebaseAutoDeleteDays" min="1" max="365" value="7"
+                        placeholder="Type number of days (e.g. 7, 15, 30)">
+                      <div class="days-presets-wrap">
+                        <button type="button" class="btn-preset-day" onclick="setAutoDeleteDaysPreset(7)">7
+                          Days</button>
+                        <button type="button" class="btn-preset-day" onclick="setAutoDeleteDaysPreset(15)">15
+                          Days</button>
+                        <button type="button" class="btn-preset-day" onclick="setAutoDeleteDaysPreset(30)">30
+                          Days</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="auto-delete-actions" style="margin-top:12px;">
+                    <button type="button" class="btn btn-outline btn-sm text-red" onclick="purgeOldLogsNow()"
+                      title="Immediately purge logs older than configured days">
+                      <i class="fa-solid fa-trash-can"></i> Purge Old Logs Now
+                    </button>
+                  </div>
+                </div>
+
+                <div class="pane-actions" style="margin-top:24px;">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Firebase Settings
+                  </button>
+                </div>
+              </form>
+            </div>
+
+          </div>
+        </div>
+      </div>
 
     </main>
   </div>
@@ -410,233 +733,21 @@
   <!-- 3. MODALS -->
   <!-- ============================================================== -->
 
-  <!-- A. Inspect Log Data Modal -->
+  <!-- Inspect Log Data Modal -->
   <div id="logDetailModal" class="modal-backdrop hidden" onclick="handleBackdropClick(event, 'logDetailModal')">
     <div class="modal-dialog modal-lg">
       <div class="modal-header">
         <div class="modal-title-wrap">
           <i class="fa-solid fa-code text-cyan"></i>
-          <h3 id="modalLogTitle">Log Inspection</h3>
+          <h3 id="modalLogTitle">Log Inspection Details</h3>
         </div>
         <button class="btn-close-modal" onclick="closeModal('logDetailModal')">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
-      <div class="modal-body" id="modalLogBody">
-        <!-- Rendered dynamically -->
-      </div>
+      <div class="modal-body" id="modalLogBody"></div>
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="closeModal('logDetailModal')">Close</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- B. Target Management Modal -->
-  <div id="targetModal" class="modal-backdrop hidden" onclick="handleBackdropClick(event, 'targetModal')">
-    <div class="modal-dialog modal-xl">
-      <div class="modal-header">
-        <div class="modal-title-wrap">
-          <i class="fa-solid fa-network-wired text-purple"></i>
-          <h3>Monitored Targets (JSON Configuration)</h3>
-        </div>
-        <button class="btn-close-modal" onclick="closeModal('targetModal')">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="targets-manager-layout">
-          <!-- Left: Target List & Quick Add Form -->
-          <div class="targets-form-col">
-            <h4 class="subheading"><i class="fa-solid fa-plus-circle"></i> Add / Edit Target</h4>
-            <form id="targetForm" onsubmit="handleSaveTarget(event)">
-              <input type="hidden" id="targetFormId">
-              <div class="form-group">
-                <label>Service Name *</label>
-                <input type="text" id="targetFormName" placeholder="e.g. Payment Gateway Service" required>
-              </div>
-              <div class="form-row-2">
-                <div class="form-group">
-                  <label>Type *</label>
-                  <select id="targetFormType">
-                    <option value="backend">Backend API (Validates JSON status & data)</option>
-                    <option value="frontend">Frontend Website (Validates HTML & assets)</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label>HTTP Method</label>
-                  <select id="targetFormMethod">
-                    <option value="GET">GET</option>
-                    <option value="POST">POST</option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-group">
-                <label>Target URL *</label>
-                <input type="url" id="targetFormURL" placeholder="https://..." required>
-              </div>
-              <div class="form-group">
-                <label>Expected Sub-Keys (for backend, comma-separated)</label>
-                <input type="text" id="targetFormKeys" placeholder="e.g. service, db">
-              </div>
-              <div class="form-group">
-                <label class="checkbox-label">
-                  <input type="checkbox" id="targetFormEnabled" checked>
-                  <span>Active & Monitored</span>
-                </label>
-              </div>
-              <div class="btn-group-row">
-                <button type="submit" class="btn btn-primary btn-sm">
-                  <i class="fa-solid fa-floppy-disk"></i> Save Target
-                </button>
-                <button type="button" class="btn btn-ghost btn-sm" onclick="resetTargetForm()">
-                  Clear Form
-                </button>
-              </div>
-            </form>
-          </div>
-
-          <!-- Right: Active Targets List -->
-          <div class="targets-list-col">
-            <h4 class="subheading"><i class="fa-solid fa-list"></i> Configured Targets</h4>
-            <div class="target-cards-list" id="targetsConfigList">
-              <!-- Rendered via JS -->
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeModal('targetModal')">Close</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- C. Settings Modal (Firebase & Email Alerts) -->
-  <div id="settingsModal" class="modal-backdrop hidden" onclick="handleBackdropClick(event, 'settingsModal')">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-header">
-        <div class="modal-title-wrap">
-          <i class="fa-solid fa-gear text-accent"></i>
-          <h3>System Settings & Firebase DB</h3>
-        </div>
-        <button class="btn-close-modal" onclick="closeModal('settingsModal')">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-      <div class="modal-body">
-        <form id="settingsForm" onsubmit="handleSaveSettings(event)">
-
-          <!-- Firebase Database Section -->
-          <div class="settings-section">
-            <div class="section-title-sm">
-              <i class="fa-solid fa-fire-flame-curved text-amber"></i>
-              <h4>Firebase Database Configuration</h4>
-            </div>
-            <p class="settings-hint">Health check logs (service name, status, hit time, message, data) are synced in
-              real-time to your Firebase DB.</p>
-
-            <div class="form-group">
-              <label class="checkbox-label">
-                <input type="checkbox" id="setFirebaseEnabled" checked>
-                <span>Enable Realtime Firebase Sync</span>
-              </label>
-            </div>
-            <div class="form-group">
-              <label>Firebase Database URL</label>
-              <input type="url" id="setFirebaseURL" placeholder="https://<project-id>-default-rtdb.firebaseio.com">
-            </div>
-            <div class="form-row-2">
-              <div class="form-group">
-                <label>Database Collection / Node</label>
-                <input type="text" id="setFirebaseCollection" placeholder="server_monitoring_logs">
-              </div>
-              <div class="form-group">
-                <label>Auth Secret / Token (Optional)</label>
-                <input type="password" id="setFirebaseAuth" placeholder="Optional database secret">
-              </div>
-            </div>
-          </div>
-
-          <!-- Email Alerts Section -->
-          <div class="settings-section">
-            <div class="section-title-sm">
-              <i class="fa-solid fa-envelope-open-text text-cyan"></i>
-              <h4>Gmail SMTP Alert Notification</h4>
-            </div>
-            <p class="settings-hint">Sends instant HTML alert emails whenever any service status or sub-service check is
-              false or fails.</p>
-
-            <div class="form-group">
-              <label class="checkbox-label">
-                <input type="checkbox" id="setEmailEnabled" checked>
-                <span>Enable Automatic Email Alerts on Failure</span>
-              </label>
-            </div>
-            <div class="form-row-2">
-              <div class="form-group">
-                <label>From Email (Gmail)</label>
-                <input type="email" id="setEmailFrom" placeholder="development.zadroit@gmail.com">
-              </div>
-              <div class="form-group">
-                <label>App Password</label>
-                <input type="password" id="setEmailPassword" placeholder="bfit dhmb hcxt jrvg">
-              </div>
-            </div>
-            <div class="form-group">
-              <label><i class="fa-solid fa-users"></i> Alert Recipient Email(s) <span
-                  class="text-cyan font-normal">(Multiple Recipients Supported)</span></label>
-              <div class="multi-email-container" id="multiEmailContainer">
-                <div class="email-chips-list" id="emailChipsList">
-                  <!-- Rendered dynamically -->
-                </div>
-                <div class="email-input-inline-wrap">
-                  <input type="email" id="newEmailInput" placeholder="Type email and press Enter or click + Add..."
-                    onkeydown="handleEmailInputKey(event)">
-                  <button type="button" class="btn btn-sm btn-action" onclick="addEmailFromInput()">
-                    <i class="fa-solid fa-plus"></i> Add
-                  </button>
-                </div>
-              </div>
-              <p class="settings-hint" style="margin-top:6px;">
-                <i class="fa-solid fa-circle-info"></i> All listed email addresses will simultaneously receive immediate
-                failure alerts. You can paste multiple emails separated by commas or spaces.
-              </p>
-            </div>
-            <div class="test-email-row">
-              <button type="button" class="btn btn-outline btn-sm" onclick="triggerTestEmail()" id="btnTestEmail">
-                <i class="fa-solid fa-paper-plane"></i>
-                <span>Send Test Alert Email to All Recipients</span>
-              </button>
-              <span id="testEmailStatus" class="test-status-text"></span>
-            </div>
-          </div>
-
-          <!-- Monitoring Interval -->
-          <div class="settings-section">
-            <div class="section-title-sm">
-              <i class="fa-regular fa-clock text-green"></i>
-              <h4>Monitoring Intervals</h4>
-            </div>
-            <div class="form-row-2">
-              <div class="form-group">
-                <label>Check Interval (Minutes)</label>
-                <input type="number" id="setIntervalMins" min="1" max="1440" value="5">
-              </div>
-              <div class="form-group">
-                <label>HTTP Request Timeout (Seconds)</label>
-                <input type="number" id="setTimeoutSecs" min="2" max="120" value="15">
-              </div>
-            </div>
-          </div>
-
-          <div class="modal-actions-right">
-            <button type="submit" class="btn btn-primary">
-              <i class="fa-solid fa-floppy-disk"></i> Save System Settings
-            </button>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeModal('settingsModal')">Close</button>
       </div>
     </div>
   </div>

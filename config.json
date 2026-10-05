@@ -35,6 +35,23 @@
     "measurement_id": "G-Q7R2VPN390",
     "collection": "server_monitoring_logs"
   },
+  "users": [
+    {
+      "id": "user_1",
+      "name": "Indumathi R",
+      "email": "indumathi.r@zadroit.com"
+    },
+    {
+      "id": "user_2",
+      "name": "Vijay Loganathan",
+      "email": "vijay.loganathan@zadroit.com"
+    },
+    {
+      "id": "user_1791200466394",
+      "name": "Thirukumara",
+      "email": "thirukumara.d@zadroit.com"
+    }
+  ],
   "targets": [
     {
       "id": "target_backend_1",
@@ -46,6 +63,11 @@
       "expected_keys": [
         "service",
         "db"
+      ],
+      "interval_minutes": 5,
+      "recipient_emails": [
+        "indumathi.r@zadroit.com",
+        "vijay.loganathan@zadroit.com"
       ]
     },
     {
@@ -54,7 +76,11 @@
       "type": "frontend",
       "url": "https://nivashoc.com/",
       "method": "GET",
-      "enabled": true
+      "enabled": true,
+      "interval_minutes": 5,
+      "recipient_emails": [
+        "indumathi.r@zadroit.com"
+      ]
     },
     {
       "id": "target_frontend_2",
@@ -62,7 +88,12 @@
       "type": "frontend",
       "url": "https://hotelsherlockholmes.com/",
       "method": "GET",
-      "enabled": true
+      "enabled": true,
+      "interval_minutes": 15,
+      "recipient_emails": [
+        "vijay.loganathan@zadroit.com",
+        "thirukumara.d@zadroit.com"
+      ]
     },
     {
       "id": "target_1791194011314",
@@ -74,6 +105,10 @@
       "expected_keys": [
         "service",
         "db"
+      ],
+      "interval_minutes": 5,
+      "recipient_emails": [
+        "vijay.loganathan@zadroit.com"
       ]
     }
   ]

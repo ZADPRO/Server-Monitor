@@ -4,13 +4,16 @@ import "time"
 
 // Target represents a monitored endpoint
 type Target struct {
-	ID           string   `json:"id"`
-	Name         string   `json:"name"`
-	Type         string   `json:"type"` // "backend" or "frontend"
-	URL          string   `json:"url"`
-	Method       string   `json:"method,omitempty"`
-	Enabled      bool     `json:"enabled"`
-	ExpectedKeys []string `json:"expected_keys,omitempty"`
+	ID                 string   `json:"id"`
+	Name               string   `json:"name"`
+	Type               string   `json:"type"` // "backend" or "frontend"
+	URL                string   `json:"url"`
+	Method             string   `json:"method,omitempty"`
+	Enabled            bool     `json:"enabled"`
+	ExpectedKeys       []string `json:"expected_keys,omitempty"`
+	IntervalMinutes    int      `json:"interval_minutes,omitempty"`
+	RecipientEmails    []string `json:"recipient_emails,omitempty"`
+	LastCheckTimestamp int64    `json:"last_check_timestamp,omitempty"`
 }
 
 // HealthCheckResult represents a single check outcome
@@ -100,6 +103,15 @@ type FirebaseConfig struct {
 	MeasurementID     string `json:"measurement_id,omitempty"`
 	AuthSecret        string `json:"auth_secret,omitempty"`
 	Collection        string `json:"collection"`
+	AutoDeleteEnabled bool   `json:"auto_delete_enabled"`
+	AutoDeleteDays    int    `json:"auto_delete_days"`
+}
+
+// User represents a system alert user recipient
+type User struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
 }
 
 // Config represents root config.json
@@ -109,6 +121,7 @@ type Config struct {
 	Monitoring MonitoringConfig `json:"monitoring"`
 	Email      EmailConfig      `json:"email"`
 	Firebase   FirebaseConfig   `json:"firebase"`
+	Users      []User           `json:"users"`
 	Targets    []Target         `json:"targets"`
 }
 

@@ -86,8 +86,9 @@ func main() {
 	}
 	fileServer := http.FileServer(http.Dir(webDir))
 	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Avoid caching index.html for fast development and updates
-		if r.URL.Path == "/" || r.URL.Path == "/index.html" {
+		// Avoid caching index.html, JS, and CSS for instant dev updates
+		ext := filepath.Ext(r.URL.Path)
+		if r.URL.Path == "/" || r.URL.Path == "/index.html" || ext == ".js" || ext == ".css" {
 			w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 		}
 		fileServer.ServeHTTP(w, r)
