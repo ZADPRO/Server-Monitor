@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -22,8 +23,25 @@ func main() {
 	configPath := flag.String("config", "config.json", "Path to config.json")
 	flag.Parse()
 
+	// Ensure data directory exists
+	dataDir := "data"
+	if err := os.MkdirAll(dataDir, 0755); err != nil {
+		log.Fatalf("[FATAL] Failed to create data directory: %v", err)
+	}
+
+	// Set up continuous log file for console logs / printfs
+	logFilePath := filepath.Join(dataDir, "app.log")
+	logFile, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err == nil {
+		multiWriter := io.MultiWriter(os.Stdout, logFile)
+		log.SetOutput(multiWriter)
+		log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
+		defer logFile.Close()
+	}
+
 	log.Println("==========================================================")
 	log.Println("🚀 Starting Zadroit Server Monitoring System...")
+	log.Printf("📝 Live Console & Execution logs saving to: %s", logFilePath)
 	log.Println("==========================================================")
 
 	// 1. Initialize configuration manager
@@ -35,10 +53,7 @@ func main() {
 	log.Printf("[CONFIG] Loaded successfully. Monitored targets: %d, Check interval: %d min(s)", len(cfg.Targets), cfg.Monitoring.IntervalMinutes)
 
 	// 2. Initialize Firebase & Local storage
-	dataDir := "data"
-	if err := os.MkdirAll(dataDir, 0755); err != nil {
-		log.Fatalf("[FATAL] Failed to create data directory: %v", err)
-	}
+
 
 	fbClient := storage.NewFirebaseClient(cfg.Firebase)
 	store, err := storage.NewLocalStorage(filepath.Join(dataDir, "logs.json"), 5000, fbClient)

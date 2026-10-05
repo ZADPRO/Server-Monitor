@@ -66,14 +66,14 @@
           <i class="fa-solid fa-arrow-right"></i>
         </button>
 
-        <div class="quick-credentials">
+        <!-- <div class="quick-credentials">
           <span class="cred-label">Preset Credentials:</span>
           <div class="cred-chips">
             <span class="cred-chip" onclick="fillCredentials('Zadroit', 'ZadGugSlm06')">
               <i class="fa-solid fa-key"></i> Auto-fill (Zadroit)
             </span>
           </div>
-        </div>
+        </div> -->
       </form>
 
       <div class="auth-footer">
@@ -582,20 +582,23 @@
               </div>
             </div>
             <div class="form-group">
-              <label><i class="fa-solid fa-users"></i> Alert Recipient Email(s) <span class="text-cyan font-normal">(Multiple Recipients Supported)</span></label>
+              <label><i class="fa-solid fa-users"></i> Alert Recipient Email(s) <span
+                  class="text-cyan font-normal">(Multiple Recipients Supported)</span></label>
               <div class="multi-email-container" id="multiEmailContainer">
                 <div class="email-chips-list" id="emailChipsList">
                   <!-- Rendered dynamically -->
                 </div>
                 <div class="email-input-inline-wrap">
-                  <input type="email" id="newEmailInput" placeholder="Type email and press Enter or click + Add..." onkeydown="handleEmailInputKey(event)">
+                  <input type="email" id="newEmailInput" placeholder="Type email and press Enter or click + Add..."
+                    onkeydown="handleEmailInputKey(event)">
                   <button type="button" class="btn btn-sm btn-action" onclick="addEmailFromInput()">
                     <i class="fa-solid fa-plus"></i> Add
                   </button>
                 </div>
               </div>
               <p class="settings-hint" style="margin-top:6px;">
-                <i class="fa-solid fa-circle-info"></i> All listed email addresses will simultaneously receive immediate failure alerts. You can paste multiple emails separated by commas or spaces.
+                <i class="fa-solid fa-circle-info"></i> All listed email addresses will simultaneously receive immediate
+                failure alerts. You can paste multiple emails separated by commas or spaces.
               </p>
             </div>
             <div class="test-email-row">

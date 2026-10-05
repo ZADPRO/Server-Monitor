@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -34,20 +35,36 @@ func NewAPIHandler(cfgMgr *config.ConfigManager, store storage.Storage, sched *m
 
 // RegisterRoutes registers all API and web routes on the given ServeMux
 func (h *APIHandler) RegisterRoutes(mux *http.ServeMux) {
-	// API Endpoints
-	mux.HandleFunc("/api/auth/login", h.handleLogin)
-	mux.HandleFunc("/api/status", h.handleStatus)
-	mux.HandleFunc("/api/logs", h.handleLogs)
-	mux.HandleFunc("/api/check-now", h.handleCheckNow)
-	mux.HandleFunc("/api/targets", h.handleTargets)
-	mux.HandleFunc("/api/targets/", h.handleTargetByID)
-	mux.HandleFunc("/api/config", h.handleConfig)
-	mux.HandleFunc("/api/test-email", h.handleTestEmail)
-	mux.HandleFunc("/api/export-logs", h.handleExportLogs)
-	mux.HandleFunc("/api/firebase-status", h.handleFirebaseStatus)
-	mux.HandleFunc("/api/firebase-logs", h.handleFirebaseLogs)
-	mux.HandleFunc("/api/firebase-sync", h.handleFirebaseSync)
+	handleWithCORS := func(pattern string, handler http.HandlerFunc) {
+		mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+
+			if r.Method == http.MethodOptions {
+				w.WriteHeader(http.StatusOK)
+				return
+			}
+			handler(w, r)
+		})
+	}
+
+	// API Endpoints with CORS
+	handleWithCORS("/api/auth/login", h.handleLogin)
+	handleWithCORS("/api/status", h.handleStatus)
+	handleWithCORS("/api/logs", h.handleLogs)
+	handleWithCORS("/api/console-logs", h.handleConsoleLogs)
+	handleWithCORS("/api/check-now", h.handleCheckNow)
+	handleWithCORS("/api/targets", h.handleTargets)
+	handleWithCORS("/api/targets/", h.handleTargetByID)
+	handleWithCORS("/api/config", h.handleConfig)
+	handleWithCORS("/api/test-email", h.handleTestEmail)
+	handleWithCORS("/api/export-logs", h.handleExportLogs)
+	handleWithCORS("/api/firebase-status", h.handleFirebaseStatus)
+	handleWithCORS("/api/firebase-logs", h.handleFirebaseLogs)
+	handleWithCORS("/api/firebase-sync", h.handleFirebaseSync)
 }
+
 
 func (h *APIHandler) handleLogin(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -429,8 +446,37 @@ func (h *APIHandler) handleFirebaseSync(w http.ResponseWriter, r *http.Request) 
 	})
 }
 
+func (h *APIHandler) handleConsoleLogs(w http.ResponseWriter, r *http.Request) {
+	logFilePath := "data/app.log"
+	data, err := os.ReadFile(logFilePath)
+	if err != nil {
+		writeJSON(w, http.StatusOK, map[string]interface{}{
+			"success": true,
+			"lines":   []string{"Log file initialized. Waiting for output..."},
+			"raw":     "",
+		})
+		return
+	}
+
+	rawText := string(data)
+	allLines := strings.Split(rawText, "\n")
+	limit := 200
+	if len(allLines) > limit {
+		allLines = allLines[len(allLines)-limit:]
+	}
+
+	writeJSON(w, http.StatusOK, map[string]interface{}{
+		"success": true,
+		"total":   len(allLines),
+		"lines":   allLines,
+		"raw":     rawText,
+	})
+}
+
 func writeJSON(w http.ResponseWriter, statusCode int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.WriteHeader(statusCode)
 	json.NewEncoder(w).Encode(data)
 }
+
