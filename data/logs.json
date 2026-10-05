@@ -1,0 +1,2995 @@
+[
+  {
+    "id": "target_1791194011314-1791194985763211800",
+    "service_name": "local",
+    "type": "backend",
+    "url": "http://192.168.29.143:8083/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 15:39:45",
+    "timestamp": 1791194985,
+    "message": "Connection failed / Timeout",
+    "data": {},
+    "response_time_ms": 2025,
+    "http_status": 0,
+    "error_detail": "Get \"http://192.168.29.143:8083/checkserver\": dial tcp 192.168.29.143:8083: connectex: No connection could be made because the target machine actively refused it.",
+    "target_id": "target_1791194011314"
+  },
+  {
+    "id": "target_frontend_2-1791194985763211800",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 15:39:45",
+    "timestamp": 1791194985,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 192,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791194985763211800",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 15:39:45",
+    "timestamp": 1791194985,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 187,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791194985763211800",
+    "service_name": "Nivas App product management",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 15:39:45",
+    "timestamp": 1791194985,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 177,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791194685763082800",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 15:34:45",
+    "timestamp": 1791194685,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 219,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_1791194011314-1791194685763082800",
+    "service_name": "local",
+    "type": "backend",
+    "url": "http://192.168.29.143:8083/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 15:34:45",
+    "timestamp": 1791194685,
+    "message": "Order Service",
+    "data": {
+      "db": false,
+      "service": true
+    },
+    "response_time_ms": 337,
+    "http_status": 200,
+    "error_detail": "Response top-level status is false (message: Order Service)",
+    "target_id": "target_1791194011314"
+  },
+  {
+    "id": "target_frontend_1-1791194685763082800",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 15:34:45",
+    "timestamp": 1791194685,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 177,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791194685763082800",
+    "service_name": "Nivas App product management",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 15:34:45",
+    "timestamp": 1791194685,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 168,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791194385763067500",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 15:29:45",
+    "timestamp": 1791194385,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 154,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_1791194011314-1791194385763067500",
+    "service_name": "local",
+    "type": "backend",
+    "url": "http://192.168.29.143:8083/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 15:29:45",
+    "timestamp": 1791194385,
+    "message": "Order Service",
+    "data": {
+      "db": false,
+      "service": true
+    },
+    "response_time_ms": 339,
+    "http_status": 200,
+    "error_detail": "Response top-level status is false (message: Order Service)",
+    "target_id": "target_1791194011314"
+  },
+  {
+    "id": "target_frontend_1-1791194385763067500",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 15:29:45",
+    "timestamp": 1791194385,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 162,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791194385763067500",
+    "service_name": "Nivas App product management",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 15:29:45",
+    "timestamp": 1791194385,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 140,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791194085762967400",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 15:24:45",
+    "timestamp": 1791194085,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 137,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791194085762967400",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 15:24:45",
+    "timestamp": 1791194085,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 174,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_1791194011314-1791194085762967400",
+    "service_name": "local",
+    "type": "backend",
+    "url": "http://192.168.29.143:8083/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 15:24:45",
+    "timestamp": 1791194085,
+    "message": "Order Service",
+    "data": {
+      "db": false,
+      "service": true
+    },
+    "response_time_ms": 316,
+    "http_status": 200,
+    "error_detail": "Response top-level status is false (message: Order Service)",
+    "target_id": "target_1791194011314"
+  },
+  {
+    "id": "target_backend_1-1791194085762967400",
+    "service_name": "Nivas App product management",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 15:24:45",
+    "timestamp": 1791194085,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 123,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791194019281790500",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 15:23:39",
+    "timestamp": 1791194019,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 245,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791194019281790500",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 15:23:39",
+    "timestamp": 1791194019,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 245,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_1791194011314-1791194019281790500",
+    "service_name": "local",
+    "type": "backend",
+    "url": "http://192.168.29.143:8083/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 15:23:39",
+    "timestamp": 1791194019,
+    "message": "Order Service",
+    "data": {
+      "db": false,
+      "service": true
+    },
+    "response_time_ms": 395,
+    "http_status": 200,
+    "error_detail": "Response top-level status is false (message: Order Service)",
+    "target_id": "target_1791194011314"
+  },
+  {
+    "id": "target_backend_1-1791194019281790500",
+    "service_name": "Nivas App product management",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 15:23:39",
+    "timestamp": 1791194019,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 220,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791193999093573300",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 15:23:19",
+    "timestamp": 1791193999,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 166,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791193999093573300",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 15:23:19",
+    "timestamp": 1791193999,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 170,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791193999093573300",
+    "service_name": "Nivas App product management",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 15:23:19",
+    "timestamp": 1791193999,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 149,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791193785762983200",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 15:19:45",
+    "timestamp": 1791193785,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 217,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791193785762983200",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 15:19:45",
+    "timestamp": 1791193785,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 197,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791193785762983200",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 15:19:45",
+    "timestamp": 1791193785,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 176,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791193485762916400",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 15:14:45",
+    "timestamp": 1791193485,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 150,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791193485762916400",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 15:14:45",
+    "timestamp": 1791193485,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 166,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791193485762916400",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 15:14:45",
+    "timestamp": 1791193485,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 119,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791193333009815400",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 15:12:13",
+    "timestamp": 1791193333,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 143,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791193333009815400",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 15:12:13",
+    "timestamp": 1791193333,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 155,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791193333009815400",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 15:12:13",
+    "timestamp": 1791193333,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 133,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791193185762924600",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 15:09:45",
+    "timestamp": 1791193185,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 2089,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_frontend_2-1791193185762924600",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 15:09:45",
+    "timestamp": 1791193185,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 1004,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_backend_1-1791193185762924600",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 15:09:45",
+    "timestamp": 1791193185,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 135,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791192885762727900",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 15:04:45",
+    "timestamp": 1791192885,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 213,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791192885762727900",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 15:04:45",
+    "timestamp": 1791192885,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 237,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791192885762727900",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 15:04:45",
+    "timestamp": 1791192885,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 177,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791192748624593500",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 15:02:28",
+    "timestamp": 1791192748,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 153,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791192748624593500",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 15:02:28",
+    "timestamp": 1791192748,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 165,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791192748624593500",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 15:02:28",
+    "timestamp": 1791192748,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 131,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791192586763282300",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 14:59:46",
+    "timestamp": 1791192586,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 241,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791192586763282300",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 14:59:46",
+    "timestamp": 1791192586,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 235,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791192586763282300",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 14:59:46",
+    "timestamp": 1791192586,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 241,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791192290019120700",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 14:54:50",
+    "timestamp": 1791192290,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 173,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791192290019772400",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 14:54:50",
+    "timestamp": 1791192290,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 172,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791192290019120700",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 14:54:50",
+    "timestamp": 1791192290,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 170,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791191990019563600",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 14:49:50",
+    "timestamp": 1791191990,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 194,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791191990019563600",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 14:49:50",
+    "timestamp": 1791191990,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 169,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791191990019563600",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 14:49:50",
+    "timestamp": 1791191990,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 139,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791191690019460600",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 14:44:50",
+    "timestamp": 1791191690,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 183,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791191690019972100",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 14:44:50",
+    "timestamp": 1791191690,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 177,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791191690019460600",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 14:44:50",
+    "timestamp": 1791191690,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 160,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791191390018899400",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 14:39:50",
+    "timestamp": 1791191390,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 189,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791191390018899400",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 14:39:50",
+    "timestamp": 1791191390,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 189,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791191390018899400",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 14:39:50",
+    "timestamp": 1791191390,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 153,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791191090018869500",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 14:34:50",
+    "timestamp": 1791191090,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 189,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791191090018869500",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 14:34:50",
+    "timestamp": 1791191090,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 181,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791191090018869500",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 14:34:50",
+    "timestamp": 1791191090,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 170,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791190790019261200",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 14:29:50",
+    "timestamp": 1791190790,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 177,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791190790019261200",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 14:29:50",
+    "timestamp": 1791190790,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 169,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791190790019261200",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 14:29:50",
+    "timestamp": 1791190790,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 290,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791190490019351900",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 14:24:50",
+    "timestamp": 1791190490,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 163,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791190490019351900",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 14:24:50",
+    "timestamp": 1791190490,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 157,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791190490019351900",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 14:24:50",
+    "timestamp": 1791190490,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 139,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791190406194223400",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 14:23:26",
+    "timestamp": 1791190406,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 1697,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_frontend_2-1791190406152965300",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 14:23:26",
+    "timestamp": 1791190406,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 1355,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_backend_1-1791190406176703400",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 14:23:26",
+    "timestamp": 1791190406,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 1574,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791187490018616200",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 13:34:50",
+    "timestamp": 1791187490,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 194,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791187490018616200",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 13:34:50",
+    "timestamp": 1791187490,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 163,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791187490018616200",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 13:34:50",
+    "timestamp": 1791187490,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 142,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791187190019088500",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 13:29:50",
+    "timestamp": 1791187190,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 137,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791187190019088500",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 13:29:50",
+    "timestamp": 1791187190,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 137,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791187190019088500",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 13:29:50",
+    "timestamp": 1791187190,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 144,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791186890018674900",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 13:24:50",
+    "timestamp": 1791186890,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 152,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791186890018674900",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 13:24:50",
+    "timestamp": 1791186890,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 152,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791186890018674900",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 13:24:50",
+    "timestamp": 1791186890,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 132,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791186603521831100",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 13:20:03",
+    "timestamp": 1791186603,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 148,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791186603521831100",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 13:20:03",
+    "timestamp": 1791186603,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 157,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791186603521831100",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 13:20:03",
+    "timestamp": 1791186603,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 124,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791186590018648200",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 13:19:50",
+    "timestamp": 1791186590,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 156,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791186590018648200",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 13:19:50",
+    "timestamp": 1791186590,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 189,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791186590018648200",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 13:19:50",
+    "timestamp": 1791186590,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 148,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_backend_1-1791186290018570900",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 13:14:50",
+    "timestamp": 1791186290,
+    "message": "Connection failed / Timeout",
+    "data": {},
+    "response_time_ms": 15000,
+    "http_status": 0,
+    "error_detail": "Get \"https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791186290018570900",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": false,
+    "hit_time": "2026-10-05 13:14:50",
+    "timestamp": 1791186290,
+    "message": "Frontend unreachable / Network Error",
+    "data": {
+      "error": "Get \"https://nivashoc.com/\": EOF",
+      "reachable": false
+    },
+    "response_time_ms": 67,
+    "http_status": 0,
+    "error_detail": "Get \"https://nivashoc.com/\": EOF",
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_frontend_2-1791186290018570900",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": false,
+    "hit_time": "2026-10-05 13:14:50",
+    "timestamp": 1791186290,
+    "message": "Frontend unreachable / Network Error",
+    "data": {
+      "error": "Get \"https://hotelsherlockholmes.com/\": EOF",
+      "reachable": false
+    },
+    "response_time_ms": 67,
+    "http_status": 0,
+    "error_detail": "Get \"https://hotelsherlockholmes.com/\": EOF",
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_2-1791185990018917700",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 13:09:50",
+    "timestamp": 1791185990,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 158,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791185990018917700",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 13:09:50",
+    "timestamp": 1791185990,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 134,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791185990018917700",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 13:09:50",
+    "timestamp": 1791185990,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 125,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791185913445291300",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 13:08:33",
+    "timestamp": 1791185913,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 225,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791185913445291300",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 13:08:33",
+    "timestamp": 1791185913,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 164,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791185913445291300",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 13:08:33",
+    "timestamp": 1791185913,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 133,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791185691019499800",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 13:04:51",
+    "timestamp": 1791185691,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 193,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791185691019499800",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 13:04:51",
+    "timestamp": 1791185691,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 156,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791185691019499800",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 13:04:51",
+    "timestamp": 1791185691,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 150,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791185366264146400",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 12:59:26",
+    "timestamp": 1791185366,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 168,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791185366264146400",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 12:59:26",
+    "timestamp": 1791185366,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 142,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791185366264146400",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 12:59:26",
+    "timestamp": 1791185366,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 139,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_2-1791185067264402600",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-05 12:54:27",
+    "timestamp": 1791185067,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 316,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791185067264402600",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 12:54:27",
+    "timestamp": 1791185067,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 224,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791185067264402600",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 12:54:27",
+    "timestamp": 1791185067,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n   ..."
+    },
+    "response_time_ms": 222,
+    "http_status": 404,
+    "error_detail": "Server returned non-200 status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791184988252274100",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 12:53:08",
+    "timestamp": 1791184988,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 187,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791184988253003000",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 12:53:08",
+    "timestamp": 1791184988,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 121,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791184778795868800",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 12:49:38",
+    "timestamp": 1791184778,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 178,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791184778795868800",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 12:49:38",
+    "timestamp": 1791184778,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 162,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791184688252337500",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 12:48:08",
+    "timestamp": 1791184688,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 169,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791184688252337500",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 12:48:08",
+    "timestamp": 1791184688,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 155,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791184388252460900",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 12:43:08",
+    "timestamp": 1791184388,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 184,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791184388252460900",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 12:43:08",
+    "timestamp": 1791184388,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 145,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791184310697271900",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 12:41:50",
+    "timestamp": 1791184310,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 173,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791184310697271900",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 12:41:50",
+    "timestamp": 1791184310,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 155,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791184088254285800",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 12:38:08",
+    "timestamp": 1791184088,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 191,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791184088254285800",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 12:38:08",
+    "timestamp": 1791184088,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 142,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791184086091257500",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 12:38:06",
+    "timestamp": 1791184086,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 177,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791184086091257500",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 12:38:06",
+    "timestamp": 1791184086,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 114,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791183788252529900",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 12:33:08",
+    "timestamp": 1791183788,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 220,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791183788252529900",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 12:33:08",
+    "timestamp": 1791183788,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 140,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791183629831756800",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 12:30:29",
+    "timestamp": 1791183629,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 167,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791183629831756800",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 12:30:29",
+    "timestamp": 1791183629,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 126,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791183488252437200",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 12:28:08",
+    "timestamp": 1791183488,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 171,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791183488253000700",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 12:28:08",
+    "timestamp": 1791183488,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 140,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791183188252213400",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 12:23:08",
+    "timestamp": 1791183188,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 196,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791183188252213400",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 12:23:08",
+    "timestamp": 1791183188,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 170,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791182888252475100",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 12:18:08",
+    "timestamp": 1791182888,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 209,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791182888253032100",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 12:18:08",
+    "timestamp": 1791182888,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 125,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791182588252152000",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 12:13:08",
+    "timestamp": 1791182588,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 180,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791182588252152000",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 12:13:08",
+    "timestamp": 1791182588,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 144,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791182288252176000",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 12:08:08",
+    "timestamp": 1791182288,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 235,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791182288254948000",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 12:08:08",
+    "timestamp": 1791182288,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 183,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791182021427606400",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 12:03:41",
+    "timestamp": 1791182021,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 164,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791182021428111200",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 12:03:41",
+    "timestamp": 1791182021,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 175,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791181988252524900",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 12:03:08",
+    "timestamp": 1791181988,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 194,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791181988252524900",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 12:03:08",
+    "timestamp": 1791181988,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 172,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791181688252777300",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 11:58:08",
+    "timestamp": 1791181688,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 160,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791181688252777300",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 11:58:08",
+    "timestamp": 1791181688,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 152,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791181388253024700",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 11:53:08",
+    "timestamp": 1791181388,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 196,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791181388253024700",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 11:53:08",
+    "timestamp": 1791181388,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 143,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791181278555723200",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 11:51:18",
+    "timestamp": 1791181278,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 209,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791181278555723200",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 11:51:18",
+    "timestamp": 1791181278,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 164,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791181088253252400",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 11:48:08",
+    "timestamp": 1791181088,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 185,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791181088253252400",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 11:48:08",
+    "timestamp": 1791181088,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 174,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791180788252173200",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 11:43:08",
+    "timestamp": 1791180788,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 296,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791180788252173200",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 11:43:08",
+    "timestamp": 1791180788,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 118,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791180488252404500",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 11:38:08",
+    "timestamp": 1791180488,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 305,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791180488252404500",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 11:38:08",
+    "timestamp": 1791180488,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 101,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791180188252464900",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 11:33:08",
+    "timestamp": 1791180188,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 162,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791180188252464900",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 11:33:08",
+    "timestamp": 1791180188,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 132,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791179888252107400",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 11:28:08",
+    "timestamp": 1791179888,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 202,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791179888252107400",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 11:28:08",
+    "timestamp": 1791179888,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 125,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791179588252760800",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 11:23:08",
+    "timestamp": 1791179588,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 184,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791179588252760800",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 11:23:08",
+    "timestamp": 1791179588,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 158,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791179288252250900",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 11:18:08",
+    "timestamp": 1791179288,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 131,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791179288252250900",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 11:18:08",
+    "timestamp": 1791179288,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 156,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  },
+  {
+    "id": "target_frontend_1-1791178989252354600",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-05 11:13:09",
+    "timestamp": 1791178989,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 263,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_backend_1-1791178989252354600",
+    "service_name": "Nivas App Search Algorithm",
+    "type": "backend",
+    "url": "https://nivas-appsearching-algorithm.brightoncloudtech.com/app-search-algorithm/checkserver",
+    "status": false,
+    "hit_time": "2026-10-05 11:13:09",
+    "timestamp": 1791178989,
+    "message": "HTTP 502 Bad Gateway",
+    "data": {
+      "raw_response": "\u003chtml\u003e\r\n\u003chead\u003e\u003ctitle\u003e502 Bad Gateway\u003c/title\u003e\u003c/head\u003e\r\n\u003cbody\u003e\r\n\u003ccenter\u003e\u003ch1\u003e502 Bad Gateway\u003c/h1\u003e\u003c/center\u003e\r\n\u003chr\u003e\u003ccenter\u003enginx\u003c/center\u003e\r\n\u003c/body\u003e\r\n\u003c/html\u003e"
+    },
+    "response_time_ms": 149,
+    "http_status": 502,
+    "error_detail": "Server returned non-200 status code: 502",
+    "target_id": "target_backend_1"
+  }
+]

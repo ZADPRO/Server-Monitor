@@ -1,0 +1,80 @@
+{
+  "server": {
+    "port": 8080,
+    "host": "0.0.0.0"
+  },
+  "auth": {
+    "username": "Zadroit",
+    "password": "ZadGugSlm06"
+  },
+  "monitoring": {
+    "interval_minutes": 5,
+    "request_timeout_seconds": 15
+  },
+  "email": {
+    "enabled": true,
+    "smtp_host": "smtp.gmail.com",
+    "smtp_port": 587,
+    "from_email": "development.zadroit@gmail.com",
+    "app_password": "bfit dhmb hcxt jrvg",
+    "to_emails": [
+      "indumathi.r@zadroit.com",
+      "vijay.loganathan@zadroit.com"
+    ]
+  },
+  "firebase": {
+    "enabled": true,
+    "type": "realtime",
+    "api_key": "AIzaSyA2sTTwDtuWcWF9Xg2sPfrrYuDLbjJCMUc",
+    "auth_domain": "server-monitor-8ffb0.firebaseapp.com",
+    "database_url": "https://server-monitor-8ffb0-default-rtdb.firebaseio.com",
+    "project_id": "server-monitor-8ffb0",
+    "storage_bucket": "server-monitor-8ffb0.firebasestorage.app",
+    "messaging_sender_id": "274069716120",
+    "app_id": "1:274069716120:web:9585c80e368ac8b9e624ed",
+    "measurement_id": "G-Q7R2VPN390",
+    "collection": "server_monitoring_logs"
+  },
+  "targets": [
+    {
+      "id": "target_backend_1",
+      "name": "Nivas App product management",
+      "type": "backend",
+      "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+      "method": "GET",
+      "enabled": true,
+      "expected_keys": [
+        "service",
+        "db"
+      ]
+    },
+    {
+      "id": "target_frontend_1",
+      "name": "Nivas HOC Website",
+      "type": "frontend",
+      "url": "https://nivashoc.com/",
+      "method": "GET",
+      "enabled": true
+    },
+    {
+      "id": "target_frontend_2",
+      "name": "Hotel Sherlock Website",
+      "type": "frontend",
+      "url": "https://hotelsherlockholmes.com/",
+      "method": "GET",
+      "enabled": true
+    },
+    {
+      "id": "target_1791194011314",
+      "name": "local",
+      "type": "backend",
+      "url": "http://192.168.29.143:8083/checkserver",
+      "method": "GET",
+      "enabled": true,
+      "expected_keys": [
+        "service",
+        "db"
+      ]
+    }
+  ]
+}
