@@ -64,8 +64,11 @@ func main() {
 	mux := http.NewServeMux()
 	apiHandler.RegisterRoutes(mux)
 
-	// Static web UI files
-	webDir := "web"
+	// Static web UI files (served from public/ directory)
+	webDir := "public"
+	if _, err := os.Stat(webDir); os.IsNotExist(err) {
+		webDir = "web"
+	}
 	fileServer := http.FileServer(http.Dir(webDir))
 	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Avoid caching index.html for fast development and updates
