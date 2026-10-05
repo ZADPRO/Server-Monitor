@@ -305,3 +305,15 @@
 2026/10/05 17:47:07.222002 [ALERT] Target local (http://192.168.29.143:8083/checkserver) is DOWN! Failure recipient(s): [vijay.loganathan@zadroit.com]. Error: Get "http://192.168.29.143:8083/checkserver": context deadline exceeded (Client.Timeout exceeded while awaiting headers)
 2026/10/05 17:47:08.556011 [FIREBASE REALTIME] Pushed log to Firebase DB: service='local' (status=false)
 2026/10/05 17:47:11.017680 [NOTIFIER] Alert email successfully sent to 1 recipient(s): vijay.loganathan@zadroit.com
+2026/10/05 17:51:52.215015 [SCHEDULER] Running scheduled checks for 1 target(s) due now...
+2026/10/05 17:51:52.652335 [HEALTHY] Target Hotel Sherlock Website (https://hotelsherlockholmes.com/) is OK (224ms)
+2026/10/05 17:51:54.385764 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Hotel Sherlock Website' (status=true)
+2026/10/05 17:52:22.214386 [SCHEDULER] Running scheduled checks for 3 target(s) due now...
+2026/10/05 17:52:22.347216 [ALERT] Target Nivas App product management (https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver) is DOWN! Failure recipient(s): [indumathi.r@zadroit.com vijay.loganathan@zadroit.com]. Error: Server returned non-200 status code: 404
+2026/10/05 17:52:22.521749 [HEALTHY] Target Nivas HOC Website (https://nivashoc.com/) is OK (139ms)
+2026/10/05 17:52:23.644535 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas App product management' (status=false)
+2026/10/05 17:52:24.409424 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas HOC Website' (status=true)
+2026/10/05 17:52:26.181093 [NOTIFIER] Alert email successfully sent to 2 recipient(s): indumathi.r@zadroit.com, vijay.loganathan@zadroit.com
+2026/10/05 17:52:37.219827 [ALERT] Target local (http://192.168.29.143:8083/checkserver) is DOWN! Failure recipient(s): [vijay.loganathan@zadroit.com]. Error: Get "http://192.168.29.143:8083/checkserver": context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+2026/10/05 17:52:38.541789 [FIREBASE REALTIME] Pushed log to Firebase DB: service='local' (status=false)
+2026/10/05 17:52:40.850799 [NOTIFIER] Alert email successfully sent to 1 recipient(s): vijay.loganathan@zadroit.com
