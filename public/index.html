@@ -83,6 +83,7 @@
       <div class="nav-left">
         <div class="nav-brand">
           <div class="brand-logo-container">
+
           </div>
           <div class="brand-meta">
             <div class="brand-row">
@@ -748,6 +749,88 @@
       <div class="modal-body" id="modalLogBody"></div>
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="closeModal('logDetailModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Mobile Filter FAB Button -->
+  <button type="button" id="mobileFilterFab" class="mobile-filter-fab" onclick="openMobileFilterModal()" title="Open Filters">
+    <i class="fa-solid fa-filter"></i>
+  </button>
+
+  <!-- Mobile Filter Modal Popup -->
+  <div id="mobileFilterModal" class="modal-backdrop hidden" onclick="handleBackdropClick(event, 'mobileFilterModal')">
+    <div class="modal-dialog modal-md">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <i class="fa-solid fa-filter text-cyan"></i>
+          <h3>Filter Monitoring Logs</h3>
+        </div>
+        <button class="btn-close-modal" onclick="closeModal('mobileFilterModal')">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="mobileFilterForm" onsubmit="applyMobileFilters(event)">
+          <div class="form-group">
+            <label><i class="fa-solid fa-layer-group"></i> Service Name</label>
+            <select id="mobileFilterService">
+              <option value="all">All Services</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label><i class="fa-solid fa-diagram-project"></i> Type</label>
+            <select id="mobileFilterType">
+              <option value="all">All Types</option>
+              <option value="backend">Backend API</option>
+              <option value="frontend">Frontend Website</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label><i class="fa-solid fa-traffic-light"></i> Status</label>
+            <select id="mobileFilterStatus">
+              <option value="all">All Statuses</option>
+              <option value="success">Success (Green)</option>
+              <option value="failure">Failure (Red)</option>
+            </select>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label><i class="fa-regular fa-calendar"></i> From Date</label>
+              <input type="date" id="mobileFilterFromDate">
+            </div>
+            <div class="form-group">
+              <label><i class="fa-regular fa-calendar"></i> To Date</label>
+              <input type="date" id="mobileFilterToDate">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label><i class="fa-solid fa-bolt"></i> Quick Range</label>
+            <div class="preset-buttons">
+              <button type="button" class="btn-preset active" onclick="setMobileQuickDate('all', this)">All</button>
+              <button type="button" class="btn-preset" onclick="setMobileQuickDate('today', this)">Today</button>
+              <button type="button" class="btn-preset" onclick="setMobileQuickDate('7days', this)">7D</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label><i class="fa-solid fa-magnifying-glass"></i> Search</label>
+            <input type="text" id="mobileFilterSearch" placeholder="Search service name, error, data...">
+          </div>
+
+          <div class="btn-group-row" style="margin-top:16px;">
+            <button type="submit" class="btn btn-primary" style="flex:1;">
+              <i class="fa-solid fa-check"></i> Apply Filters
+            </button>
+            <button type="button" class="btn btn-ghost" onclick="resetMobileFilters()">
+              Reset
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

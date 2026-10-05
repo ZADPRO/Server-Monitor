@@ -802,6 +802,109 @@ window.resetAllFilters = function() {
   showToast('Filters reset to default', 'info');
 };
 
+function openMobileFilterModal() {
+  const serviceSel = document.getElementById('mobileFilterService');
+  const typeSel = document.getElementById('mobileFilterType');
+  const statusSel = document.getElementById('mobileFilterStatus');
+  const fromInput = document.getElementById('mobileFilterFromDate');
+  const toInput = document.getElementById('mobileFilterToDate');
+  const searchInput = document.getElementById('mobileFilterSearch');
+
+  if (serviceSel) serviceSel.value = state.filters.serviceName || 'all';
+  if (typeSel) typeSel.value = state.filters.type || 'all';
+  if (statusSel) statusSel.value = state.filters.status || 'all';
+  if (fromInput) fromInput.value = state.filters.fromDate || '';
+  if (toInput) toInput.value = state.filters.toDate || '';
+  if (searchInput) searchInput.value = state.filters.search || '';
+
+  const modal = document.getElementById('mobileFilterModal');
+  if (modal) modal.classList.remove('hidden');
+}
+
+function applyMobileFilters(e) {
+  if (e) e.preventDefault();
+
+  const serviceSel = document.getElementById('mobileFilterService');
+  const typeSel = document.getElementById('mobileFilterType');
+  const statusSel = document.getElementById('mobileFilterStatus');
+  const fromInput = document.getElementById('mobileFilterFromDate');
+  const toInput = document.getElementById('mobileFilterToDate');
+  const searchInput = document.getElementById('mobileFilterSearch');
+
+  state.filters = {
+    serviceName: serviceSel ? serviceSel.value : 'all',
+    type: typeSel ? typeSel.value : 'all',
+    status: statusSel ? statusSel.value : 'all',
+    fromDate: fromInput ? fromInput.value : '',
+    toDate: toInput ? toInput.value : '',
+    search: searchInput ? searchInput.value.trim() : '',
+  };
+
+  if (document.getElementById('filterService')) document.getElementById('filterService').value = state.filters.serviceName;
+  if (document.getElementById('filterType')) document.getElementById('filterType').value = state.filters.type;
+  if (document.getElementById('filterStatus')) document.getElementById('filterStatus').value = state.filters.status;
+  if (document.getElementById('filterFromDate')) document.getElementById('filterFromDate').value = state.filters.fromDate;
+  if (document.getElementById('filterToDate')) document.getElementById('filterToDate').value = state.filters.toDate;
+  if (document.getElementById('filterSearch')) document.getElementById('filterSearch').value = state.filters.search;
+
+  state.currentPage = 1;
+  const modal = document.getElementById('mobileFilterModal');
+  if (modal) modal.classList.add('hidden');
+  fetchLogs();
+}
+
+function setMobileQuickDate(preset, btn) {
+  const container = btn.closest('.preset-buttons');
+  if (container) {
+    container.querySelectorAll('.btn-preset').forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+  const fromElem = document.getElementById('mobileFilterFromDate');
+  const toElem = document.getElementById('mobileFilterToDate');
+
+  if (!fromElem || !toElem) return;
+
+  if (preset === 'all') {
+    fromElem.value = '';
+    toElem.value = '';
+  } else if (preset === 'today') {
+    fromElem.value = today;
+    toElem.value = today;
+  } else if (preset === '7days') {
+    const d = new Date();
+    d.setDate(d.getDate() - 7);
+    fromElem.value = d.toISOString().split('T')[0];
+    toElem.value = today;
+  }
+}
+
+function resetMobileFilters() {
+  const serviceSel = document.getElementById('mobileFilterService');
+  const typeSel = document.getElementById('mobileFilterType');
+  const statusSel = document.getElementById('mobileFilterStatus');
+  const fromInput = document.getElementById('mobileFilterFromDate');
+  const toInput = document.getElementById('mobileFilterToDate');
+  const searchInput = document.getElementById('mobileFilterSearch');
+
+  if (serviceSel) serviceSel.value = 'all';
+  if (typeSel) typeSel.value = 'all';
+  if (statusSel) statusSel.value = 'all';
+  if (fromInput) fromInput.value = '';
+  if (toInput) toInput.value = '';
+  if (searchInput) searchInput.value = '';
+
+  resetAllFilters();
+  const modal = document.getElementById('mobileFilterModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+window.openMobileFilterModal = openMobileFilterModal;
+window.applyMobileFilters = applyMobileFilters;
+window.setMobileQuickDate = setMobileQuickDate;
+window.resetMobileFilters = resetMobileFilters;
+
 window.exportCSV = function() {
   const allLogs = state.cachedLogs || [];
   if (allLogs.length === 0) {
@@ -1066,13 +1169,13 @@ async function loadTargets() {
   } catch (err) {}
 
   const select = document.getElementById('filterService');
-  if (select) {
-    let options = '<option value="all">All Services</option>';
-    state.targets.forEach((t) => {
-      options += `<option value="${escapeHTML(t.name)}">${escapeHTML(t.name)}</option>`;
-    });
-    select.innerHTML = options;
-  }
+  const mobileSelect = document.getElementById('mobileFilterService');
+  let options = '<option value="all">All Services</option>';
+  state.targets.forEach((t) => {
+    options += `<option value="${escapeHTML(t.name)}">${escapeHTML(t.name)}</option>`;
+  });
+  if (select) select.innerHTML = options;
+  if (mobileSelect) mobileSelect.innerHTML = options;
 
   renderServicesConfigList(state.targets);
 }
