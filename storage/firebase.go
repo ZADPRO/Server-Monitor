@@ -13,7 +13,7 @@ import (
 	"serverMonitoring/models"
 )
 
-// FirebaseClient handles persisting and retrieving health check records from Firebase Realtime Database
+// FirebaseClient handles persisting and retrieving health check records, targets, and users from Firebase Realtime Database
 type FirebaseClient struct {
 	config models.FirebaseConfig
 	client *http.Client
@@ -21,6 +21,11 @@ type FirebaseClient struct {
 
 // NewFirebaseClient creates a new Firebase client
 func NewFirebaseClient(cfg models.FirebaseConfig) *FirebaseClient {
+	if cfg.DatabaseURL == "" {
+		cfg.DatabaseURL = "https://server-monitor-8ffb0-default-rtdb.firebaseio.com"
+	}
+	cfg.Enabled = true
+
 	return &FirebaseClient{
 		config: cfg,
 		client: &http.Client{
@@ -41,15 +46,16 @@ func (f *FirebaseClient) GetConfig() models.FirebaseConfig {
 
 // CleanDatabaseURL ensures database URL has no trailing slashes
 func (f *FirebaseClient) CleanDatabaseURL() string {
-	return strings.TrimRight(strings.TrimSpace(f.config.DatabaseURL), "/")
+	url := strings.TrimRight(strings.TrimSpace(f.config.DatabaseURL), "/")
+	if url == "" {
+		url = "https://server-monitor-8ffb0-default-rtdb.firebaseio.com"
+	}
+	return url
 }
 
 // SaveLog saves a health check result into Firebase Database in real-time
 func (f *FirebaseClient) SaveLog(result models.HealthCheckResult) error {
 	baseURL := f.CleanDatabaseURL()
-	if !f.config.Enabled || baseURL == "" {
-		return nil
-	}
 
 	collection := f.config.Collection
 	if collection == "" {
@@ -126,10 +132,6 @@ func (f *FirebaseClient) SaveLog(result models.HealthCheckResult) error {
 // FetchLogsFromFirebase fetches real-time logs stored in Firebase Database
 func (f *FirebaseClient) FetchLogsFromFirebase() ([]models.HealthCheckResult, error) {
 	baseURL := f.CleanDatabaseURL()
-	if !f.config.Enabled || baseURL == "" {
-		return nil, fmt.Errorf("firebase is not enabled or database_url is empty")
-	}
-
 	collection := f.config.Collection
 	if collection == "" {
 		collection = "server_monitoring_logs"
@@ -152,10 +154,6 @@ func (f *FirebaseClient) FetchLogsFromFirebase() ([]models.HealthCheckResult, er
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == 401 || resp.StatusCode == 403 {
-		return nil, fmt.Errorf("permission denied (HTTP %d). Please set Firebase Realtime Database rules to .read: true, .write: true", resp.StatusCode)
-	}
-
 	if resp.StatusCode >= 400 {
 		body, _ := io.ReadAll(resp.Body)
 		return nil, fmt.Errorf("firebase error HTTP %d: %s", resp.StatusCode, string(body))
@@ -166,12 +164,10 @@ func (f *FirebaseClient) FetchLogsFromFirebase() ([]models.HealthCheckResult, er
 		return nil, err
 	}
 
-	// Firebase Realtime DB returns either a map of pushIDs -> objects, or an array, or null
 	if string(bodyBytes) == "null" || len(bodyBytes) == 0 {
 		return []models.HealthCheckResult{}, nil
 	}
 
-	// Try unmarshaling as map of push keys
 	var logsMap map[string]models.HealthCheckResult
 	if err := json.Unmarshal(bodyBytes, &logsMap); err == nil {
 		results := make([]models.HealthCheckResult, 0, len(logsMap))
@@ -184,11 +180,222 @@ func (f *FirebaseClient) FetchLogsFromFirebase() ([]models.HealthCheckResult, er
 		return results, nil
 	}
 
-	// Fallback: try as array
 	var logsArray []models.HealthCheckResult
 	if err := json.Unmarshal(bodyBytes, &logsArray); err == nil {
 		return logsArray, nil
 	}
 
 	return nil, fmt.Errorf("unexpected response format from Firebase")
+}
+
+// ============================================================================
+// FIREBASE TARGETS MANAGEMENT (STRICTLY FIREBASE STORAGE)
+// ============================================================================
+
+func (f *FirebaseClient) FetchTargetsFromFirebase() ([]models.Target, error) {
+	baseURL := f.CleanDatabaseURL()
+	endpoint := fmt.Sprintf("%s/server_monitoring_targets.json", baseURL)
+
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := f.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("firebase targets error HTTP %d: %s", resp.StatusCode, string(body))
+	}
+
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if string(bodyBytes) == "null" || len(bodyBytes) == 0 {
+		return []models.Target{}, nil
+	}
+
+	var targetsMap map[string]models.Target
+	if err := json.Unmarshal(bodyBytes, &targetsMap); err == nil {
+		results := make([]models.Target, 0, len(targetsMap))
+		for id, target := range targetsMap {
+			if target.ID == "" {
+				target.ID = id
+			}
+			// Enforce 5-minute interval for all targets
+			target.IntervalMinutes = 5
+			results = append(results, target)
+		}
+		return results, nil
+	}
+
+	var targetsArray []models.Target
+	if err := json.Unmarshal(bodyBytes, &targetsArray); err == nil {
+		for i := range targetsArray {
+			targetsArray[i].IntervalMinutes = 5
+		}
+		return targetsArray, nil
+	}
+
+	return []models.Target{}, nil
+}
+
+func (f *FirebaseClient) SaveTargetToFirebase(target models.Target) error {
+	baseURL := f.CleanDatabaseURL()
+	target.IntervalMinutes = 5 // Strictly 5 minutes interval
+
+	endpoint := fmt.Sprintf("%s/server_monitoring_targets/%s.json", baseURL, target.ID)
+	dataJSON, err := json.Marshal(target)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("PUT", endpoint, bytes.NewBuffer(dataJSON))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := f.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("firebase error HTTP %d: %s", resp.StatusCode, string(body))
+	}
+
+	log.Printf("[FIREBASE TARGETS] Saved target '%s' (%s) strictly in Firebase RTDB", target.Name, target.ID)
+	return nil
+}
+
+func (f *FirebaseClient) DeleteTargetFromFirebase(targetID string) error {
+	baseURL := f.CleanDatabaseURL()
+	endpoint := fmt.Sprintf("%s/server_monitoring_targets/%s.json", baseURL, targetID)
+
+	req, err := http.NewRequest("DELETE", endpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := f.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	log.Printf("[FIREBASE TARGETS] Deleted target '%s' strictly from Firebase RTDB", targetID)
+	return nil
+}
+
+// ============================================================================
+// FIREBASE USERS MANAGEMENT (STRICTLY FIREBASE STORAGE)
+// ============================================================================
+
+func (f *FirebaseClient) FetchUsersFromFirebase() ([]models.User, error) {
+	baseURL := f.CleanDatabaseURL()
+	endpoint := fmt.Sprintf("%s/server_monitoring_users.json", baseURL)
+
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := f.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("firebase users error HTTP %d: %s", resp.StatusCode, string(body))
+	}
+
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if string(bodyBytes) == "null" || len(bodyBytes) == 0 {
+		return []models.User{}, nil
+	}
+
+	var usersMap map[string]models.User
+	if err := json.Unmarshal(bodyBytes, &usersMap); err == nil {
+		results := make([]models.User, 0, len(usersMap))
+		for id, user := range usersMap {
+			if user.ID == "" {
+				user.ID = id
+			}
+			results = append(results, user)
+		}
+		return results, nil
+	}
+
+	var usersArray []models.User
+	if err := json.Unmarshal(bodyBytes, &usersArray); err == nil {
+		return usersArray, nil
+	}
+
+	return []models.User{}, nil
+}
+
+func (f *FirebaseClient) SaveUserToFirebase(user models.User) error {
+	baseURL := f.CleanDatabaseURL()
+	endpoint := fmt.Sprintf("%s/server_monitoring_users/%s.json", baseURL, user.ID)
+
+	dataJSON, err := json.Marshal(user)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("PUT", endpoint, bytes.NewBuffer(dataJSON))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := f.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("firebase error HTTP %d: %s", resp.StatusCode, string(body))
+	}
+
+	log.Printf("[FIREBASE USERS] Saved user '%s' (%s) strictly in Firebase RTDB", user.Name, user.Email)
+	return nil
+}
+
+func (f *FirebaseClient) DeleteUserFromFirebase(userID string) error {
+	baseURL := f.CleanDatabaseURL()
+	endpoint := fmt.Sprintf("%s/server_monitoring_users/%s.json", baseURL, userID)
+
+	req, err := http.NewRequest("DELETE", endpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := f.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	log.Printf("[FIREBASE USERS] Deleted user '%s' strictly from Firebase RTDB", userID)
+	return nil
 }

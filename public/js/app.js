@@ -1192,19 +1192,12 @@ function renderServicesConfigList(targets) {
 
   let html = '';
   targets.forEach((t, index) => {
-    const intervalMins = t.interval_minutes || 5;
-    let intervalLabel = `${intervalMins} mins`;
-    if (intervalMins === 60) intervalLabel = '1 hrs';
-    else if (intervalMins === 360) intervalLabel = '6 hrs';
-    else if (intervalMins === 720) intervalLabel = '12 hrs';
-    else if (intervalMins === 1440) intervalLabel = '24 hrs';
-
     html += `
       <tr>
         <td class="text-center font-mono text-muted">#${index + 1}</td>
         <td><strong style="color:var(--text-primary);">${escapeHTML(t.name)}</strong></td>
         <td><span class="type-badge ${t.type === 'backend' ? 'backend' : 'frontend'}">${t.type}</span></td>
-        <td class="font-mono text-muted" style="white-space:nowrap; font-size:12px;"><i class="fa-regular fa-clock"></i> Every ${intervalLabel}</td>
+        <td class="font-mono text-muted" style="white-space:nowrap; font-size:12px;"><i class="fa-regular fa-clock"></i> Every 5 Mins</td>
         <td class="text-center">
           ${t.enabled ? '<span class="status-badge success" style="font-size:10.5px;">Active</span>' : '<span class="status-badge failure" style="font-size:10.5px;">Disabled</span>'}
         </td>
@@ -1248,7 +1241,6 @@ function resetServiceForm() {
   const targetFormType = document.getElementById('targetFormType');
   const targetFormURL = document.getElementById('targetFormURL');
   const targetFormMethod = document.getElementById('targetFormMethod');
-  const targetFormInterval = document.getElementById('targetFormInterval');
   const targetFormKeys = document.getElementById('targetFormKeys');
   const targetFormEnabled = document.getElementById('targetFormEnabled');
 
@@ -1257,7 +1249,6 @@ function resetServiceForm() {
   if (targetFormType) targetFormType.value = 'backend';
   if (targetFormURL) targetFormURL.value = '';
   if (targetFormMethod) targetFormMethod.value = 'GET';
-  if (targetFormInterval) targetFormInterval.value = '5';
   if (targetFormKeys) targetFormKeys.value = 'service, db';
   if (targetFormEnabled) targetFormEnabled.checked = true;
   state.targetCustomEmails = [];
@@ -1402,7 +1393,6 @@ window.handleSaveServiceTarget = async function(e) {
   const type = document.getElementById('targetFormType').value;
   const method = document.getElementById('targetFormMethod').value;
   const url = document.getElementById('targetFormURL').value.trim();
-  const intervalMinutes = parseInt(document.getElementById('targetFormInterval').value, 10) || 5;
   const keysStr = document.getElementById('targetFormKeys').value.trim();
   const enabled = document.getElementById('targetFormEnabled').checked;
 
@@ -1427,7 +1417,7 @@ window.handleSaveServiceTarget = async function(e) {
     method,
     expected_keys,
     enabled,
-    interval_minutes: intervalMinutes,
+    interval_minutes: 5,
     recipient_emails: recipientEmails,
   };
 

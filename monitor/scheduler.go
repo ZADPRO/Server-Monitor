@@ -48,9 +48,9 @@ func GetScheduler() *Scheduler {
 	return schedInstance
 }
 
-// Start begins periodic monitoring ticker (runs every 30 seconds to evaluate per-target intervals)
+// Start begins periodic monitoring ticker (runs strictly every 5 minutes for all targets)
 func (s *Scheduler) Start() {
-	log.Printf("[SCHEDULER] Starting monitoring scheduler with per-target interval evaluator (tick: 30s)...")
+	log.Printf("[SCHEDULER] Starting monitoring scheduler (strictly every 5 mins)...")
 
 	// Run immediate initial check in background
 	go func() {
@@ -58,7 +58,7 @@ func (s *Scheduler) Start() {
 		s.RunChecksNow()
 	}()
 
-	s.ticker = time.NewTicker(30 * time.Second)
+	s.ticker = time.NewTicker(5 * time.Minute)
 
 	go func() {
 		for {
@@ -81,7 +81,7 @@ func (s *Scheduler) Stop() {
 	close(s.stopChan)
 }
 
-// checkDueTargets checks targets whose individual interval has elapsed
+// checkDueTargets checks all enabled targets strictly every 5 minutes
 func (s *Scheduler) checkDueTargets() {
 	targets := s.cfgManager.GetTargets()
 	now := time.Now()
@@ -92,17 +92,8 @@ func (s *Scheduler) checkDueTargets() {
 		if !target.Enabled {
 			continue
 		}
-
-		intervalMins := target.IntervalMinutes
-		if intervalMins <= 0 {
-			intervalMins = 5
-		}
-
-		lastCheck, exists := s.lastCheckedMap[target.ID]
-		if !exists || now.Sub(lastCheck) >= time.Duration(intervalMins)*time.Minute {
-			s.lastCheckedMap[target.ID] = now
-			dueTargets = append(dueTargets, target)
-		}
+		s.lastCheckedMap[target.ID] = now
+		dueTargets = append(dueTargets, target)
 	}
 	s.lastCheckMu.Unlock()
 
@@ -110,7 +101,7 @@ func (s *Scheduler) checkDueTargets() {
 		return
 	}
 
-	log.Printf("[SCHEDULER] Running scheduled checks for %d target(s) due now...", len(dueTargets))
+	log.Printf("[SCHEDULER] Executing 5-minute health check cycle for %d enabled target(s)...", len(dueTargets))
 	s.executeTargets(dueTargets)
 
 	// Check if auto deletion is enabled and purge old logs

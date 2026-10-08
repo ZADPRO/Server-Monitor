@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"serverMonitoring/models"
+	"serverMonitoring/storage"
 )
 
 type ConfigManager struct {
@@ -17,6 +18,7 @@ type ConfigManager struct {
 	configPath   string
 	config       *models.Config
 	lastModified time.Time
+	fbClient     *storage.FirebaseClient
 }
 
 var (
@@ -24,15 +26,15 @@ var (
 	once     sync.Once
 )
 
-// InitConfig initializes the singleton config manager and starts background watcher
+// InitConfig initializes the singleton config manager
 func InitConfig(path string) (*ConfigManager, error) {
 	once.Do(func() {
 		instance = &ConfigManager{
 			configPath: path,
 		}
-		// Initialize with default config so instance.config is NEVER nil
 		defaultCfg := GetDefaultConfig()
 		instance.config = &defaultCfg
+		instance.fbClient = storage.NewFirebaseClient(defaultCfg.Firebase)
 
 		reloadErr := instance.reload()
 		if reloadErr == nil {
@@ -48,6 +50,15 @@ func InitConfig(path string) (*ConfigManager, error) {
 // GetManager returns the existing manager instance
 func GetManager() *ConfigManager {
 	return instance
+}
+
+func (cm *ConfigManager) getFirebaseClient() *storage.FirebaseClient {
+	if cm.fbClient != nil {
+		return cm.fbClient
+	}
+	cfg := cm.Get()
+	cm.fbClient = storage.NewFirebaseClient(cfg.Firebase)
+	return cm.fbClient
 }
 
 func (cm *ConfigManager) startWatcher() {
@@ -82,7 +93,6 @@ func (cm *ConfigManager) reload() error {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 
-	// Try candidate file paths for config.json (support local dev & Vercel Lambda)
 	candidates := []string{
 		cm.configPath,
 		"config.json",
@@ -125,7 +135,7 @@ func (cm *ConfigManager) reload() error {
 		return fmt.Errorf("failed to parse config JSON from %s: %w", foundPath, err)
 	}
 
-	// Apply defaults if necessary
+	// Apply defaults
 	if cfg.Server.Port == 0 {
 		cfg.Server.Port = 8080
 	}
@@ -143,6 +153,7 @@ func (cm *ConfigManager) reload() error {
 	}
 
 	cm.config = &cfg
+	cm.fbClient = storage.NewFirebaseClient(cfg.Firebase)
 	return nil
 }
 
@@ -157,7 +168,7 @@ func (cm *ConfigManager) Get() models.Config {
 	return *cm.config
 }
 
-// Save persists the provided config to disk
+// Save persists the provided config
 func (cm *ConfigManager) Save(cfg models.Config) error {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
@@ -174,173 +185,211 @@ func (cm *ConfigManager) Save(cfg models.Config) error {
 		_ = os.MkdirAll(dir, 0755)
 	}
 
-	if err := os.WriteFile(cm.configPath, data, 0644); err != nil {
-		// Fallback to /tmp for read-only serverless environment
-		tmpPath := filepath.Join(os.TempDir(), "config.json")
-		_ = os.WriteFile(tmpPath, data, 0644)
-		log.Printf("[CONFIG WARN] Could not write to %s (read-only filesystem), saved to %s: %v", cm.configPath, tmpPath, err)
-	}
-
+	_ = os.WriteFile(cm.configPath, data, 0644)
 	if info, err := os.Stat(cm.configPath); err == nil {
 		cm.lastModified = info.ModTime()
 	}
 
 	cm.config = &cfg
+	cm.fbClient = storage.NewFirebaseClient(cfg.Firebase)
 	return nil
 }
 
-// GetTargets returns list of monitoring targets
+// ============================================================================
+// TARGETS MANAGEMENT (STRICTLY FIREBASE STORAGE)
+// ============================================================================
+
+// GetTargets returns list of monitoring targets strictly from Firebase RTDB
 func (cm *ConfigManager) GetTargets() []models.Target {
-	cm.mu.RLock()
-	defer cm.mu.RUnlock()
-	if cm.config == nil {
-		return GetDefaultConfig().Targets
+	fb := cm.getFirebaseClient()
+	fbTargets, err := fb.FetchTargetsFromFirebase()
+	if err == nil && len(fbTargets) > 0 {
+		cm.mu.Lock()
+		cm.config.Targets = fbTargets
+		cm.mu.Unlock()
+		return fbTargets
 	}
-	targets := make([]models.Target, len(cm.config.Targets))
-	copy(targets, cm.config.Targets)
+
+	// If Firebase targets node is empty, seed initial targets to Firebase RTDB
+	cm.mu.RLock()
+	var targets []models.Target
+	if cm.config != nil && len(cm.config.Targets) > 0 {
+		targets = make([]models.Target, len(cm.config.Targets))
+		copy(targets, cm.config.Targets)
+	} else {
+		targets = GetDefaultConfig().Targets
+	}
+	cm.mu.RUnlock()
+
+	// Seed to Firebase asynchronously
+	go func(list []models.Target) {
+		for _, t := range list {
+			t.IntervalMinutes = 5
+			_ = fb.SaveTargetToFirebase(t)
+		}
+	}(targets)
+
+	for i := range targets {
+		targets[i].IntervalMinutes = 5
+	}
 	return targets
 }
 
-// AddTarget adds a new target to monitoring
+// AddTarget adds a new target strictly to Firebase RTDB
 func (cm *ConfigManager) AddTarget(target models.Target) error {
-	cm.mu.Lock()
-	defer cm.mu.Unlock()
+	target.IntervalMinutes = 5
+	fb := cm.getFirebaseClient()
 
-	for _, t := range cm.config.Targets {
-		if t.ID == target.ID {
-			return fmt.Errorf("target with ID '%s' already exists", target.ID)
-		}
+	if err := fb.SaveTargetToFirebase(target); err != nil {
+		log.Printf("[FIREBASE TARGET WARN] Could not save target to Firebase: %v", err)
 	}
 
-	cm.config.Targets = append(cm.config.Targets, target)
-	return cm.saveUnlocked()
-}
-
-// UpdateTarget updates an existing target
-func (cm *ConfigManager) UpdateTarget(target models.Target) error {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
-
-	found := false
 	for i, t := range cm.config.Targets {
 		if t.ID == target.ID {
 			cm.config.Targets[i] = target
-			found = true
-			break
+			return nil
 		}
 	}
-
-	if !found {
-		return fmt.Errorf("target with ID '%s' not found", target.ID)
-	}
-
-	return cm.saveUnlocked()
-}
-
-// DeleteTarget removes a target by ID
-func (cm *ConfigManager) DeleteTarget(id string) error {
-	cm.mu.Lock()
-	defer cm.mu.Unlock()
-
-	newTargets := make([]models.Target, 0, len(cm.config.Targets))
-	found := false
-	for _, t := range cm.config.Targets {
-		if t.ID == id {
-			found = true
-			continue
-		}
-		newTargets = append(newTargets, t)
-	}
-
-	if !found {
-		return fmt.Errorf("target with ID '%s' not found", id)
-	}
-
-	cm.config.Targets = newTargets
-	return cm.saveUnlocked()
-}
-
-// GetUsers returns list of configured alert users
-func (cm *ConfigManager) GetUsers() []models.User {
-	cm.mu.RLock()
-	defer cm.mu.RUnlock()
-	if cm.config == nil {
-		return GetDefaultConfig().Users
-	}
-	users := make([]models.User, len(cm.config.Users))
-	copy(users, cm.config.Users)
-	return users
-}
-
-// AddUser adds a new user recipient
-func (cm *ConfigManager) AddUser(user models.User) error {
-	cm.mu.Lock()
-	defer cm.mu.Unlock()
-
-	for _, u := range cm.config.Users {
-		if u.ID == user.ID {
-			return fmt.Errorf("user with ID '%s' already exists", user.ID)
-		}
-	}
-
-	cm.config.Users = append(cm.config.Users, user)
-	return cm.saveUnlocked()
-}
-
-// UpdateUser updates an existing user
-func (cm *ConfigManager) UpdateUser(user models.User) error {
-	cm.mu.Lock()
-	defer cm.mu.Unlock()
-
-	found := false
-	for i, u := range cm.config.Users {
-		if u.ID == user.ID {
-			cm.config.Users[i] = user
-			found = true
-			break
-		}
-	}
-
-	if !found {
-		return fmt.Errorf("user with ID '%s' not found", user.ID)
-	}
-
-	return cm.saveUnlocked()
-}
-
-// DeleteUser removes a user by ID
-func (cm *ConfigManager) DeleteUser(id string) error {
-	cm.mu.Lock()
-	defer cm.mu.Unlock()
-
-	newUsers := make([]models.User, 0, len(cm.config.Users))
-	found := false
-	for _, u := range cm.config.Users {
-		if u.ID == id {
-			found = true
-			continue
-		}
-		newUsers = append(newUsers, u)
-	}
-
-	if !found {
-		return fmt.Errorf("user with ID '%s' not found", id)
-	}
-
-	cm.config.Users = newUsers
-	return cm.saveUnlocked()
-}
-
-func (cm *ConfigManager) saveUnlocked() error {
-	data, err := json.MarshalIndent(cm.config, "", "  ")
-	if err != nil {
-		return fmt.Errorf("failed to encode config: %w", err)
-	}
-	_ = os.WriteFile(cm.configPath, data, 0644)
+	cm.config.Targets = append(cm.config.Targets, target)
 	return nil
 }
 
-// GetDefaultConfig returns a robust fallback configuration
+// UpdateTarget updates an existing target strictly in Firebase RTDB
+func (cm *ConfigManager) UpdateTarget(target models.Target) error {
+	target.IntervalMinutes = 5
+	fb := cm.getFirebaseClient()
+
+	if err := fb.SaveTargetToFirebase(target); err != nil {
+		log.Printf("[FIREBASE TARGET WARN] Could not update target in Firebase: %v", err)
+	}
+
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+	for i, t := range cm.config.Targets {
+		if t.ID == target.ID {
+			cm.config.Targets[i] = target
+			return nil
+		}
+	}
+	cm.config.Targets = append(cm.config.Targets, target)
+	return nil
+}
+
+// DeleteTarget removes a target strictly from Firebase RTDB
+func (cm *ConfigManager) DeleteTarget(id string) error {
+	fb := cm.getFirebaseClient()
+	if err := fb.DeleteTargetFromFirebase(id); err != nil {
+		log.Printf("[FIREBASE TARGET WARN] Could not delete target from Firebase: %v", err)
+	}
+
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+	newTargets := make([]models.Target, 0, len(cm.config.Targets))
+	for _, t := range cm.config.Targets {
+		if t.ID != id {
+			newTargets = append(newTargets, t)
+		}
+	}
+	cm.config.Targets = newTargets
+	return nil
+}
+
+// ============================================================================
+// USERS MANAGEMENT (STRICTLY FIREBASE STORAGE)
+// ============================================================================
+
+// GetUsers returns list of configured alert users strictly from Firebase RTDB
+func (cm *ConfigManager) GetUsers() []models.User {
+	fb := cm.getFirebaseClient()
+	fbUsers, err := fb.FetchUsersFromFirebase()
+	if err == nil && len(fbUsers) > 0 {
+		cm.mu.Lock()
+		cm.config.Users = fbUsers
+		cm.mu.Unlock()
+		return fbUsers
+	}
+
+	// If Firebase users node is empty, seed initial users to Firebase RTDB
+	cm.mu.RLock()
+	var users []models.User
+	if cm.config != nil && len(cm.config.Users) > 0 {
+		users = make([]models.User, len(cm.config.Users))
+		copy(users, cm.config.Users)
+	} else {
+		users = GetDefaultConfig().Users
+	}
+	cm.mu.RUnlock()
+
+	// Seed to Firebase asynchronously
+	go func(list []models.User) {
+		for _, u := range list {
+			_ = fb.SaveUserToFirebase(u)
+		}
+	}(users)
+
+	return users
+}
+
+// AddUser adds a new user recipient strictly to Firebase RTDB
+func (cm *ConfigManager) AddUser(user models.User) error {
+	fb := cm.getFirebaseClient()
+	if err := fb.SaveUserToFirebase(user); err != nil {
+		log.Printf("[FIREBASE USER WARN] Could not save user to Firebase: %v", err)
+	}
+
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+	for i, u := range cm.config.Users {
+		if u.ID == user.ID {
+			cm.config.Users[i] = user
+			return nil
+		}
+	}
+	cm.config.Users = append(cm.config.Users, user)
+	return nil
+}
+
+// UpdateUser updates an existing user strictly in Firebase RTDB
+func (cm *ConfigManager) UpdateUser(user models.User) error {
+	fb := cm.getFirebaseClient()
+	if err := fb.SaveUserToFirebase(user); err != nil {
+		log.Printf("[FIREBASE USER WARN] Could not update user in Firebase: %v", err)
+	}
+
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+	for i, u := range cm.config.Users {
+		if u.ID == user.ID {
+			cm.config.Users[i] = user
+			return nil
+		}
+	}
+	cm.config.Users = append(cm.config.Users, user)
+	return nil
+}
+
+// DeleteUser removes a user strictly from Firebase RTDB
+func (cm *ConfigManager) DeleteUser(id string) error {
+	fb := cm.getFirebaseClient()
+	if err := fb.DeleteUserFromFirebase(id); err != nil {
+		log.Printf("[FIREBASE USER WARN] Could not delete user from Firebase: %v", err)
+	}
+
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+	newUsers := make([]models.User, 0, len(cm.config.Users))
+	for _, u := range cm.config.Users {
+		if u.ID != id {
+			newUsers = append(newUsers, u)
+		}
+	}
+	cm.config.Users = newUsers
+	return nil
+}
+
+// GetDefaultConfig returns robust default configuration
 func GetDefaultConfig() models.Config {
 	return models.Config{
 		Server: models.ServerConfig{
@@ -414,7 +463,7 @@ func GetDefaultConfig() models.Config {
 				URL:             "https://hotelsherlockholmes.com/",
 				Method:          "GET",
 				Enabled:         true,
-				IntervalMinutes: 15,
+				IntervalMinutes: 5,
 				RecipientEmails: []string{"vijay.loganathan@zadroit.com"},
 			},
 		},
