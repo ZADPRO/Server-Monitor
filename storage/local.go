@@ -78,7 +78,9 @@ func (ls *LocalStorage) load() error {
 func (ls *LocalStorage) persistUnlocked() error {
 	dir := filepath.Dir(ls.filePath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
-		return err
+		dir = os.TempDir()
+		ls.filePath = filepath.Join(dir, "logs.json")
+		_ = os.MkdirAll(dir, 0755)
 	}
 
 	data, err := json.MarshalIndent(ls.logs, "", "  ")
@@ -86,7 +88,14 @@ func (ls *LocalStorage) persistUnlocked() error {
 		return err
 	}
 
-	return os.WriteFile(ls.filePath, data, 0644)
+	writeErr := os.WriteFile(ls.filePath, data, 0644)
+	if writeErr != nil {
+		// Fallback for read-only serverless filesystem like Vercel
+		tmpPath := filepath.Join(os.TempDir(), "logs.json")
+		_ = os.WriteFile(tmpPath, data, 0644)
+	}
+
+	return nil
 }
 
 // SaveLog saves a new health check result, sends to Firebase, and updates in-memory and disk records

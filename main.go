@@ -23,15 +23,24 @@ func main() {
 	configPath := flag.String("config", "config.json", "Path to config.json")
 	flag.Parse()
 
-	// Ensure data directory exists
+	// Ensure data directory exists (with fallback for read-only serverless environments like Vercel)
 	dataDir := "data"
 	if err := os.MkdirAll(dataDir, 0755); err != nil {
-		log.Fatalf("[FATAL] Failed to create data directory: %v", err)
+		dataDir = filepath.Join(os.TempDir(), "server-monitor-data")
+		_ = os.MkdirAll(dataDir, 0755)
 	}
 
 	// Set up continuous log file for console logs / printfs
 	logFilePath := filepath.Join(dataDir, "app.log")
 	logFile, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		// If read-only filesystem, try opening in /tmp
+		dataDir = filepath.Join(os.TempDir(), "server-monitor-data")
+		_ = os.MkdirAll(dataDir, 0755)
+		logFilePath = filepath.Join(dataDir, "app.log")
+		logFile, err = os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	}
+
 	if err == nil {
 		multiWriter := io.MultiWriter(os.Stdout, logFile)
 		log.SetOutput(multiWriter)
