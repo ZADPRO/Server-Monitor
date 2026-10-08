@@ -33,7 +33,9 @@
     "messaging_sender_id": "274069716120",
     "app_id": "1:274069716120:web:9585c80e368ac8b9e624ed",
     "measurement_id": "G-Q7R2VPN390",
-    "collection": "server_monitoring_logs"
+    "collection": "server_monitoring_logs",
+    "auto_delete_enabled": true,
+    "auto_delete_days": 7
   },
   "users": [
     {

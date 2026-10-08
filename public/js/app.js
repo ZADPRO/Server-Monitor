@@ -202,14 +202,12 @@ window.switchPage = function(pageName) {
 window.switchSettingsTab = function(tabName) {
   const paneService = document.getElementById('paneService');
   const paneUser = document.getElementById('paneUser');
-  const paneFirebase = document.getElementById('paneFirebase');
 
   const tabService = document.getElementById('tabNavService');
   const tabUser = document.getElementById('tabNavUser');
-  const tabFirebase = document.getElementById('tabNavFirebase');
 
-  [paneService, paneUser, paneFirebase].forEach(p => p && p.classList.add('hidden'));
-  [tabService, tabUser, tabFirebase].forEach(t => t && t.classList.remove('active'));
+  [paneService, paneUser].forEach(p => p && p.classList.add('hidden'));
+  [tabService, tabUser].forEach(t => t && t.classList.remove('active'));
 
   if (tabName === 'service') {
     if (paneService) paneService.classList.remove('hidden');
@@ -220,9 +218,6 @@ window.switchSettingsTab = function(tabName) {
     if (paneUser) paneUser.classList.remove('hidden');
     if (tabUser) tabUser.classList.add('active');
     loadUsers();
-  } else if (tabName === 'firebase') {
-    if (paneFirebase) paneFirebase.classList.remove('hidden');
-    if (tabFirebase) tabFirebase.classList.add('active');
     loadSettingsData();
   }
 };

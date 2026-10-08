@@ -382,11 +382,6 @@
               <i class="fa-solid fa-users text-cyan"></i>
               <span>User</span>
             </button>
-
-            <button type="button" class="settings-nav-item" id="tabNavFirebase" onclick="switchSettingsTab('firebase')">
-              <i class="fa-solid fa-fire-flame-curved text-amber"></i>
-              <span>Firebase Configuration</span>
-            </button>
           </aside>
 
           <!-- Right Content Area -->
@@ -637,44 +632,10 @@
                   </div>
                 </form>
               </div>
-            </div>
 
-            <!-- TAB 3: FIREBASE CONFIGURATION -->
-            <div id="paneFirebase" class="settings-pane hidden">
-              <div class="pane-header">
-                <h3><i class="fa-solid fa-fire-flame-curved text-amber"></i> Firebase Realtime Database Configuration
-                </h3>
-                <p>Sync all health check probes instantly to Firebase Realtime Database node and manage automated log
-                  deletion retention policies.</p>
-              </div>
-
-              <form onsubmit="handleSaveFirebaseSettings(event)" class="settings-card-form">
-                <div class="form-group">
-                  <label class="checkbox-label">
-                    <input type="checkbox" id="setFirebaseEnabled" checked>
-                    <span>Enable Real-time Firebase Synchronization</span>
-                  </label>
-                </div>
-
-                <div class="form-group">
-                  <label>Firebase Database URL</label>
-                  <input type="url" id="setFirebaseURL" placeholder="https://<project-id>-default-rtdb.firebaseio.com"
-                    required>
-                </div>
-
-                <div class="form-row-2">
-                  <div class="form-group">
-                    <label>Database Node / Collection</label>
-                    <input type="text" id="setFirebaseCollection" placeholder="server_monitoring_logs" required>
-                  </div>
-
-                  <div class="form-group">
-                    <label>Auth Secret / Token (Optional)</label>
-                    <input type="password" id="setFirebaseAuth" placeholder="Optional database secret">
-                  </div>
-                </div>
-
-                <!-- Auto Deletion / Log Retention Sub-Section -->
+              <!-- Auto Deletion / Log Retention Sub-Section -->
+              <div class="settings-section"
+                style="margin-top:24px; border-top:1px solid var(--border-subtle); padding-top:20px;">
                 <div class="auto-delete-card">
                   <div class="auto-delete-header">
                     <i class="fa-solid fa-clock-rotate-left text-amber"></i>
@@ -714,13 +675,7 @@
                     </button>
                   </div>
                 </div>
-
-                <div class="pane-actions" style="margin-top:24px;">
-                  <button type="submit" class="btn btn-primary">
-                    <i class="fa-solid fa-floppy-disk"></i> Save Firebase Settings
-                  </button>
-                </div>
-              </form>
+              </div>
             </div>
 
           </div>
