@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"serverMonitoring/config"
@@ -70,6 +71,14 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	initOnce.Do(initVercelApp)
 
 	if apiMux != nil {
+		// Ensure r.URL.Path reflects the original API request path (e.g. /api/status, /api/check-now)
+		if origPath := r.Header.Get("x-forwarded-uri"); origPath != "" {
+			if idx := strings.Index(origPath, "?"); idx != -1 {
+				r.URL.Path = origPath[:idx]
+			} else {
+				r.URL.Path = origPath
+			}
+		}
 		apiMux.ServeHTTP(w, r)
 		return
 	}

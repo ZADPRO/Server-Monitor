@@ -1,5 +1,79 @@
 [
   {
+    "id": "target_1791194011314-1791493272682473100",
+    "service_name": "local",
+    "type": "backend",
+    "url": "http://192.168.29.143:8083/checkserver",
+    "status": false,
+    "hit_time": "2026-10-09 02:31:12",
+    "timestamp": 1791493272,
+    "message": "Connection failed / Timeout",
+    "data": {},
+    "response_time_ms": 15000,
+    "http_status": 0,
+    "error_detail": "Get \"http://192.168.29.143:8083/checkserver\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)",
+    "target_id": "target_1791194011314"
+  },
+  {
+    "id": "target_frontend_1-1791493272682473100",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-09 02:31:12",
+    "timestamp": 1791493272,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 315,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_frontend_2-1791493272682473100",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-09 02:31:12",
+    "timestamp": 1791493272,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 260,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_backend_1-1791493272682473100",
+    "service_name": "Nivas App product management",
+    "type": "backend",
+    "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+    "status": false,
+    "hit_time": "2026-10-09 02:31:12",
+    "timestamp": 1791493272,
+    "message": "HTTP 404 Not Found",
+    "data": {
+      "raw_response": "\u003c!doctype html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n    \u003cmeta charset='utf-8'\u003e\n    \u003cmeta name='viewport' content='width=device-width, initial-scale=1'\u003e\n    \u003ctitle\u003eHTTP Server Test Page powered by: Rocky Linux\u003c/title\u003e\n    \u003cstyle type=\"text/css\"\u003e\n      /*\u003c![CDATA[*/\n      \n      html {\n        height: 100%;\n        width..."
+    },
+    "response_time_ms": 250,
+    "http_status": 404,
+    "error_detail": "Server returned error status code: 404",
+    "target_id": "target_backend_1"
+  },
+  {
     "id": "target_frontend_1-1791204502212943300",
     "service_name": "Nivas HOC Website",
     "type": "frontend",
