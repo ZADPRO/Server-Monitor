@@ -353,3 +353,15 @@
 2026/10/05 18:13:23.621617 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas App product management' (status=false)
 2026/10/05 18:13:23.824763 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas HOC Website' (status=true)
 2026/10/05 18:13:27.165220 [NOTIFIER] Alert email successfully sent to 2 recipient(s): indumathi.r@zadroit.com, vijay.loganathan@zadroit.com
+2026/10/05 18:13:37.215932 [ALERT] Target local (http://192.168.29.143:8083/checkserver) is DOWN! Failure recipient(s): [vijay.loganathan@zadroit.com]. Error: Get "http://192.168.29.143:8083/checkserver": context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+2026/10/05 18:13:38.547818 [FIREBASE REALTIME] Pushed log to Firebase DB: service='local' (status=false)
+2026/10/05 18:13:42.127981 [NOTIFIER] Alert email successfully sent to 1 recipient(s): vijay.loganathan@zadroit.com
+2026/10/05 18:18:22.212591 [SCHEDULER] Running scheduled checks for 3 target(s) due now...
+2026/10/05 18:18:22.363054 [ALERT] Target Nivas App product management (https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver) is DOWN! Failure recipient(s): [indumathi.r@zadroit.com vijay.loganathan@zadroit.com]. Error: Server returned non-200 status code: 404
+2026/10/05 18:18:22.528017 [HEALTHY] Target Nivas HOC Website (https://nivashoc.com/) is OK (157ms)
+2026/10/05 18:18:23.646192 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas App product management' (status=false)
+2026/10/05 18:18:23.858121 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas HOC Website' (status=true)
+2026/10/05 18:18:27.014417 [NOTIFIER] Alert email successfully sent to 2 recipient(s): indumathi.r@zadroit.com, vijay.loganathan@zadroit.com
+2026/10/05 18:18:27.168299 
+[SYSTEM] Shutting down gracefully...
+2026/10/05 18:18:27.168826 [SYSTEM] Server exited safely.
