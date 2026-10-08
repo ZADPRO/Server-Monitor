@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -28,7 +30,7 @@ func initVercelApp() {
 		dataDir = os.TempDir()
 	}
 
-	// Console & application log file
+	// Console & application log file in /tmp
 	logFilePath := filepath.Join(dataDir, "app.log")
 	if logFile, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666); err == nil {
 		multiWriter := io.MultiWriter(os.Stdout, logFile)
@@ -37,13 +39,9 @@ func initVercelApp() {
 
 	// Locate config.json
 	configPath := "config.json"
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		configPath = filepath.Join(dataDir, "config.json")
-	}
-
 	cfgMgr, err := config.InitConfig(configPath)
 	if err != nil {
-		log.Printf("[VERCEL WARN] Config manager init error: %v", err)
+		log.Printf("[VERCEL WARN] Config manager initialized with default fallback: %v", err)
 	}
 
 	cfg := cfgMgr.Get()
@@ -68,20 +66,61 @@ func initVercelApp() {
 
 // Handler is the entrypoint for Vercel Go Serverless Functions
 func Handler(w http.ResponseWriter, r *http.Request) {
+	// Add global panic recovery to prevent generic Vercel 500 crashes
+	defer func() {
+		if rec := recover(); rec != nil {
+			log.Printf("[VERCEL PANIC RECOVERED] %v", rec)
+			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+			w.WriteHeader(http.StatusInternalServerError)
+			_ = json.NewEncoder(w).Encode(map[string]interface{}{
+				"success": false,
+				"error":   fmt.Sprintf("Serverless execution error: %v", rec),
+			})
+		}
+	}()
+
 	initOnce.Do(initVercelApp)
 
+	// Always set CORS headers
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
 	if apiMux != nil {
-		// Ensure r.URL.Path reflects the original API request path (e.g. /api/status, /api/check-now)
-		if origPath := r.Header.Get("x-forwarded-uri"); origPath != "" {
-			if idx := strings.Index(origPath, "?"); idx != -1 {
-				r.URL.Path = origPath[:idx]
-			} else {
-				r.URL.Path = origPath
+		// Resolve target API path on Vercel
+		reqPath := r.URL.Path
+
+		// Check x-forwarded-uri or RequestURI if available
+		if fwdURI := r.Header.Get("x-forwarded-uri"); fwdURI != "" {
+			if u, err := url.Parse(fwdURI); err == nil && u.Path != "" {
+				reqPath = u.Path
+			}
+		} else if r.RequestURI != "" {
+			if u, err := url.Parse(r.RequestURI); err == nil && u.Path != "" {
+				reqPath = u.Path
 			}
 		}
+
+		// Ensure request URL path matches registered handler routes (e.g. /api/status, /api/check-now)
+		if reqPath != "" && strings.HasPrefix(reqPath, "/api") {
+			r.URL.Path = reqPath
+		}
+
 		apiMux.ServeHTTP(w, r)
 		return
 	}
 
-	http.Error(w, fmt.Sprintf("API Handler failed to initialize"), http.StatusInternalServerError)
+	w.WriteHeader(http.StatusInternalServerError)
+	_ = json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": false,
+		"error":   "API Handler failed to initialize",
+	})
 }

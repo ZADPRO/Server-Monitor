@@ -365,3 +365,48 @@
 2026/10/05 18:18:27.168299 
 [SYSTEM] Shutting down gracefully...
 2026/10/05 18:18:27.168826 [SYSTEM] Server exited safely.
+2026/10/09 02:31:11.677441 ==========================================================
+2026/10/09 02:31:11.678015 🚀 Starting Zadroit Server Monitoring System...
+2026/10/09 02:31:11.678015 📝 Live Console & Execution logs saving to: data\app.log
+2026/10/09 02:31:11.678015 ==========================================================
+2026/10/09 02:31:11.678593 [CONFIG] Loaded successfully. Monitored targets: 4, Check interval: 5 min(s)
+2026/10/09 02:31:11.681446 [FIREBASE] Connected to Firebase DB endpoint: https://server-monitor-8ffb0-default-rtdb.firebaseio.com (Collection: server_monitoring_logs)
+2026/10/09 02:31:11.681446 [SCHEDULER] Starting monitoring scheduler with per-target interval evaluator (tick: 30s)...
+2026/10/09 02:31:11.681963 [HTTP] Zadroit Server Monitor Dashboard running at: http://localhost:8080
+2026/10/09 02:31:11.681963 [AUTH] Default Login: Username: Zadroit | Password: [PROTECTED]
+2026/10/09 02:31:12.939191 [ALERT] Target Nivas App product management (https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver) is DOWN! Failure recipient(s): [indumathi.r@zadroit.com vijay.loganathan@zadroit.com]. Error: Server returned error status code: 404
+2026/10/09 02:31:13.151675 [HEALTHY] Target Hotel Sherlock Website (https://hotelsherlockholmes.com/) is OK (260ms)
+2026/10/09 02:31:13.185965 [HEALTHY] Target Nivas HOC Website (https://nivashoc.com/) is OK (315ms)
+2026/10/09 02:31:14.317928 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas App product management' (status=false)
+2026/10/09 02:31:14.661082 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Hotel Sherlock Website' (status=true)
+2026/10/09 02:31:14.665989 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas HOC Website' (status=true)
+2026/10/09 02:31:19.376798 [NOTIFIER] Alert email successfully sent to 2 recipient(s): indumathi.r@zadroit.com, vijay.loganathan@zadroit.com
+2026/10/09 02:31:27.691594 [ALERT] Target local (http://192.168.29.143:8083/checkserver) is DOWN! Failure recipient(s): [vijay.loganathan@zadroit.com]. Error: Get "http://192.168.29.143:8083/checkserver": context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+2026/10/09 02:31:29.155631 [FIREBASE REALTIME] Pushed log to Firebase DB: service='local' (status=false)
+2026/10/09 02:31:33.745787 [NOTIFIER] Alert email successfully sent to 1 recipient(s): vijay.loganathan@zadroit.com
+2026/10/09 02:36:41.681721 [SCHEDULER] Running scheduled checks for 3 target(s) due now...
+2026/10/09 02:36:41.885830 [ALERT] Target Nivas App product management (https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver) is DOWN! Failure recipient(s): [indumathi.r@zadroit.com vijay.loganathan@zadroit.com]. Error: Server returned error status code: 404
+2026/10/09 02:36:42.073474 [HEALTHY] Target Nivas HOC Website (https://nivashoc.com/) is OK (197ms)
+2026/10/09 02:36:43.394680 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas App product management' (status=false)
+2026/10/09 02:36:43.458202 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas HOC Website' (status=true)
+2026/10/09 02:36:46.707496 [NOTIFIER] Alert email successfully sent to 2 recipient(s): indumathi.r@zadroit.com, vijay.loganathan@zadroit.com
+2026/10/09 02:36:56.691352 [ALERT] Target local (http://192.168.29.143:8083/checkserver) is DOWN! Failure recipient(s): [vijay.loganathan@zadroit.com]. Error: Get "http://192.168.29.143:8083/checkserver": context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+2026/10/09 02:36:58.135714 [FIREBASE REALTIME] Pushed log to Firebase DB: service='local' (status=false)
+2026/10/09 02:37:01.091932 [NOTIFIER] Alert email successfully sent to 1 recipient(s): vijay.loganathan@zadroit.com
+2026/10/09 02:37:16.031349 
+[SYSTEM] Shutting down gracefully...
+2026/10/09 02:37:16.032072 [SYSTEM] Server exited safely.
+2026/10/09 02:37:16.032072 [SCHEDULER] Monitoring scheduler stopped.
+2026/10/09 02:37:19.987383 ==========================================================
+2026/10/09 02:37:19.988427 🚀 Starting Zadroit Server Monitoring System...
+2026/10/09 02:37:19.988427 📝 Live Console & Execution logs saving to: data\app.log
+2026/10/09 02:37:19.988427 ==========================================================
+2026/10/09 02:37:19.988964 [CONFIG] Loaded successfully. Monitored targets: 4, Check interval: 5 min(s)
+2026/10/09 02:37:19.990769 [FIREBASE] Connected to Firebase DB endpoint: https://server-monitor-8ffb0-default-rtdb.firebaseio.com (Collection: server_monitoring_logs)
+2026/10/09 02:37:19.991429 [SCHEDULER] Starting monitoring scheduler with per-target interval evaluator (tick: 30s)...
+2026/10/09 02:37:19.991429 [HTTP] Zadroit Server Monitor Dashboard running at: http://localhost:8080
+2026/10/09 02:37:19.991429 [AUTH] Default Login: Username: Zadroit | Password: [PROTECTED]
+2026/10/09 02:37:20.122210 
+[SYSTEM] Shutting down gracefully...
+2026/10/09 02:37:20.122210 [SYSTEM] Server exited safely.
+2026/10/09 02:37:20.122717 [SCHEDULER] Monitoring scheduler stopped.

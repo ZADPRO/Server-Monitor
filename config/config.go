@@ -31,9 +31,15 @@ func InitConfig(path string) (*ConfigManager, error) {
 		instance = &ConfigManager{
 			configPath: path,
 		}
+		// Initialize with default config so instance.config is NEVER nil
+		defaultCfg := GetDefaultConfig()
+		instance.config = &defaultCfg
+
 		err = instance.reload()
 		if err == nil {
 			instance.startWatcher()
+		} else {
+			log.Printf("[CONFIG] Using default configuration (Could not load %s: %v)", path, err)
 		}
 	})
 	return instance, err
@@ -46,7 +52,7 @@ func GetManager() *ConfigManager {
 
 func (cm *ConfigManager) startWatcher() {
 	go func() {
-		ticker := time.NewTicker(3 * time.Second)
+		ticker := time.NewTicker(5 * time.Second)
 		defer ticker.Stop()
 		for range ticker.C {
 			cm.checkAndReload()
@@ -76,19 +82,47 @@ func (cm *ConfigManager) reload() error {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 
-	data, err := os.ReadFile(cm.configPath)
-	if err != nil {
-		return fmt.Errorf("failed to read config file at %s: %w", cm.configPath, err)
+	// Try candidate file paths for config.json (support local dev & Vercel Lambda)
+	candidates := []string{
+		cm.configPath,
+		"config.json",
+		"./config.json",
+		"../config.json",
+		"/var/task/config.json",
 	}
 
-	info, _ := os.Stat(cm.configPath)
-	if info != nil {
+	if envTaskRoot := os.Getenv("LAMBDA_TASK_ROOT"); envTaskRoot != "" {
+		candidates = append(candidates, filepath.Join(envTaskRoot, "config.json"))
+	}
+
+	var data []byte
+	var readErr error
+	foundPath := ""
+
+	for _, p := range candidates {
+		if p == "" {
+			continue
+		}
+		if b, err := os.ReadFile(p); err == nil && len(b) > 0 {
+			data = b
+			foundPath = p
+			break
+		} else if readErr == nil {
+			readErr = err
+		}
+	}
+
+	if len(data) == 0 {
+		return fmt.Errorf("failed to read config file from candidates %v: %v", candidates, readErr)
+	}
+
+	if info, err := os.Stat(foundPath); err == nil {
 		cm.lastModified = info.ModTime()
 	}
 
 	var cfg models.Config
 	if err := json.Unmarshal(data, &cfg); err != nil {
-		return fmt.Errorf("failed to parse config JSON: %w", err)
+		return fmt.Errorf("failed to parse config JSON from %s: %w", foundPath, err)
 	}
 
 	// Apply defaults if necessary
@@ -116,6 +150,10 @@ func (cm *ConfigManager) reload() error {
 func (cm *ConfigManager) Get() models.Config {
 	cm.mu.RLock()
 	defer cm.mu.RUnlock()
+	if cm.config == nil {
+		defaultCfg := GetDefaultConfig()
+		return defaultCfg
+	}
 	return *cm.config
 }
 
@@ -131,15 +169,19 @@ func (cm *ConfigManager) Save(cfg models.Config) error {
 
 	dir := filepath.Dir(cm.configPath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
-		return fmt.Errorf("failed to create config directory: %w", err)
+		dir = os.TempDir()
+		cm.configPath = filepath.Join(dir, "config.json")
+		_ = os.MkdirAll(dir, 0755)
 	}
 
 	if err := os.WriteFile(cm.configPath, data, 0644); err != nil {
-		return fmt.Errorf("failed to write config file: %w", err)
+		// Fallback to /tmp for read-only serverless environment
+		tmpPath := filepath.Join(os.TempDir(), "config.json")
+		_ = os.WriteFile(tmpPath, data, 0644)
+		log.Printf("[CONFIG WARN] Could not write to %s (read-only filesystem), saved to %s: %v", cm.configPath, tmpPath, err)
 	}
 
-	info, _ := os.Stat(cm.configPath)
-	if info != nil {
+	if info, err := os.Stat(cm.configPath); err == nil {
 		cm.lastModified = info.ModTime()
 	}
 
@@ -151,6 +193,9 @@ func (cm *ConfigManager) Save(cfg models.Config) error {
 func (cm *ConfigManager) GetTargets() []models.Target {
 	cm.mu.RLock()
 	defer cm.mu.RUnlock()
+	if cm.config == nil {
+		return GetDefaultConfig().Targets
+	}
 	targets := make([]models.Target, len(cm.config.Targets))
 	copy(targets, cm.config.Targets)
 	return targets
@@ -219,6 +264,9 @@ func (cm *ConfigManager) DeleteTarget(id string) error {
 func (cm *ConfigManager) GetUsers() []models.User {
 	cm.mu.RLock()
 	defer cm.mu.RUnlock()
+	if cm.config == nil {
+		return GetDefaultConfig().Users
+	}
 	users := make([]models.User, len(cm.config.Users))
 	copy(users, cm.config.Users)
 	return users
@@ -288,12 +336,87 @@ func (cm *ConfigManager) saveUnlocked() error {
 	if err != nil {
 		return fmt.Errorf("failed to encode config: %w", err)
 	}
-	err = os.WriteFile(cm.configPath, data, 0644)
-	if err == nil {
-		info, _ := os.Stat(cm.configPath)
-		if info != nil {
-			cm.lastModified = info.ModTime()
-		}
+	_ = os.WriteFile(cm.configPath, data, 0644)
+	return nil
+}
+
+// GetDefaultConfig returns a robust fallback configuration
+func GetDefaultConfig() models.Config {
+	return models.Config{
+		Server: models.ServerConfig{
+			Port: 8080,
+			Host: "0.0.0.0",
+		},
+		Auth: models.AuthConfig{
+			Username: "Zadroit",
+			Password: "ZadGugSlm06",
+		},
+		Monitoring: models.MonitoringConfig{
+			IntervalMinutes:       5,
+			RequestTimeoutSeconds: 15,
+		},
+		Email: models.EmailConfig{
+			Enabled:     true,
+			SMTPHost:    "smtp.gmail.com",
+			SMTPPort:    587,
+			FromEmail:   "development.zadroit@gmail.com",
+			AppPassword: "bfitdhmbhcxtjrvg",
+			ToEmails: []string{
+				"indumathi.r@zadroit.com",
+				"vijay.loganathan@zadroit.com",
+			},
+		},
+		Firebase: models.FirebaseConfig{
+			Enabled:           true,
+			Type:              "realtime",
+			APIKey:            "AIzaSyA2sTTwDtuWcWF9Xg2sPfrrYuDLbjJCMUc",
+			AuthDomain:        "server-monitor-8ffb0.firebaseapp.com",
+			DatabaseURL:       "https://server-monitor-8ffb0-default-rtdb.firebaseio.com",
+			ProjectID:         "server-monitor-8ffb0",
+			StorageBucket:     "server-monitor-8ffb0.firebasestorage.app",
+			MessagingSenderID: "274069716120",
+			AppID:             "1:274069716120:web:9585c80e368ac8b9e624ed",
+			MeasurementID:     "G-Q7R2VPN390",
+			Collection:        "server_monitoring_logs",
+			AutoDeleteEnabled: true,
+			AutoDeleteDays:    7,
+		},
+		Users: []models.User{
+			{ID: "user_1", Name: "Indumathi R", Email: "indumathi.r@zadroit.com"},
+			{ID: "user_2", Name: "Vijay Loganathan", Email: "vijay.loganathan@zadroit.com"},
+		},
+		Targets: []models.Target{
+			{
+				ID:              "target_backend_1",
+				Name:            "Nivas App product management",
+				Type:            "backend",
+				URL:             "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+				Method:          "GET",
+				Enabled:         true,
+				ExpectedKeys:    []string{"service", "db"},
+				IntervalMinutes: 5,
+				RecipientEmails: []string{"indumathi.r@zadroit.com", "vijay.loganathan@zadroit.com"},
+			},
+			{
+				ID:              "target_frontend_1",
+				Name:            "Nivas HOC Website",
+				Type:            "frontend",
+				URL:             "https://nivashoc.com/",
+				Method:          "GET",
+				Enabled:         true,
+				IntervalMinutes: 5,
+				RecipientEmails: []string{"indumathi.r@zadroit.com"},
+			},
+			{
+				ID:              "target_frontend_2",
+				Name:            "Hotel Sherlock Website",
+				Type:            "frontend",
+				URL:             "https://hotelsherlockholmes.com/",
+				Method:          "GET",
+				Enabled:         true,
+				IntervalMinutes: 15,
+				RecipientEmails: []string{"vijay.loganathan@zadroit.com"},
+			},
+		},
 	}
-	return err
 }
