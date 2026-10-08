@@ -54,20 +54,17 @@ func main() {
 	log.Println("==========================================================")
 
 	// 1. Initialize configuration manager
-	cfgMgr, err := config.InitConfig(*configPath)
-	if err != nil {
-		log.Fatalf("[FATAL] Could not load config from %s: %v", *configPath, err)
-	}
+	cfgMgr, _ := config.InitConfig(*configPath)
 	cfg := cfgMgr.Get()
-	log.Printf("[CONFIG] Loaded successfully. Monitored targets: %d, Check interval: %d min(s)", len(cfg.Targets), cfg.Monitoring.IntervalMinutes)
+	log.Printf("[CONFIG] Active targets: %d, Check interval: %d min(s)", len(cfg.Targets), cfg.Monitoring.IntervalMinutes)
 
 	// 2. Initialize Firebase & Local storage
-
-
 	fbClient := storage.NewFirebaseClient(cfg.Firebase)
 	store, err := storage.NewLocalStorage(filepath.Join(dataDir, "logs.json"), 5000, fbClient)
 	if err != nil {
-		log.Fatalf("[FATAL] Failed to initialize storage: %v", err)
+		tmpDataDir := filepath.Join(os.TempDir(), "server-monitor-data")
+		_ = os.MkdirAll(tmpDataDir, 0755)
+		store, _ = storage.NewLocalStorage(filepath.Join(tmpDataDir, "logs.json"), 5000, fbClient)
 	}
 	defer store.Close()
 

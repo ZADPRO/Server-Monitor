@@ -26,7 +26,6 @@ var (
 
 // InitConfig initializes the singleton config manager and starts background watcher
 func InitConfig(path string) (*ConfigManager, error) {
-	var err error
 	once.Do(func() {
 		instance = &ConfigManager{
 			configPath: path,
@@ -35,14 +34,15 @@ func InitConfig(path string) (*ConfigManager, error) {
 		defaultCfg := GetDefaultConfig()
 		instance.config = &defaultCfg
 
-		err = instance.reload()
-		if err == nil {
+		reloadErr := instance.reload()
+		if reloadErr == nil {
 			instance.startWatcher()
+			log.Printf("[CONFIG] Loaded successfully from %s", path)
 		} else {
-			log.Printf("[CONFIG] Using default configuration (Could not load %s: %v)", path, err)
+			log.Printf("[CONFIG] Using default embedded configuration (Note: %v)", reloadErr)
 		}
 	})
-	return instance, err
+	return instance, nil
 }
 
 // GetManager returns the existing manager instance
