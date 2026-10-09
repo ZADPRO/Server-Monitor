@@ -17,6 +17,7 @@ type Scheduler struct {
 	storage        storage.Storage
 	notifier       *notifier.EmailNotifier
 	ticker         *time.Ticker
+	tickerMu       sync.Mutex
 	stopChan       chan struct{}
 	runningMu      sync.Mutex
 	isChecking     bool
@@ -58,12 +59,18 @@ func (s *Scheduler) Start() {
 		s.RunChecksNow()
 	}()
 
+	s.tickerMu.Lock()
 	s.ticker = time.NewTicker(5 * time.Minute)
+	s.tickerMu.Unlock()
 
 	go func() {
 		for {
+			s.tickerMu.Lock()
+			tickChan := s.ticker.C
+			s.tickerMu.Unlock()
+
 			select {
-			case <-s.ticker.C:
+			case <-tickChan:
 				s.checkDueTargets()
 			case <-s.stopChan:
 				log.Printf("[SCHEDULER] Monitoring scheduler stopped.")
@@ -73,11 +80,22 @@ func (s *Scheduler) Start() {
 	}()
 }
 
+// ResetTicker resets the 5-minute ticker so scheduled checks wait a full cycle after a manual check
+func (s *Scheduler) ResetTicker() {
+	s.tickerMu.Lock()
+	defer s.tickerMu.Unlock()
+	if s.ticker != nil {
+		s.ticker.Reset(5 * time.Minute)
+	}
+}
+
 // Stop stops periodic monitoring
 func (s *Scheduler) Stop() {
+	s.tickerMu.Lock()
 	if s.ticker != nil {
 		s.ticker.Stop()
 	}
+	s.tickerMu.Unlock()
 	close(s.stopChan)
 }
 
@@ -128,6 +146,8 @@ func (s *Scheduler) checkDueTargets() {
 
 // RunChecksNow triggers an immediate health check across ALL enabled targets
 func (s *Scheduler) RunChecksNow() []models.HealthCheckResult {
+	s.ResetTicker()
+
 	targets := s.getTargets()
 	var enabledTargets []models.Target
 	now := time.Now()

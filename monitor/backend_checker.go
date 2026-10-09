@@ -12,8 +12,25 @@ import (
 	"serverMonitoring/models"
 )
 
-// CheckBackend checks a backend API endpoint based on all target configurations
+// CheckBackend checks a backend API endpoint with 1 automatic retry on failure
 func CheckBackend(target models.Target, timeout time.Duration) models.HealthCheckResult {
+	res := checkBackendOnce(target, timeout)
+	if res.Status {
+		return res
+	}
+
+	// Retry once after 1s before marking as failure
+	time.Sleep(1 * time.Second)
+	retryRes := checkBackendOnce(target, timeout)
+	if retryRes.Status {
+		return retryRes
+	}
+
+	return retryRes
+}
+
+// checkBackendOnce performs a single probe of a backend API endpoint
+func checkBackendOnce(target models.Target, timeout time.Duration) models.HealthCheckResult {
 	startTime := time.Now()
 	nowStr := startTime.In(models.ISTLocation).Format(models.TimeFormat)
 

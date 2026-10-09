@@ -29,8 +29,25 @@ var (
 	}
 )
 
-// CheckFrontend checks a frontend website URL based on target configurations
+// CheckFrontend checks a frontend website URL with 1 automatic retry on failure
 func CheckFrontend(target models.Target, timeout time.Duration) models.HealthCheckResult {
+	res := checkFrontendOnce(target, timeout)
+	if res.Status {
+		return res
+	}
+
+	// Retry once after 1s before marking as failure
+	time.Sleep(1 * time.Second)
+	retryRes := checkFrontendOnce(target, timeout)
+	if retryRes.Status {
+		return retryRes
+	}
+
+	return retryRes
+}
+
+// checkFrontendOnce performs a single probe of a frontend website URL
+func checkFrontendOnce(target models.Target, timeout time.Duration) models.HealthCheckResult {
 	startTime := time.Now()
 	nowStr := startTime.In(models.ISTLocation).Format(models.TimeFormat)
 

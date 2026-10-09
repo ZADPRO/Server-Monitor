@@ -488,3 +488,80 @@
 2026/10/09 12:33:15.799336 [HEALTHY] Target Nivas HOC Website (https://nivashoc.com/) is OK (195ms)
 2026/10/09 12:33:16.122347 [FIREBASE PURGE] Successfully purged 0 log(s) older than 7 day(s) from Firebase DB
 2026/10/09 12:33:16.734973 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas HOC Website' (status=true)
+2026/10/09 12:34:26.900906 ==========================================================
+2026/10/09 12:34:26.901428 🚀 Starting Zadroit Server Monitoring System...
+2026/10/09 12:34:26.901428 📝 Live Console & Execution logs saving to: data\app.log
+2026/10/09 12:34:26.901428 ==========================================================
+2026/10/09 12:34:26.901944 [CONFIG] Loaded successfully from config.json
+2026/10/09 12:34:26.901944 [CONFIG] Active targets: 0, Check interval: 5 min(s)
+2026/10/09 12:34:26.904032 [FIREBASE] Connected to Firebase DB endpoint: https://server-monitor-8ffb0-default-rtdb.firebaseio.com
+2026/10/09 12:34:26.904032 [SCHEDULER] Starting monitoring scheduler (strictly every 5 mins)...
+2026/10/09 12:34:26.904553 [HTTP] Zadroit Server Monitor Dashboard listening on 0.0.0.0:8080 (Port: 8080)
+2026/10/09 12:34:26.904553 [AUTH] Default Login: Username: Zadroit | Password: [PROTECTED]
+2026/10/09 12:34:28.092729 [CONFIG SYNC] Loaded 1 targets from Firebase DB
+2026/10/09 12:34:28.621076 [CONFIG SYNC] Loaded 1 users from Firebase DB
+2026/10/09 12:34:29.101147 [HEALTHY] Target Nivas HOC Website (https://nivashoc.com/) is OK (245ms)
+2026/10/09 12:34:29.680823 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas HOC Website' (status=true)
+2026/10/09 12:39:27.211674 [SCHEDULER] Executing 5-minute health check cycle for 1 enabled target(s)...
+2026/10/09 12:39:27.588983 [HEALTHY] Target Nivas HOC Website (https://nivashoc.com/) is OK (189ms)
+2026/10/09 12:39:27.911343 [FIREBASE PURGE] Successfully purged 0 log(s) older than 7 day(s) from Firebase DB
+2026/10/09 12:39:28.496546 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas HOC Website' (status=true)
+2026/10/09 12:42:30.809120 [HEALTHY] Target Nivas HOC Website (https://nivashoc.com/) is OK (172ms)
+2026/10/09 12:42:31.694610 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas HOC Website' (status=true)
+2026/10/09 12:44:27.553030 [SCHEDULER] Executing 5-minute health check cycle for 1 enabled target(s)...
+2026/10/09 12:44:27.951940 [HEALTHY] Target Nivas HOC Website (https://nivashoc.com/) is OK (234ms)
+2026/10/09 12:44:28.572251 [FIREBASE PURGE] Successfully purged 0 log(s) older than 7 day(s) from Firebase DB
+2026/10/09 12:44:28.636511 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas HOC Website' (status=true)
+2026/10/09 12:47:36.220532 [FIREBASE PURGE] Successfully purged 0 log(s) older than 7 day(s) from Firebase DB
+2026/10/09 12:54:27.203512 [SCHEDULER] Executing 5-minute health check cycle for 4 enabled target(s)...
+2026/10/09 12:54:27.471781 [HEALTHY] Target Nivas App Product Management Service (https://nivasappproduct-wishlist.brightoncloudtech.com/app-product-wishlist-cart/api/v1/checkserver) is OK (262ms)
+2026/10/09 12:54:27.519019 [HEALTHY] Target Nivas Order Management Service (https://nivasapporder-management-testing.brightoncloudtech.com/Order-management/api/v1/checkserver) is OK (308ms)
+2026/10/09 12:54:27.639962 [HEALTHY] Target Nivas Website (https://nivashoc.com) is OK (271ms)
+2026/10/09 12:54:27.813223 [HEALTHY] Target Hotel sherlock holmes (https://hotelsherlockholmes.com) is OK (298ms)
+2026/10/09 12:54:28.281879 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas App Product Management Service' (status=true)
+2026/10/09 12:54:28.374745 [FIREBASE PURGE] Successfully purged 0 log(s) older than 7 day(s) from Firebase DB
+2026/10/09 12:54:28.452684 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas Order Management Service' (status=true)
+2026/10/09 12:54:28.531543 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas Website' (status=true)
+2026/10/09 12:54:28.704839 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Hotel sherlock holmes' (status=true)
+2026/10/09 12:59:27.606168 [SCHEDULER] Executing 5-minute health check cycle for 4 enabled target(s)...
+2026/10/09 12:59:27.885141 [HEALTHY] Target Nivas Order Management Service (https://nivasapporder-management-testing.brightoncloudtech.com/Order-management/api/v1/checkserver) is OK (265ms)
+2026/10/09 12:59:27.912723 [HEALTHY] Target Nivas App Product Management Service (https://nivasappproduct-wishlist.brightoncloudtech.com/app-product-wishlist-cart/api/v1/checkserver) is OK (303ms)
+2026/10/09 12:59:28.130608 [HEALTHY] Target Hotel sherlock holmes (https://hotelsherlockholmes.com) is OK (328ms)
+2026/10/09 12:59:28.156765 [HEALTHY] Target Nivas Website (https://nivashoc.com) is OK (353ms)
+2026/10/09 12:59:28.767181 [FIREBASE PURGE] Successfully purged 0 log(s) older than 7 day(s) from Firebase DB
+2026/10/09 12:59:28.822401 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas App Product Management Service' (status=true)
+2026/10/09 12:59:28.829853 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas Order Management Service' (status=true)
+2026/10/09 12:59:28.927394 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Hotel sherlock holmes' (status=true)
+2026/10/09 12:59:29.107910 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas Website' (status=true)
+2026/10/09 13:01:16.902775 [CONFIG] Detected changes in config.json, reloading...
+2026/10/09 13:01:16.903403 [CONFIG] Successfully reloaded config from disk.
+2026/10/09 13:04:27.611142 [SCHEDULER] Executing 5-minute health check cycle for 4 enabled target(s)...
+2026/10/09 13:04:27.772861 [HEALTHY] Target Nivas App Product Management Service (https://nivasappproduct-wishlist.brightoncloudtech.com/app-product-wishlist-cart/api/v1/checkserver) is OK (156ms)
+2026/10/09 13:04:27.795328 [HEALTHY] Target Nivas Order Management Service (https://nivasapporder-management-testing.brightoncloudtech.com/Order-management/api/v1/checkserver) is OK (164ms)
+2026/10/09 13:04:27.957117 [HEALTHY] Target Nivas Website (https://nivashoc.com) is OK (194ms)
+2026/10/09 13:04:28.101682 [HEALTHY] Target Hotel sherlock holmes (https://hotelsherlockholmes.com) is OK (179ms)
+2026/10/09 13:04:28.609031 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas App Product Management Service' (status=true)
+2026/10/09 13:04:28.719828 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas Order Management Service' (status=true)
+2026/10/09 13:04:28.739632 [FIREBASE PURGE] Successfully purged 0 log(s) older than 7 day(s) from Firebase DB
+2026/10/09 13:04:28.800244 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas Website' (status=true)
+2026/10/09 13:04:29.085225 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Hotel sherlock holmes' (status=true)
+2026/10/09 13:09:27.760637 [SCHEDULER] Executing 5-minute health check cycle for 4 enabled target(s)...
+2026/10/09 13:09:27.996878 [HEALTHY] Target Nivas App Product Management Service (https://nivasappproduct-wishlist.brightoncloudtech.com/app-product-wishlist-cart/api/v1/checkserver) is OK (230ms)
+2026/10/09 13:09:28.011685 [HEALTHY] Target Nivas Order Management Service (https://nivasapporder-management-testing.brightoncloudtech.com/Order-management/api/v1/checkserver) is OK (231ms)
+2026/10/09 13:09:28.153752 [HEALTHY] Target Nivas Website (https://nivashoc.com) is OK (230ms)
+2026/10/09 13:09:28.274610 [HEALTHY] Target Hotel sherlock holmes (https://hotelsherlockholmes.com) is OK (241ms)
+2026/10/09 13:09:28.941274 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas Order Management Service' (status=true)
+2026/10/09 13:09:28.946651 [FIREBASE PURGE] Successfully purged 0 log(s) older than 7 day(s) from Firebase DB
+2026/10/09 13:09:28.949841 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas App Product Management Service' (status=true)
+2026/10/09 13:09:28.987538 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas Website' (status=true)
+2026/10/09 13:09:29.115877 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Hotel sherlock holmes' (status=true)
+2026/10/09 13:14:27.613949 [SCHEDULER] Executing 5-minute health check cycle for 4 enabled target(s)...
+2026/10/09 13:14:27.765614 [HEALTHY] Target Nivas App Product Management Service (https://nivasappproduct-wishlist.brightoncloudtech.com/app-product-wishlist-cart/api/v1/checkserver) is OK (146ms)
+2026/10/09 13:14:27.789159 [HEALTHY] Target Nivas Order Management Service (https://nivasapporder-management-testing.brightoncloudtech.com/Order-management/api/v1/checkserver) is OK (172ms)
+2026/10/09 13:14:27.956506 [HEALTHY] Target Nivas Website (https://nivashoc.com) is OK (172ms)
+2026/10/09 13:14:27.982231 [HEALTHY] Target Hotel sherlock holmes (https://hotelsherlockholmes.com) is OK (154ms)
+2026/10/09 13:14:28.628123 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas App Product Management Service' (status=true)
+2026/10/09 13:14:28.682930 [FIREBASE PURGE] Successfully purged 0 log(s) older than 7 day(s) from Firebase DB
+2026/10/09 13:14:28.710438 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas Order Management Service' (status=true)
+2026/10/09 13:14:28.781649 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas Website' (status=true)
+2026/10/09 13:14:28.897361 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Hotel sherlock holmes' (status=true)
