@@ -155,7 +155,20 @@ const (
 	DateFormat = "2006-01-02"
 )
 
-// NowFormatted returns current timestamp in standard format
+// ISTLocation defines Indian Standard Time (UTC+05:30 / Asia/Kolkata)
+var ISTLocation = time.FixedZone("IST", 5*3600+30*60)
+
+// NowFormatted returns current timestamp in standard format in Indian Standard Time (IST)
 func NowFormatted() string {
-	return time.Now().Format(TimeFormat)
+	return time.Now().In(ISTLocation).Format(TimeFormat)
+}
+
+// NowIST returns current time in Indian Standard Time (IST)
+func NowIST() time.Time {
+	return time.Now().In(ISTLocation)
+}
+
+// FormatIST formats any time in Indian Standard Time (IST)
+func FormatIST(t time.Time) string {
+	return t.In(ISTLocation).Format(TimeFormat)
 }

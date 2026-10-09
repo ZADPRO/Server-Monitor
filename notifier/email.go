@@ -247,7 +247,7 @@ func (n *EmailNotifier) buildAlertHTML(result models.HealthCheckResult) string {
             <td style="word-break:break-all;"><a href="%s" style="color:#38bdf8; text-decoration:none;">%s</a></td>
           </tr>
           <tr style="border-bottom:1px solid #2d3748;">
-            <td style="color:#94a3b8; font-weight:600;">Hit Time:</td>
+            <td style="color:#94a3b8; font-weight:600;">Hit Time (IST):</td>
             <td style="color:#f1f5f9;">%s</td>
           </tr>
           <tr style="border-bottom:1px solid #2d3748;">
@@ -296,14 +296,14 @@ func (n *EmailNotifier) buildAlertPlainText(result models.HealthCheckResult) str
 ⚠️ SERVER MONITORING ALERT - %s IS DOWN
 =======================================================
 
-Service Name : %s
-Type         : %s
-URL          : %s
-Hit Time     : %s
-Status       : FAILED
-HTTP Status  : %d
-Message      : %s
-Error Detail : %s
+Service Name   : %s
+Type           : %s
+URL            : %s
+Hit Time (IST) : %s
+Status         : FAILED
+HTTP Status    : %d
+Message        : %s
+Error Detail   : %s
 
 Response Data:
 %s

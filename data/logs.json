@@ -1,5 +1,236 @@
 [
   {
+    "id": "target_1791528915364407000-1791529950478205400",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-09 12:42:30",
+    "timestamp": 1791529950,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 172,
+    "http_status": 200,
+    "target_id": "target_1791528915364407000"
+  },
+  {
+    "id": "target_1791528915364407000-1791529767211674300",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-09 12:39:27",
+    "timestamp": 1791529767,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 189,
+    "http_status": 200,
+    "target_id": "target_1791528915364407000"
+  },
+  {
+    "id": "target_1791528915364407000-1791529468610156400",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-09 12:34:28",
+    "timestamp": 1791529468,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 245,
+    "http_status": 200,
+    "target_id": "target_1791528915364407000"
+  },
+  {
+    "id": "target_1791528915364407000-1791529395466421700",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-09 12:33:15",
+    "timestamp": 1791529395,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 195,
+    "http_status": 200,
+    "target_id": "target_1791528915364407000"
+  },
+  {
+    "id": "target_1791528915364407000-1791529095324846300",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-09 12:28:15",
+    "timestamp": 1791529095,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 161,
+    "http_status": 200,
+    "target_id": "target_1791528915364407000"
+  },
+  {
+    "id": "target_frontend_2-1791528544630302700",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-09 12:19:04",
+    "timestamp": 1791528544,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 154,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791528544630302700",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-09 12:19:04",
+    "timestamp": 1791528544,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 143,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_frontend_2-1791528244630333600",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-09 12:14:04",
+    "timestamp": 1791528244,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 161,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791528244630333600",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-09 12:14:04",
+    "timestamp": 1791528244,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 131,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
+    "id": "target_frontend_2-1791527944630424100",
+    "service_name": "Hotel Sherlock Website",
+    "type": "frontend",
+    "url": "https://hotelsherlockholmes.com/",
+    "status": true,
+    "hit_time": "2026-10-09 12:09:04",
+    "timestamp": 1791527944,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 4,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 9162
+    },
+    "response_time_ms": 153,
+    "http_status": 200,
+    "target_id": "target_frontend_2"
+  },
+  {
+    "id": "target_frontend_1-1791527944630424100",
+    "service_name": "Nivas HOC Website",
+    "type": "frontend",
+    "url": "https://nivashoc.com/",
+    "status": true,
+    "hit_time": "2026-10-09 12:09:04",
+    "timestamp": 1791527944,
+    "message": "Frontend is healthy, accessible, and all assets loaded",
+    "data": {
+      "assets_checked": 2,
+      "broken_assets": 0,
+      "console_error_free": true,
+      "content_type": "text/html",
+      "http_status": 200,
+      "page_size_bytes": 2645
+    },
+    "response_time_ms": 166,
+    "http_status": 200,
+    "target_id": "target_frontend_1"
+  },
+  {
     "id": "target_frontend_2-1791527744470685700",
     "service_name": "Hotel Sherlock Website",
     "type": "frontend",

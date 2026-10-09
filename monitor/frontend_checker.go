@@ -32,7 +32,7 @@ var (
 // CheckFrontend checks a frontend website URL based on target configurations
 func CheckFrontend(target models.Target, timeout time.Duration) models.HealthCheckResult {
 	startTime := time.Now()
-	nowStr := startTime.Format(models.TimeFormat)
+	nowStr := startTime.In(models.ISTLocation).Format(models.TimeFormat)
 
 	result := models.HealthCheckResult{
 		ID:          fmt.Sprintf("%s-%d", target.ID, startTime.UnixNano()),

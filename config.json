@@ -37,5 +37,26 @@
     "auto_delete_enabled": true,
     "auto_delete_days": 7
   },
-  "targets": []
+  "users": [
+    {
+      "id": "user_1791528927244392900",
+      "name": "Indumathi R",
+      "email": "indumathi.r@zadroit.com",
+      "updated_at": "2026-10-09 12:25:27"
+    }
+  ],
+  "targets": [
+    {
+      "id": "target_1791528915364407000",
+      "name": "Nivas HOC Website",
+      "type": "frontend",
+      "url": "https://nivashoc.com/",
+      "method": "GET",
+      "enabled": true,
+      "interval_minutes": 5,
+      "recipient_emails": [
+        "indumathi.r@zadroit.com"
+      ]
+    }
+  ]
 }

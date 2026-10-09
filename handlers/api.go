@@ -725,12 +725,12 @@ func (h *APIHandler) handleExportLogs(w http.ResponseWriter, r *http.Request) {
 	filtered := filterLogs(allLogs, filter)
 
 	w.Header().Set("Content-Type", "text/csv")
-	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment;filename=server_logs_%s.csv", time.Now().Format("20060102_150405")))
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment;filename=server_logs_%s.csv", time.Now().In(models.ISTLocation).Format("20060102_150405")))
 
 	writer := csv.NewWriter(w)
 	defer writer.Flush()
 
-	writer.Write([]string{"S.No", "Service Name", "Type", "URL", "Status", "Hit Time", "HTTP Code", "Response Time (ms)", "Message", "Data"})
+	writer.Write([]string{"S.No", "Service Name", "Type", "URL", "Status", "Hit Time (IST)", "HTTP Code", "Response Time (ms)", "Message", "Data"})
 
 	for i, item := range filtered {
 		statusStr := "FAILURE"
@@ -802,7 +802,7 @@ func (h *APIHandler) handleFirebaseStatus(w http.ResponseWriter, r *http.Request
 		UsersCount:   len(users),
 		EmailSynced:  emailCfg != nil,
 		Message:      "Real-time bidirectional synchronization active for Logs, Targets, Users, and Emails",
-		LastSyncedAt: time.Now().Format("2006-01-02 15:04:05"),
+		LastSyncedAt: models.NowFormatted(),
 	})
 }
 

@@ -428,3 +428,63 @@
 2026/10/09 12:02:00.667602 [HEALTHY] Target Hotel Sherlock Website (https://hotelsherlockholmes.com/) is OK (157ms)
 2026/10/09 12:02:01.556646 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas HOC Website' (status=true)
 2026/10/09 12:02:01.592888 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Hotel Sherlock Website' (status=true)
+2026/10/09 12:04:04.614964 ==========================================================
+2026/10/09 12:04:04.615576 🚀 Starting Zadroit Server Monitoring System...
+2026/10/09 12:04:04.615576 📝 Live Console & Execution logs saving to: data\app.log
+2026/10/09 12:04:04.615576 ==========================================================
+2026/10/09 12:04:04.627281 [CONFIG] Loaded successfully from config.json
+2026/10/09 12:04:04.627281 [CONFIG] Active targets: 2, Check interval: 5 min(s)
+2026/10/09 12:04:04.629972 [FIREBASE] Connected to Firebase DB endpoint: https://server-monitor-8ffb0-default-rtdb.firebaseio.com
+2026/10/09 12:04:04.629972 [SCHEDULER] Starting monitoring scheduler (strictly every 5 mins)...
+2026/10/09 12:04:04.629972 [HTTP] Zadroit Server Monitor Dashboard listening on 0.0.0.0:8080 (Port: 8080)
+2026/10/09 12:04:04.629972 [AUTH] Default Login: Username: Zadroit | Password: [PROTECTED]
+2026/10/09 12:04:05.786379 [CONFIG SYNC] Loaded 2 targets from Firebase DB
+2026/10/09 12:04:05.931872 [HEALTHY] Target Nivas HOC Website (https://nivashoc.com/) is OK (170ms)
+2026/10/09 12:04:05.973095 [HEALTHY] Target Hotel Sherlock Website (https://hotelsherlockholmes.com/) is OK (170ms)
+2026/10/09 12:04:06.070308 [CONFIG SYNC] Loaded auth credentials from Firebase DB (User: Zadroit)
+2026/10/09 12:04:06.603439 [CONFIG SYNC] Loaded email alert config from Firebase DB (2 recipients)
+2026/10/09 12:04:06.636451 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas HOC Website' (status=true)
+2026/10/09 12:04:06.862123 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Hotel Sherlock Website' (status=true)
+2026/10/09 12:05:44.757578 [HEALTHY] Target Nivas HOC Website (https://nivashoc.com/) is OK (136ms)
+2026/10/09 12:05:44.771668 [HEALTHY] Target Hotel Sherlock Website (https://hotelsherlockholmes.com/) is OK (133ms)
+2026/10/09 12:05:45.683763 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas HOC Website' (status=true)
+2026/10/09 12:05:45.703702 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Hotel Sherlock Website' (status=true)
+2026/10/09 12:09:04.630424 [SCHEDULER] Executing 5-minute health check cycle for 2 enabled target(s)...
+2026/10/09 12:09:04.937768 [HEALTHY] Target Nivas HOC Website (https://nivashoc.com/) is OK (166ms)
+2026/10/09 12:09:04.987552 [HEALTHY] Target Hotel Sherlock Website (https://hotelsherlockholmes.com/) is OK (153ms)
+2026/10/09 12:09:05.853522 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas HOC Website' (status=true)
+2026/10/09 12:09:05.893953 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Hotel Sherlock Website' (status=true)
+2026/10/09 12:14:04.630333 [SCHEDULER] Executing 5-minute health check cycle for 2 enabled target(s)...
+2026/10/09 12:14:04.908688 [HEALTHY] Target Nivas HOC Website (https://nivashoc.com/) is OK (131ms)
+2026/10/09 12:14:05.049470 [HEALTHY] Target Hotel Sherlock Website (https://hotelsherlockholmes.com/) is OK (161ms)
+2026/10/09 12:14:05.817365 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas HOC Website' (status=true)
+2026/10/09 12:14:05.958620 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Hotel Sherlock Website' (status=true)
+2026/10/09 12:19:04.630302 [SCHEDULER] Executing 5-minute health check cycle for 2 enabled target(s)...
+2026/10/09 12:19:04.907480 [HEALTHY] Target Nivas HOC Website (https://nivashoc.com/) is OK (143ms)
+2026/10/09 12:19:04.960027 [HEALTHY] Target Hotel Sherlock Website (https://hotelsherlockholmes.com/) is OK (154ms)
+2026/10/09 12:19:05.837835 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas HOC Website' (status=true)
+2026/10/09 12:19:05.888666 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Hotel Sherlock Website' (status=true)
+2026/10/09 12:21:59.627928 [CONFIG] Detected changes in config.json, reloading...
+2026/10/09 12:21:59.628719 [CONFIG] Successfully reloaded config from disk.
+2026/10/09 12:23:14.677331 ==========================================================
+2026/10/09 12:23:14.677331 🚀 Starting Zadroit Server Monitoring System...
+2026/10/09 12:23:14.677331 📝 Live Console & Execution logs saving to: data\app.log
+2026/10/09 12:23:14.677331 ==========================================================
+2026/10/09 12:23:14.677948 [CONFIG] Loaded successfully from config.json
+2026/10/09 12:23:14.677948 [CONFIG] Active targets: 0, Check interval: 5 min(s)
+2026/10/09 12:23:14.680209 [FIREBASE] Connected to Firebase DB endpoint: https://server-monitor-8ffb0-default-rtdb.firebaseio.com
+2026/10/09 12:23:14.680209 [SCHEDULER] Starting monitoring scheduler (strictly every 5 mins)...
+2026/10/09 12:23:14.680209 [HTTP] Zadroit Server Monitor Dashboard listening on 0.0.0.0:8080 (Port: 8080)
+2026/10/09 12:23:14.680209 [AUTH] Default Login: Username: Zadroit | Password: [PROTECTED]
+2026/10/09 12:23:16.314446 [CONFIG SYNC] Loaded 0 targets from Firebase DB
+2026/10/09 12:23:16.902619 [CONFIG SYNC] Loaded 0 users from Firebase DB
+2026/10/09 12:25:15.660265 [FIREBASE REALTIME] Synced target 'Nivas HOC Website' (target_1791528915364407000) to Firebase DB
+2026/10/09 12:25:27.543758 [FIREBASE REALTIME] Saved user 'Indumathi R' (indumathi.r@zadroit.com) to Firebase DB
+2026/10/09 12:28:15.324545 [SCHEDULER] Executing 5-minute health check cycle for 1 enabled target(s)...
+2026/10/09 12:28:15.629375 [HEALTHY] Target Nivas HOC Website (https://nivashoc.com/) is OK (161ms)
+2026/10/09 12:28:15.919855 [FIREBASE PURGE] Successfully purged 0 log(s) older than 7 day(s) from Firebase DB
+2026/10/09 12:28:16.493864 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas HOC Website' (status=true)
+2026/10/09 12:33:15.466421 [SCHEDULER] Executing 5-minute health check cycle for 1 enabled target(s)...
+2026/10/09 12:33:15.799336 [HEALTHY] Target Nivas HOC Website (https://nivashoc.com/) is OK (195ms)
+2026/10/09 12:33:16.122347 [FIREBASE PURGE] Successfully purged 0 log(s) older than 7 day(s) from Firebase DB
+2026/10/09 12:33:16.734973 [FIREBASE REALTIME] Pushed log to Firebase DB: service='Nivas HOC Website' (status=true)

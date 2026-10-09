@@ -19,6 +19,73 @@ const firebaseConfig = {
   measurementId: "G-Q7R2VPN390"
 };
 
+// ============================================================================
+// TIMEZONE & IST (Indian Standard Time - UTC+05:30) UTILITIES
+// ============================================================================
+function formatToIST(timestamp, hitTimeStr) {
+  let dateObj = null;
+
+  if (timestamp) {
+    const ms = timestamp > 1e11 ? timestamp : timestamp * 1000;
+    dateObj = new Date(ms);
+  } else if (hitTimeStr && typeof hitTimeStr === 'string') {
+    if (hitTimeStr.includes('T') || hitTimeStr.includes('Z')) {
+      dateObj = new Date(hitTimeStr);
+    } else {
+      const match = hitTimeStr.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/);
+      if (match) {
+        return `${match[1]}-${match[2]}-${match[3]} ${match[4]}:${match[5]}:${match[6]}`;
+      }
+      dateObj = new Date(hitTimeStr);
+    }
+  }
+
+  if (!dateObj || isNaN(dateObj.getTime())) {
+    return hitTimeStr || 'N/A';
+  }
+
+  try {
+    const formatter = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Kolkata',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+    const parts = formatter.formatToParts(dateObj);
+    const map = {};
+    parts.forEach(p => { map[p.type] = p.value; });
+    return `${map.year}-${map.month}-${map.day} ${map.hour}:${map.minute}:${map.second}`;
+  } catch (e) {
+    return dateObj.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+  }
+}
+
+function getTodayIST() {
+  try {
+    const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' });
+    return formatter.format(new Date());
+  } catch (e) {
+    return new Date().toISOString().split('T')[0];
+  }
+}
+
+function getDaysAgoIST(days) {
+  try {
+    const d = new Date();
+    d.setDate(d.getDate() - days);
+    const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' });
+    return formatter.format(d);
+  } catch (e) {
+    const d = new Date();
+    d.setDate(d.getDate() - days);
+    return d.toISOString().split('T')[0];
+  }
+}
+
 // Application State (Strictly loaded and synchronized from Firebase Realtime Database)
 const state = {
   authToken: localStorage.getItem('zadroit_auth_token') || null,
@@ -396,7 +463,7 @@ function updateMetricsFromFirebaseLogs(logsList) {
     if (sName && !targetStatuses[sName]) {
       targetStatuses[sName] = {
         status: Boolean(log.status),
-        hit_time: log.hit_time || log['hit time'] || 'Recent',
+        hit_time: formatToIST(log.timestamp, log.hit_time || log['hit time'] || 'Recent'),
         message: log.message || '',
         http_status: log.http_status || (log.status ? 200 : 500),
         response_time_ms: log.response_time_ms || 0,
@@ -426,13 +493,16 @@ function updateMetricsFromFirebaseLogs(logsList) {
   const successfulChecks = logsList.filter(l => Boolean(l.status)).length;
   const uptimePercent = totalChecks > 0 ? (successfulChecks / totalChecks) * 100 : 100;
 
+  const firstLog = logsList[0];
+  const lastCheckFormatted = firstLog ? formatToIST(firstLog.timestamp, firstLog.hit_time || firstLog['hit time']) : 'Just now';
+
   const summary = {
     total_targets: totalTargets,
     online_targets: onlineCount,
     offline_targets: offlineCount,
     total_checks: totalChecks,
     uptime_percent: uptimePercent,
-    last_check_time: logsList[0]?.hit_time || logsList[0]?.['hit time'] || 'Just now',
+    last_check_time: lastCheckFormatted,
     target_statuses: targetStatuses
   };
 
@@ -743,17 +813,17 @@ function filterAndRenderClientLogs() {
   }
 
   if (state.filters.fromDate) {
-    const fromTime = new Date(state.filters.fromDate).setHours(0, 0, 0, 0);
     filtered = filtered.filter(l => {
-      const logDate = l.timestamp ? l.timestamp * 1000 : new Date(l.hit_time || l['hit time']).getTime();
-      return logDate >= fromTime;
+      const istStr = formatToIST(l.timestamp, l.hit_time || l['hit time']);
+      const logDate = istStr.substring(0, 10);
+      return logDate >= state.filters.fromDate;
     });
   }
   if (state.filters.toDate) {
-    const toTime = new Date(state.filters.toDate).setHours(23, 59, 59, 999);
     filtered = filtered.filter(l => {
-      const logDate = l.timestamp ? l.timestamp * 1000 : new Date(l.hit_time || l['hit time']).getTime();
-      return logDate <= toTime;
+      const istStr = formatToIST(l.timestamp, l.hit_time || l['hit time']);
+      const logDate = istStr.substring(0, 10);
+      return logDate <= state.filters.toDate;
     });
   }
 
@@ -807,7 +877,7 @@ function renderLogsTable(logs, total) {
 
     const rowNum = (state.currentPage - 1) * state.limit + index + 1;
     const sName = item.service_name || item['service name'] || 'Unnamed';
-    const hitTime = item.hit_time || item['hit time'] || 'N/A';
+    const hitTime = formatToIST(item.timestamp, item.hit_time || item['hit time']);
 
     html += `
       <tr class="${isSuccess ? 'row-success' : 'row-failure'}">
@@ -916,7 +986,7 @@ window.setQuickDate = function (preset, btn) {
   document.querySelectorAll('.date-presets-group .btn-preset').forEach((b) => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = getTodayIST();
   const fromElem = document.getElementById('filterFromDate');
   const toElem = document.getElementById('filterToDate');
 
@@ -929,9 +999,7 @@ window.setQuickDate = function (preset, btn) {
     fromElem.value = today;
     toElem.value = today;
   } else if (preset === '7days') {
-    const d = new Date();
-    d.setDate(d.getDate() - 7);
-    fromElem.value = d.toISOString().split('T')[0];
+    fromElem.value = getDaysAgoIST(7);
     toElem.value = today;
   }
 
@@ -1021,7 +1089,7 @@ function setMobileQuickDate(preset, btn) {
     btn.classList.add('active');
   }
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = getTodayIST();
   const fromElem = document.getElementById('mobileFilterFromDate');
   const toElem = document.getElementById('mobileFilterToDate');
 
@@ -1034,9 +1102,7 @@ function setMobileQuickDate(preset, btn) {
     fromElem.value = today;
     toElem.value = today;
   } else if (preset === '7days') {
-    const d = new Date();
-    d.setDate(d.getDate() - 7);
-    fromElem.value = d.toISOString().split('T')[0];
+    fromElem.value = getDaysAgoIST(7);
     toElem.value = today;
   }
 }
@@ -1073,12 +1139,12 @@ window.exportCSV = function() {
     return;
   }
 
-  const headers = ['Service Name', 'Type', 'Status', 'Hit Time', 'Target URL', 'Response Time (ms)', 'HTTP Status', 'Message', 'Data JSON'];
+  const headers = ['Service Name', 'Type', 'Status', 'Hit Time (IST)', 'Target URL', 'Response Time (ms)', 'HTTP Status', 'Message', 'Data JSON'];
   const rows = allLogs.map(l => [
     `"${(l.service_name || l['service name'] || '').replace(/"/g, '""')}"`,
     `"${l.type || ''}"`,
     l.status ? 'Success' : 'Failure',
-    `"${(l.hit_time || l['hit time'] || '').replace(/"/g, '""')}"`,
+    `"${formatToIST(l.timestamp, l.hit_time || l['hit time']).replace(/"/g, '""')}"`,
     `"${(l.url || '').replace(/"/g, '""')}"`,
     l.response_time_ms || 0,
     l.http_status || 200,
@@ -1090,7 +1156,7 @@ window.exportCSV = function() {
   const encodedUri = encodeURI(csvContent);
   const link = document.createElement('a');
   link.setAttribute('href', encodedUri);
-  link.setAttribute('download', `server_monitoring_logs_${new Date().toISOString().split('T')[0]}.csv`);
+  link.setAttribute('download', `server_monitoring_logs_${getTodayIST()}.csv`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -1833,8 +1899,8 @@ window.inspectLog = function (id) {
         <span class="value type-badge ${logItem.type === 'backend' ? 'backend' : 'frontend'}">${logItem.type}</span>
       </div>
       <div class="inspect-meta-item">
-        <span class="key">Hit Timestamp</span>
-        <span class="value font-mono">${escapeHTML(logItem.hit_time || logItem['hit time'] || '')}</span>
+        <span class="key">Hit Timestamp (IST)</span>
+        <span class="value font-mono">${escapeHTML(formatToIST(logItem.timestamp, logItem.hit_time || logItem['hit time']))}</span>
       </div>
       <div class="inspect-meta-item">
         <span class="key">Target URL</span>

@@ -15,7 +15,7 @@ import (
 // CheckBackend checks a backend API endpoint based on all target configurations
 func CheckBackend(target models.Target, timeout time.Duration) models.HealthCheckResult {
 	startTime := time.Now()
-	nowStr := startTime.Format(models.TimeFormat)
+	nowStr := startTime.In(models.ISTLocation).Format(models.TimeFormat)
 
 	result := models.HealthCheckResult{
 		ID:          fmt.Sprintf("%s-%d", target.ID, startTime.UnixNano()),

@@ -326,7 +326,7 @@ func (f *FirebaseClient) SaveAuthConfig(auth models.AuthConfig) error {
 		Username:  auth.Username,
 		Password:  auth.Password,
 		Role:      "admin",
-		UpdatedAt: time.Now().Format("2006-01-02 15:04:05"),
+		UpdatedAt: models.NowFormatted(),
 	}
 	_, _, _ = f.doRequest("PUT", fmt.Sprintf("users/%s", auth.Username), userObj)
 
@@ -366,7 +366,7 @@ func (f *FirebaseClient) SaveUser(user models.User) error {
 		return fmt.Errorf("user ID or Username cannot be empty")
 	}
 	if user.UpdatedAt == "" {
-		user.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
+		user.UpdatedAt = models.NowFormatted()
 	}
 
 	_, _, err := f.doRequest("PUT", fmt.Sprintf("users/%s", key), user)
