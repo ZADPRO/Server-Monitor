@@ -28,17 +28,23 @@ var (
 
 // InitConfig initializes the singleton config manager and starts background watcher
 func InitConfig(path string) (*ConfigManager, error) {
-	var err error
 	once.Do(func() {
 		instance = &ConfigManager{
 			configPath: path,
 		}
-		err = instance.reload()
-		if err == nil {
+		defaultCfg := GetDefaultConfig()
+		instance.config = &defaultCfg
+		instance.fbClient = storage.NewFirebaseClient(defaultCfg.Firebase)
+
+		reloadErr := instance.reload()
+		if reloadErr == nil {
 			instance.startWatcher()
+			log.Printf("[CONFIG] Loaded successfully from %s", path)
+		} else {
+			log.Printf("[CONFIG] Using default embedded configuration (Note: %v)", reloadErr)
 		}
 	})
-	return instance, err
+	return instance, nil
 }
 
 // GetManager returns the existing manager instance
@@ -62,7 +68,7 @@ func (cm *ConfigManager) GetFirebaseClient() *storage.FirebaseClient {
 
 func (cm *ConfigManager) startWatcher() {
 	go func() {
-		ticker := time.NewTicker(3 * time.Second)
+		ticker := time.NewTicker(5 * time.Second)
 		defer ticker.Stop()
 		for range ticker.C {
 			cm.checkAndReload()
@@ -92,22 +98,49 @@ func (cm *ConfigManager) reload() error {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 
-	data, err := os.ReadFile(cm.configPath)
-	if err != nil {
-		return fmt.Errorf("failed to read config file at %s: %w", cm.configPath, err)
+	candidates := []string{
+		cm.configPath,
+		"config.json",
+		"./config.json",
+		"../config.json",
+		"/var/task/config.json",
 	}
 
-	info, _ := os.Stat(cm.configPath)
-	if info != nil {
+	if envTaskRoot := os.Getenv("LAMBDA_TASK_ROOT"); envTaskRoot != "" {
+		candidates = append(candidates, filepath.Join(envTaskRoot, "config.json"))
+	}
+
+	var data []byte
+	var readErr error
+	foundPath := ""
+
+	for _, p := range candidates {
+		if p == "" {
+			continue
+		}
+		if b, err := os.ReadFile(p); err == nil && len(b) > 0 {
+			data = b
+			foundPath = p
+			break
+		} else if readErr == nil {
+			readErr = err
+		}
+	}
+
+	if len(data) == 0 {
+		return fmt.Errorf("failed to read config file from candidates %v: %v", candidates, readErr)
+	}
+
+	if info, err := os.Stat(foundPath); err == nil {
 		cm.lastModified = info.ModTime()
 	}
 
 	var cfg models.Config
 	if err := json.Unmarshal(data, &cfg); err != nil {
-		return fmt.Errorf("failed to parse config JSON: %w", err)
+		return fmt.Errorf("failed to parse config JSON from %s: %w", foundPath, err)
 	}
 
-	// Apply defaults if necessary
+	// Apply defaults
 	if cfg.Server.Port == 0 {
 		cfg.Server.Port = 8080
 	}
@@ -125,6 +158,7 @@ func (cm *ConfigManager) reload() error {
 	}
 
 	cm.config = &cfg
+	cm.fbClient = storage.NewFirebaseClient(cfg.Firebase)
 	return nil
 }
 
@@ -132,6 +166,10 @@ func (cm *ConfigManager) reload() error {
 func (cm *ConfigManager) Get() models.Config {
 	cm.mu.RLock()
 	defer cm.mu.RUnlock()
+	if cm.config == nil {
+		defaultCfg := GetDefaultConfig()
+		return defaultCfg
+	}
 	return *cm.config
 }
 
@@ -148,17 +186,13 @@ func (cm *ConfigManager) Save(cfg models.Config) error {
 
 	dir := filepath.Dir(cm.configPath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
-		cm.mu.Unlock()
-		return fmt.Errorf("failed to create config directory: %w", err)
+		dir = os.TempDir()
+		cm.configPath = filepath.Join(dir, "config.json")
+		_ = os.MkdirAll(dir, 0755)
 	}
 
-	if err := os.WriteFile(cm.configPath, data, 0644); err != nil {
-		cm.mu.Unlock()
-		return fmt.Errorf("failed to write config file: %w", err)
-	}
-
-	info, _ := os.Stat(cm.configPath)
-	if info != nil {
+	_ = os.WriteFile(cm.configPath, data, 0644)
+	if info, err := os.Stat(cm.configPath); err == nil {
 		cm.lastModified = info.ModTime()
 	}
 
@@ -179,6 +213,9 @@ func (cm *ConfigManager) Save(cfg models.Config) error {
 func (cm *ConfigManager) GetTargets() []models.Target {
 	cm.mu.RLock()
 	defer cm.mu.RUnlock()
+	if cm.config == nil {
+		return []models.Target{}
+	}
 	targets := make([]models.Target, len(cm.config.Targets))
 	copy(targets, cm.config.Targets)
 	return targets
@@ -273,6 +310,94 @@ func (cm *ConfigManager) DeleteTarget(id string) error {
 	return err
 }
 
+// GetUsers returns list of configured alert users
+func (cm *ConfigManager) GetUsers() []models.User {
+	cm.mu.RLock()
+	defer cm.mu.RUnlock()
+	if cm.config == nil {
+		return []models.User{}
+	}
+	users := make([]models.User, len(cm.config.Users))
+	copy(users, cm.config.Users)
+	return users
+}
+
+// AddUser adds a new user recipient
+func (cm *ConfigManager) AddUser(user models.User) error {
+	cm.mu.Lock()
+	fb := cm.fbClient
+
+	for _, u := range cm.config.Users {
+		if u.ID == user.ID || (u.Username != "" && u.Username == user.Username) {
+			cm.mu.Unlock()
+			return fmt.Errorf("user with ID/Username already exists")
+		}
+	}
+
+	cm.config.Users = append(cm.config.Users, user)
+	err := cm.saveUnlocked()
+	cm.mu.Unlock()
+
+	if err == nil && fb != nil {
+		go func(u models.User) {
+			_ = fb.SaveUser(u)
+		}(user)
+	}
+	return err
+}
+
+// UpdateUser updates an existing user
+func (cm *ConfigManager) UpdateUser(user models.User) error {
+	cm.mu.Lock()
+	fb := cm.fbClient
+
+	found := false
+	for i, u := range cm.config.Users {
+		if (user.ID != "" && u.ID == user.ID) || (user.Username != "" && u.Username == user.Username) {
+			cm.config.Users[i] = user
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		cm.mu.Unlock()
+		return fmt.Errorf("user with ID '%s' not found", user.ID)
+	}
+
+	err := cm.saveUnlocked()
+	cm.mu.Unlock()
+
+	if err == nil && fb != nil {
+		go func(u models.User) {
+			_ = fb.SaveUser(u)
+		}(user)
+	}
+	return err
+}
+
+// DeleteUser removes a user by ID
+func (cm *ConfigManager) DeleteUser(id string) error {
+	cm.mu.Lock()
+	newUsers := make([]models.User, 0, len(cm.config.Users))
+	found := false
+	for _, u := range cm.config.Users {
+		if u.ID == id || u.Username == id {
+			found = true
+			continue
+		}
+		newUsers = append(newUsers, u)
+	}
+	if !found {
+		cm.mu.Unlock()
+		return fmt.Errorf("user '%s' not found", id)
+	}
+	cm.config.Users = newUsers
+	err := cm.saveUnlocked()
+	cm.mu.Unlock()
+	return err
+}
+
 // SyncWithFirebase pulls existing targets, auth, and email config from Firebase; if empty in Firebase, seeds from local
 func (cm *ConfigManager) SyncWithFirebase() error {
 	cm.mu.Lock()
@@ -294,7 +419,6 @@ func (cm *ConfigManager) SyncWithFirebase() error {
 			cm.mu.Unlock()
 			log.Printf("[CONFIG SYNC] Loaded %d targets from Firebase DB", len(fbTargets))
 		} else if len(cfgCopy.Targets) > 0 {
-			// Seed Firebase with local targets
 			_ = fb.SaveAllTargets(cfgCopy.Targets)
 			log.Printf("[CONFIG SYNC] Seeded Firebase DB with %d local targets", len(cfgCopy.Targets))
 		}
@@ -342,4 +466,97 @@ func (cm *ConfigManager) saveUnlocked() error {
 		}
 	}
 	return err
+}
+
+// GetDefaultConfig returns robust default configuration
+func GetDefaultConfig() models.Config {
+	return models.Config{
+		Server: models.ServerConfig{
+			Port: 8080,
+			Host: "0.0.0.0",
+		},
+		Auth: models.AuthConfig{
+			Username: "Zadroit",
+			Password: "ZadGugSlm06",
+		},
+		Monitoring: models.MonitoringConfig{
+			IntervalMinutes:       5,
+			RequestTimeoutSeconds: 15,
+		},
+		Email: models.EmailConfig{
+			Enabled:     true,
+			SMTPHost:    "smtp.gmail.com",
+			SMTPPort:    587,
+			FromEmail:   "development.zadroit@gmail.com",
+			AppPassword: "bfitdhmbhcxtjrvg",
+			ToEmails: []string{
+				"indumathi.r@zadroit.com",
+				"vijay.loganathan@zadroit.com",
+			},
+		},
+		Firebase: models.FirebaseConfig{
+			Enabled:           true,
+			Type:              "realtime",
+			APIKey:            "AIzaSyA2sTTwDtuWcWF9Xg2sPfrrYuDLbjJCMUc",
+			AuthDomain:        "server-monitor-8ffb0.firebaseapp.com",
+			DatabaseURL:       "https://server-monitor-8ffb0-default-rtdb.firebaseio.com",
+			ProjectID:         "server-monitor-8ffb0",
+			StorageBucket:     "server-monitor-8ffb0.firebasestorage.app",
+			MessagingSenderID: "274069716120",
+			AppID:             "1:274069716120:web:9585c80e368ac8b9e624ed",
+			MeasurementID:     "G-Q7R2VPN390",
+			Collection:        "server_monitoring_logs",
+			AutoDeleteEnabled: true,
+			AutoDeleteDays:    7,
+		},
+		Users: []models.User{
+			{ID: "user_1", Name: "Indumathi R", Email: "indumathi.r@zadroit.com"},
+			{ID: "user_2", Name: "Vijay Loganathan", Email: "vijay.loganathan@zadroit.com"},
+			{ID: "user_1791200466394", Name: "Thirukumara", Email: "thirukumara.d@zadroit.com"},
+		},
+		Targets: []models.Target{
+			{
+				ID:              "target_backend_1",
+				Name:            "Nivas App product management",
+				Type:            "backend",
+				URL:             "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+				Method:          "GET",
+				Enabled:         true,
+				ExpectedKeys:    []string{"service", "db"},
+				IntervalMinutes: 5,
+				RecipientEmails: []string{"indumathi.r@zadroit.com", "vijay.loganathan@zadroit.com"},
+			},
+			{
+				ID:              "target_frontend_1",
+				Name:            "Nivas HOC Website",
+				Type:            "frontend",
+				URL:             "https://nivashoc.com/",
+				Method:          "GET",
+				Enabled:         true,
+				IntervalMinutes: 5,
+				RecipientEmails: []string{"indumathi.r@zadroit.com"},
+			},
+			{
+				ID:              "target_frontend_2",
+				Name:            "Hotel Sherlock Website",
+				Type:            "frontend",
+				URL:             "https://hotelsherlockholmes.com/",
+				Method:          "GET",
+				Enabled:         true,
+				IntervalMinutes: 15,
+				RecipientEmails: []string{"vijay.loganathan@zadroit.com", "thirukumara.d@zadroit.com"},
+			},
+			{
+				ID:              "target_1791194011314",
+				Name:            "local",
+				Type:            "backend",
+				URL:             "http://192.168.29.143:8083/checkserver",
+				Method:          "GET",
+				Enabled:         true,
+				ExpectedKeys:    []string{"service", "db"},
+				IntervalMinutes: 5,
+				RecipientEmails: []string{"vijay.loganathan@zadroit.com"},
+			},
+		},
+	}
 }

@@ -58,13 +58,15 @@ func (h *APIHandler) RegisterRoutes(mux *http.ServeMux) {
 	handleWithCORS("/api/check-now", h.handleCheckNow)
 	handleWithCORS("/api/targets", h.handleTargets)
 	handleWithCORS("/api/targets/", h.handleTargetByID)
+	handleWithCORS("/api/users", h.handleUsers)
+	handleWithCORS("/api/users/", h.handleUserByID)
 	handleWithCORS("/api/config", h.handleConfig)
 	handleWithCORS("/api/test-email", h.handleTestEmail)
 	handleWithCORS("/api/export-logs", h.handleExportLogs)
 	handleWithCORS("/api/firebase-status", h.handleFirebaseStatus)
-	handleWithCORS("/api/firebase-logs", h.handleFirebaseLogs)
-	handleWithCORS("/api/firebase-sync", h.handleFirebaseSync)
+	handleWithCORS("/api/firebase-sync", h.handleFirebaseSyncAll)
 	handleWithCORS("/api/firebase-sync-all", h.handleFirebaseSyncAll)
+	handleWithCORS("/api/purge-logs", h.handlePurgeLogs)
 }
 
 func (h *APIHandler) handleLogin(w http.ResponseWriter, r *http.Request) {
@@ -118,85 +120,6 @@ func (h *APIHandler) handleLogin(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h *APIHandler) handleUsers(w http.ResponseWriter, r *http.Request) {
-	fb := h.storage.GetFirebaseClient()
-
-	switch r.Method {
-	case http.MethodGet:
-		var users []models.User
-		if fb != nil {
-			if fbUsers, err := fb.FetchUsers(); err == nil && len(fbUsers) > 0 {
-				users = fbUsers
-			}
-		}
-
-		if len(users) == 0 {
-			cfg := h.cfgManager.Get()
-			users = []models.User{
-				{
-					Username:  cfg.Auth.Username,
-					Role:      "admin",
-					UpdatedAt: time.Now().Format("2006-01-02 15:04:05"),
-				},
-			}
-		}
-
-		// Mask passwords in output
-		safeUsers := make([]models.User, len(users))
-		for i, u := range users {
-			safeUsers[i] = models.User{
-				Username:  u.Username,
-				Password:  "••••••••",
-				Role:      u.Role,
-				Email:     u.Email,
-				UpdatedAt: u.UpdatedAt,
-			}
-		}
-
-		writeJSON(w, http.StatusOK, map[string]interface{}{
-			"success": true,
-			"users":   safeUsers,
-		})
-
-	case http.MethodPost:
-		var newUser models.User
-		if err := json.NewDecoder(r.Body).Decode(&newUser); err != nil {
-			writeJSON(w, http.StatusBadRequest, map[string]interface{}{"error": "Invalid user JSON"})
-			return
-		}
-
-		if newUser.Username == "" || newUser.Password == "" {
-			writeJSON(w, http.StatusBadRequest, map[string]interface{}{"error": "Username and password are required"})
-			return
-		}
-
-		if newUser.Role == "" {
-			newUser.Role = "admin"
-		}
-		newUser.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
-
-		// Update in ConfigManager
-		cfg := h.cfgManager.Get()
-		cfg.Auth.Username = newUser.Username
-		cfg.Auth.Password = newUser.Password
-		_ = h.cfgManager.Save(cfg)
-
-		// Sync directly to Firebase
-		if fb != nil {
-			_ = fb.SaveUser(newUser)
-			_ = fb.SaveAuthConfig(models.AuthConfig{Username: newUser.Username, Password: newUser.Password})
-		}
-
-		writeJSON(w, http.StatusOK, map[string]interface{}{
-			"success": true,
-			"message": fmt.Sprintf("User '%s' saved to Firebase and local storage", newUser.Username),
-		})
-
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	}
-}
-
 func (h *APIHandler) handleStatus(w http.ResponseWriter, r *http.Request) {
 	summary := h.storage.GetSummary()
 	cfg := h.cfgManager.Get()
@@ -247,6 +170,33 @@ func (h *APIHandler) handleCheckNow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	targetID := r.URL.Query().Get("target_id")
+	if targetID == "" {
+		var req struct {
+			TargetID string `json:"target_id"`
+		}
+		_ = json.NewDecoder(r.Body).Decode(&req)
+		targetID = req.TargetID
+	}
+
+	if targetID != "" {
+		res, err := h.scheduler.RunCheckForSingleTarget(targetID)
+		if err != nil {
+			writeJSON(w, http.StatusBadRequest, map[string]interface{}{
+				"success": false,
+				"error":   err.Error(),
+			})
+			return
+		}
+		summary := h.storage.GetSummary()
+		writeJSON(w, http.StatusOK, map[string]interface{}{
+			"success": true,
+			"results": []models.HealthCheckResult{*res},
+			"summary": summary,
+		})
+		return
+	}
+
 	results := h.scheduler.RunChecksNow()
 	summary := h.storage.GetSummary()
 
@@ -280,6 +230,9 @@ func (h *APIHandler) handleTargets(w http.ResponseWriter, r *http.Request) {
 		if target.Type == "" {
 			target.Type = "backend"
 		}
+		if target.IntervalMinutes <= 0 {
+			target.IntervalMinutes = 5
+		}
 
 		if err := h.cfgManager.AddTarget(target); err != nil {
 			writeJSON(w, http.StatusBadRequest, map[string]interface{}{"error": err.Error()})
@@ -298,12 +251,31 @@ func (h *APIHandler) handleTargets(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *APIHandler) handleTargetByID(w http.ResponseWriter, r *http.Request) {
-	id := strings.TrimPrefix(r.URL.Path, "/api/targets/")
-	if id == "" {
+	path := strings.TrimPrefix(r.URL.Path, "/api/targets/")
+	if path == "" {
 		http.Error(w, "Missing target ID", http.StatusBadRequest)
 		return
 	}
 
+	// Handle /api/targets/:id/check
+	if strings.HasSuffix(path, "/check") {
+		id := strings.TrimSuffix(path, "/check")
+		id = strings.TrimSuffix(id, "/")
+		if r.Method != http.MethodPost {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		res, err := h.scheduler.RunCheckForSingleTarget(id)
+		if err != nil {
+			writeJSON(w, http.StatusBadRequest, map[string]interface{}{"success": false, "error": err.Error()})
+			return
+		}
+		summary := h.storage.GetSummary()
+		writeJSON(w, http.StatusOK, map[string]interface{}{"success": true, "results": []models.HealthCheckResult{*res}, "summary": summary})
+		return
+	}
+
+	id := path
 	switch r.Method {
 	case http.MethodPut:
 		var target models.Target
@@ -312,6 +284,9 @@ func (h *APIHandler) handleTargetByID(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		target.ID = id
+		if target.IntervalMinutes <= 0 {
+			target.IntervalMinutes = 5
+		}
 
 		if err := h.cfgManager.UpdateTarget(target); err != nil {
 			writeJSON(w, http.StatusNotFound, map[string]interface{}{"error": err.Error()})
@@ -334,6 +309,75 @@ func (h *APIHandler) handleTargetByID(w http.ResponseWriter, r *http.Request) {
 			"success": true,
 			"message": "Target deleted locally and removed from Firebase",
 		})
+
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func (h *APIHandler) handleUsers(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		users := h.cfgManager.GetUsers()
+		writeJSON(w, http.StatusOK, users)
+
+	case http.MethodPost:
+		var user models.User
+		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+			writeJSON(w, http.StatusBadRequest, map[string]interface{}{"error": "Invalid user JSON"})
+			return
+		}
+
+		if user.ID == "" {
+			user.ID = fmt.Sprintf("user_%d", time.Now().UnixNano())
+		}
+		if user.Name == "" || user.Email == "" {
+			writeJSON(w, http.StatusBadRequest, map[string]interface{}{"error": "Name and Email are required"})
+			return
+		}
+
+		if err := h.cfgManager.AddUser(user); err != nil {
+			writeJSON(w, http.StatusBadRequest, map[string]interface{}{"error": err.Error()})
+			return
+		}
+
+		writeJSON(w, http.StatusCreated, user)
+
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func (h *APIHandler) handleUserByID(w http.ResponseWriter, r *http.Request) {
+	id := strings.TrimPrefix(r.URL.Path, "/api/users/")
+	if id == "" {
+		http.Error(w, "Missing user ID", http.StatusBadRequest)
+		return
+	}
+
+	switch r.Method {
+	case http.MethodPut:
+		var user models.User
+		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+			writeJSON(w, http.StatusBadRequest, map[string]interface{}{"error": "Invalid user JSON"})
+			return
+		}
+		user.ID = id
+
+		if err := h.cfgManager.UpdateUser(user); err != nil {
+			writeJSON(w, http.StatusNotFound, map[string]interface{}{"error": err.Error()})
+			return
+		}
+
+		writeJSON(w, http.StatusOK, user)
+
+	case http.MethodDelete:
+		if err := h.cfgManager.DeleteUser(id); err != nil {
+			writeJSON(w, http.StatusNotFound, map[string]interface{}{"error": err.Error()})
+			return
+		}
+
+		writeJSON(w, http.StatusOK, map[string]interface{}{"success": true, "message": "User deleted"})
 
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -613,6 +657,43 @@ func (h *APIHandler) handleConsoleLogs(w http.ResponseWriter, r *http.Request) {
 		"total":   len(allLines),
 		"lines":   allLines,
 		"raw":     rawText,
+	})
+}
+
+func (h *APIHandler) handlePurgeLogs(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	daysStr := r.URL.Query().Get("days")
+	days := 0
+	if daysStr != "" {
+		days, _ = strconv.Atoi(daysStr)
+	}
+
+	if days <= 0 {
+		cfg := h.cfgManager.Get()
+		days = cfg.Firebase.AutoDeleteDays
+		if days <= 0 {
+			days = 7 // Default 7 days if unspecified
+		}
+	}
+
+	count, err := h.storage.PurgeOldLogs(days)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]interface{}{
+			"success": false,
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]interface{}{
+		"success":      true,
+		"purged_count": count,
+		"days":         days,
+		"message":      fmt.Sprintf("Successfully purged %d log(s) older than %d day(s)", count, days),
 	})
 }
 

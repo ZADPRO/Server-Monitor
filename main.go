@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -23,15 +24,24 @@ func main() {
 	configPath := flag.String("config", "config.json", "Path to config.json")
 	flag.Parse()
 
-	// Ensure data directory exists
+	// Ensure data directory exists (with fallback for read-only serverless environments like Vercel)
 	dataDir := "data"
 	if err := os.MkdirAll(dataDir, 0755); err != nil {
-		log.Fatalf("[FATAL] Failed to create data directory: %v", err)
+		dataDir = filepath.Join(os.TempDir(), "server-monitor-data")
+		_ = os.MkdirAll(dataDir, 0755)
 	}
 
 	// Set up continuous log file for console logs / printfs
 	logFilePath := filepath.Join(dataDir, "app.log")
 	logFile, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		// If read-only filesystem, try opening in /tmp
+		dataDir = filepath.Join(os.TempDir(), "server-monitor-data")
+		_ = os.MkdirAll(dataDir, 0755)
+		logFilePath = filepath.Join(dataDir, "app.log")
+		logFile, err = os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	}
+
 	if err == nil {
 		multiWriter := io.MultiWriter(os.Stdout, logFile)
 		log.SetOutput(multiWriter)
@@ -45,12 +55,9 @@ func main() {
 	log.Println("==========================================================")
 
 	// 1. Initialize configuration manager
-	cfgMgr, err := config.InitConfig(*configPath)
-	if err != nil {
-		log.Fatalf("[FATAL] Could not load config from %s: %v", *configPath, err)
-	}
+	cfgMgr, _ := config.InitConfig(*configPath)
 	cfg := cfgMgr.Get()
-	log.Printf("[CONFIG] Loaded successfully. Monitored targets: %d, Check interval: %d min(s)", len(cfg.Targets), cfg.Monitoring.IntervalMinutes)
+	log.Printf("[CONFIG] Active targets: %d, Check interval: %d min(s)", len(cfg.Targets), cfg.Monitoring.IntervalMinutes)
 
 	// 2. Initialize Firebase & Local storage
 	fbClient := storage.NewFirebaseClient(cfg.Firebase)
@@ -58,7 +65,9 @@ func main() {
 
 	store, err := storage.NewLocalStorage(filepath.Join(dataDir, "logs.json"), 5000, fbClient)
 	if err != nil {
-		log.Fatalf("[FATAL] Failed to initialize storage: %v", err)
+		tmpDataDir := filepath.Join(os.TempDir(), "server-monitor-data")
+		_ = os.MkdirAll(tmpDataDir, 0755)
+		store, _ = storage.NewLocalStorage(filepath.Join(tmpDataDir, "logs.json"), 5000, fbClient)
 	}
 	defer store.Close()
 
@@ -93,14 +102,28 @@ func main() {
 	}
 	fileServer := http.FileServer(http.Dir(webDir))
 	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Avoid caching index.html for fast development and updates
-		if r.URL.Path == "/" || r.URL.Path == "/index.html" {
+		// Avoid caching index.html, JS, and CSS for instant dev updates
+		ext := filepath.Ext(r.URL.Path)
+		if r.URL.Path == "/" || r.URL.Path == "/index.html" || ext == ".js" || ext == ".css" {
 			w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 		}
 		fileServer.ServeHTTP(w, r)
 	}))
 
-	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
+	// Determine port (check PORT environment variable for Vercel / Cloud deployments)
+	port := cfg.Server.Port
+	if envPort := os.Getenv("PORT"); envPort != "" {
+		if p, err := strconv.Atoi(envPort); err == nil && p > 0 {
+			port = p
+		}
+	}
+
+	host := cfg.Server.Host
+	if os.Getenv("PORT") != "" || host == "" {
+		host = "0.0.0.0"
+	}
+
+	addr := fmt.Sprintf("%s:%d", host, port)
 	server := &http.Server{
 		Addr:         addr,
 		Handler:      mux,
@@ -109,12 +132,12 @@ func main() {
 		IdleTimeout:  120 * time.Second,
 	}
 
-	// 5. Start HTTP Server in background
+	// 5. Start HTTP Server
 	go func() {
-		log.Printf("[HTTP] Zadroit Server Monitor Dashboard running at: http://localhost:%d", cfg.Server.Port)
+		log.Printf("[HTTP] Zadroit Server Monitor Dashboard listening on %s (Port: %d)", addr, port)
 		log.Printf("[AUTH] Default Login: Username: %s | Password: [PROTECTED]", cfg.Auth.Username)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("[FATAL] HTTP server error: %v", err)
+			log.Printf("[HTTP ERROR] Server error: %v", err)
 		}
 	}()
 

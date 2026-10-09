@@ -33,16 +33,56 @@
     "messaging_sender_id": "274069716120",
     "app_id": "1:274069716120:web:9585c80e368ac8b9e624ed",
     "measurement_id": "G-Q7R2VPN390",
-    "collection": "server_monitoring_logs"
+    "collection": "server_monitoring_logs",
+    "auto_delete_enabled": true,
+    "auto_delete_days": 7
   },
+  "users": [
+    {
+      "id": "user_1",
+      "name": "Indumathi R",
+      "email": "indumathi.r@zadroit.com"
+    },
+    {
+      "id": "user_2",
+      "name": "Vijay Loganathan",
+      "email": "vijay.loganathan@zadroit.com"
+    },
+    {
+      "id": "user_1791200466394",
+      "name": "Thirukumara",
+      "email": "thirukumara.d@zadroit.com"
+    }
+  ],
   "targets": [
+    {
+      "id": "target_backend_1",
+      "name": "Nivas App product management",
+      "type": "backend",
+      "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
+      "method": "GET",
+      "enabled": true,
+      "expected_keys": [
+        "service",
+        "db"
+      ],
+      "interval_minutes": 5,
+      "recipient_emails": [
+        "indumathi.r@zadroit.com",
+        "vijay.loganathan@zadroit.com"
+      ]
+    },
     {
       "id": "target_frontend_1",
       "name": "Nivas HOC Website",
       "type": "frontend",
       "url": "https://nivashoc.com/",
       "method": "GET",
-      "enabled": true
+      "enabled": true,
+      "interval_minutes": 5,
+      "recipient_emails": [
+        "indumathi.r@zadroit.com"
+      ]
     },
     {
       "id": "target_frontend_2",
@@ -50,7 +90,12 @@
       "type": "frontend",
       "url": "https://hotelsherlockholmes.com/",
       "method": "GET",
-      "enabled": true
+      "enabled": true,
+      "interval_minutes": 15,
+      "recipient_emails": [
+        "vijay.loganathan@zadroit.com",
+        "thirukumara.d@zadroit.com"
+      ]
     },
     {
       "id": "target_1791194011314",
@@ -62,18 +107,10 @@
       "expected_keys": [
         "service",
         "db"
-      ]
-    },
-    {
-      "id": "target_backend_1",
-      "name": "Nivas App product management",
-      "type": "backend",
-      "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
-      "method": "GET",
-      "enabled": true,
-      "expected_keys": [
-        "service",
-        "db"
+      ],
+      "interval_minutes": 5,
+      "recipient_emails": [
+        "vijay.loganathan@zadroit.com"
       ]
     }
   ]

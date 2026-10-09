@@ -19,7 +19,20 @@ const firebaseConfig = {
   measurementId: "G-Q7R2VPN390"
 };
 
-// Default Target Definitions
+// Default Definitions
+const DEFAULT_USERS = [
+  {
+    id: "user_1",
+    name: "Indumathi R",
+    email: "indumathi.r@zadroit.com"
+  },
+  {
+    id: "user_2",
+    name: "Vijay Loganathan",
+    email: "vijay.loganathan@zadroit.com"
+  }
+];
+
 const DEFAULT_TARGETS = [
   {
     id: "target_backend_1",
@@ -28,7 +41,9 @@ const DEFAULT_TARGETS = [
     url: "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
     method: "GET",
     expected_keys: ["service", "db"],
-    enabled: true
+    enabled: true,
+    interval_minutes: 5,
+    recipient_emails: ["indumathi.r@zadroit.com", "vijay.loganathan@zadroit.com"]
   },
   {
     id: "target_frontend_1",
@@ -37,7 +52,9 @@ const DEFAULT_TARGETS = [
     url: "https://nivashoc.com/",
     method: "GET",
     expected_keys: [],
-    enabled: true
+    enabled: true,
+    interval_minutes: 5,
+    recipient_emails: ["indumathi.r@zadroit.com"]
   },
   {
     id: "target_frontend_2",
@@ -46,7 +63,9 @@ const DEFAULT_TARGETS = [
     url: "https://hotelsherlockholmes.com/",
     method: "GET",
     expected_keys: [],
-    enabled: true
+    enabled: true,
+    interval_minutes: 15,
+    recipient_emails: ["indumathi.r@zadroit.com"]
   },
   {
     id: "target_1791194011314",
@@ -55,7 +74,9 @@ const DEFAULT_TARGETS = [
     url: "http://192.168.29.143:8083/checkserver",
     method: "GET",
     expected_keys: ["service", "db"],
-    enabled: true
+    enabled: true,
+    interval_minutes: 5,
+    recipient_emails: ["vijay.loganathan@zadroit.com"]
   }
 ];
 
@@ -66,10 +87,12 @@ const state = {
   currentPage: 1,
   limit: 25,
   totalLogs: 0,
+  users: [...DEFAULT_USERS],
   targets: [...DEFAULT_TARGETS],
   summary: null,
   cachedLogs: [],
   recipientEmails: ['indumathi.r@zadroit.com', 'vijay.loganathan@zadroit.com'],
+  targetCustomEmails: [],
   authCredentials: {
     username: 'Zadroit',
     password: ''
@@ -88,6 +111,7 @@ const state = {
   firebaseTargetsRef: null,
   firebaseEmailRef: null,
   firebaseAuthRef: null,
+  firebaseUsersRef: null,
   firebaseStatus: {
     connected: false,
     permissionDenied: false,
@@ -96,9 +120,7 @@ const state = {
     usersCount: 1,
     emailSynced: false
   },
-  nextCheckSeconds: 300, // 5 minutes
   searchTimer: null,
-  countdownTimer: null,
   pollTimer: null,
 };
 
@@ -119,7 +141,6 @@ function initApp() {
   }
 }
 
-// Initialize Native Firebase JS SDK
 function initFirebaseSDK() {
   try {
     state.firebaseApp = initializeApp(firebaseConfig);
@@ -141,36 +162,17 @@ function showDashboard() {
   document.getElementById('loginView').classList.add('hidden');
   document.getElementById('dashboardView').classList.remove('hidden');
 
-  // Load initial data
+  loadUsers();
   loadTargets();
   fetchStatus();
   fetchLogs();
 
-  // Attach Realtime Firebase WebSockets & Listeners for Targets, Users, Emails, Logs
   attachFirebaseRealtimeListeners();
-
-  // Start 5-minute countdown and background poll
   startTimers();
 }
 
 function startTimers() {
   clearIntervals();
-
-  // 1-second interval for countdown timer
-  state.countdownTimer = setInterval(() => {
-    if (state.nextCheckSeconds > 0) {
-      state.nextCheckSeconds--;
-    } else {
-      state.nextCheckSeconds = (state.summary?.interval_minutes || 5) * 60;
-      fetchStatus();
-      if (!state.firebaseStatus.connected) {
-        fetchLogs();
-      }
-    }
-    updateTimerDisplay();
-  }, 1000);
-
-  // Periodic UI refresh every 15 seconds
   state.pollTimer = setInterval(() => {
     fetchStatus();
     if (!state.firebaseStatus.connected) {
@@ -180,21 +182,61 @@ function startTimers() {
 }
 
 function clearIntervals() {
-  if (state.countdownTimer) clearInterval(state.countdownTimer);
   if (state.pollTimer) clearInterval(state.pollTimer);
 }
 
-function updateTimerDisplay() {
-  const mins = Math.floor(state.nextCheckSeconds / 60);
-  const secs = state.nextCheckSeconds % 60;
-  const timerElem = document.getElementById('nextCheckTimer');
-  if (timerElem) {
-    timerElem.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+// ============================================================================
+// PAGE & SETTINGS TAB NAVIGATION
+// ============================================================================
+window.switchPage = function(pageName) {
+  const pageDashboard = document.getElementById('pageDashboard');
+  const pageSettings = document.getElementById('pageSettings');
+  const btnDashboard = document.getElementById('btnNavDashboard');
+  const btnSettings = document.getElementById('btnNavSettings');
+
+  if (pageName === 'dashboardPage') {
+    pageDashboard.classList.remove('hidden');
+    pageSettings.classList.add('hidden');
+    btnDashboard.classList.add('active');
+    btnSettings.classList.remove('active');
+    fetchStatus();
+    fetchLogs();
+  } else if (pageName === 'settingsPage') {
+    pageDashboard.classList.add('hidden');
+    pageSettings.classList.remove('hidden');
+    btnDashboard.classList.remove('active');
+    btnSettings.classList.add('active');
+    switchSettingsTab('service');
+    loadSettingsData();
+    loadUsers();
   }
-}
+};
+
+window.switchSettingsTab = function(tabName) {
+  const paneService = document.getElementById('paneService');
+  const paneUser = document.getElementById('paneUser');
+
+  const tabService = document.getElementById('tabNavService');
+  const tabUser = document.getElementById('tabNavUser');
+
+  [paneService, paneUser].forEach(p => p && p.classList.add('hidden'));
+  [tabService, tabUser].forEach(t => t && t.classList.remove('active'));
+
+  if (tabName === 'service') {
+    if (paneService) paneService.classList.remove('hidden');
+    if (tabService) tabService.classList.add('active');
+    loadUsers();
+    loadTargets();
+  } else if (tabName === 'user') {
+    if (paneUser) paneUser.classList.remove('hidden');
+    if (tabUser) tabUser.classList.add('active');
+    loadUsers();
+    loadSettingsData();
+  }
+};
 
 // ============================================================================
-// FIREBASE REAL-TIME WEBSOCKET LISTENERS (LOGS, TARGETS, EMAILS, AUTH)
+// FIREBASE REAL-TIME WEBSOCKET LISTENERS (LOGS, TARGETS, EMAILS, AUTH, USERS)
 // ============================================================================
 function attachFirebaseRealtimeListeners() {
   if (!state.firebaseDb) {
@@ -239,11 +281,7 @@ function attachFirebaseRealtimeListeners() {
         state.firebaseStatus.totalLogs = logsList.length;
 
         updateFirebaseBadgeUI();
-
-        // Derive summary & target cards from Firebase logs
         updateMetricsFromFirebaseLogs(logsList);
-
-        // Filter and render logs table
         filterAndRenderClientLogs();
       } else {
         updateFirebaseBadgeUI();
@@ -292,11 +330,8 @@ function attachFirebaseRealtimeListeners() {
         if (targetList.length > 0) {
           state.targets = targetList;
           state.firebaseStatus.targetsCount = targetList.length;
+          renderServicesConfigList(state.targets);
           updateFilterDropdown();
-          renderTargetsManagerList(state.targets);
-          if (state.summary) {
-            renderServiceCards(state.summary);
-          }
           updateFirebaseBadgeUI();
         }
       }
@@ -314,7 +349,6 @@ function attachFirebaseRealtimeListeners() {
         if (Array.isArray(data.to_emails) && data.to_emails.length > 0) {
           state.recipientEmails = [...data.to_emails];
           state.firebaseStatus.emailSynced = true;
-          window.renderEmailChips();
           updateFirebaseBadgeUI();
         }
       }
@@ -382,7 +416,6 @@ function detachFirebaseListeners() {
   }
 }
 
-// Compute live metrics and service status from Firebase logs stream
 function updateMetricsFromFirebaseLogs(logsList) {
   if (!logsList || logsList.length === 0) return;
 
@@ -436,7 +469,6 @@ function updateMetricsFromFirebaseLogs(logsList) {
 
   state.summary = summary;
   renderSummaryMetrics(summary);
-  renderServiceCards(summary);
 }
 
 // Force re-check and sync
@@ -458,7 +490,6 @@ window.syncNowFromFirebase = async function () {
       fetchStatus();
       fetchLogs();
     } else {
-      // Direct Firebase read fallback
       attachFirebaseRealtimeListeners();
       showToast('Synced directly via Firebase Realtime Database', 'success');
     }
@@ -513,7 +544,7 @@ window.syncAllToFirebase = async function () {
 };
 
 // ============================================================================
-// AUTHENTICATION (STATIC + BACKEND + FIREBASE REALTIME DB)
+// AUTHENTICATION
 // ============================================================================
 window.handleLogin = async function (e) {
   e.preventDefault();
@@ -527,7 +558,6 @@ window.handleLogin = async function (e) {
   loginBtn.disabled = true;
   loginBtn.innerHTML = `<div class="spinner-inline"></div> Verifying...`;
 
-  // 1. Static Login Check: Zadroit / ZadGugSlm06
   if (username === 'Zadroit' && password === 'ZadGugSlm06') {
     completeLogin(username);
     return;
@@ -575,7 +605,6 @@ window.handleLogin = async function (e) {
     }
   }
 
-  // Invalid credentials
   errorText.textContent = 'Invalid username or password';
   errorBox.classList.remove('hidden');
   shakeElement(document.querySelector('.auth-card'));
@@ -615,6 +644,7 @@ window.fillCredentials = function (user, pass) {
 
 window.togglePasswordVisibility = function (inputId) {
   const input = document.getElementById(inputId);
+  if (!input) return;
   const icon = document.getElementById('passwordToggleIcon');
   if (input.type === 'password') {
     input.type = 'text';
@@ -641,7 +671,6 @@ async function fetchStatus() {
       const summary = await res.json();
       state.summary = summary;
       renderSummaryMetrics(summary);
-      renderServiceCards(summary);
       return;
     }
   } catch (err) { }
@@ -669,95 +698,19 @@ function renderSummaryMetrics(summary) {
     }
   }
 
-  if (summary.last_check_time && summary.last_check_time !== 'Never') {
-    const lastCheckElem = document.getElementById('lastCheckTimeText');
-    if (lastCheckElem) {
-      lastCheckElem.textContent = `Last Checked: ${summary.last_check_time}`;
+  const pill = document.getElementById('globalStatusPill');
+  const pillText = document.getElementById('globalStatusText');
+  if (pill && pillText) {
+    if (summary.offline_targets > 0) {
+      pill.className = 'system-status-pill degraded';
+      pillText.textContent = `${summary.offline_targets} Incident(s)`;
+    } else {
+      pill.className = 'system-status-pill';
+      pillText.textContent = 'All Systems Operational';
     }
   }
 }
 
-function renderServiceCards(summary) {
-  const container = document.getElementById('serviceCardsContainer');
-  if (!container) return;
-
-  const statuses = summary?.target_statuses || {};
-  const targets = state.targets || [];
-
-  if (targets.length === 0 && Object.keys(statuses).length === 0) {
-    container.innerHTML = `<div class="card-skeleton">No active targets configured. Add a target to start monitoring.</div>`;
-    return;
-  }
-
-  let html = '';
-  targets.forEach((target) => {
-    const st = statuses[target.id] || statuses[target.name] || {
-      status: false,
-      hit_time: 'Awaiting probe...',
-      message: 'Monitoring active',
-      http_status: 0,
-      response_time_ms: 0,
-      data: {},
-    };
-
-    const isUp = Boolean(st.status);
-    const cardClass = isUp ? 'status-up' : 'status-down';
-    const badgeClass = isUp ? 'up' : 'down';
-    const badgeText = isUp ? '● UP (200)' : '● DOWN / ERROR';
-    const typeClass = target.type === 'backend' ? 'backend' : 'frontend';
-
-    let subDataHtml = '';
-    if (st.data && typeof st.data === 'object') {
-      for (const [k, v] of Object.entries(st.data)) {
-        if (typeof v === 'boolean') {
-          const passClass = v ? 'pass' : 'fail';
-          const icon = v ? '✓' : '✗';
-          subDataHtml += `<span class="data-chip ${passClass}">${k}: ${icon}</span>`;
-        }
-      }
-    }
-
-    html += `
-      <div class="target-card ${cardClass}">
-        <div class="target-card-header">
-          <div class="target-title-col">
-            <div class="target-name">${escapeHTML(target.name)}</div>
-            <a href="${escapeHTML(target.url)}" target="_blank" rel="noopener noreferrer" class="target-url-link">
-              <i class="fa-solid fa-arrow-up-right-from-square"></i> ${escapeHTML(target.url)}
-            </a>
-          </div>
-          <span class="target-status-badge ${badgeClass}">${badgeText}</span>
-        </div>
-
-        <div class="target-card-details">
-          <div class="detail-item">
-            <span class="label">Type</span>
-            <span class="type-badge ${typeClass}">${target.type}</span>
-          </div>
-          <div class="detail-item">
-            <span class="label">Latency</span>
-            <span class="val">${st.response_time_ms || 0}ms</span>
-          </div>
-          <div class="detail-item">
-            <span class="label">HTTP Code</span>
-            <span class="val">${st.http_status || (isUp ? 200 : 'ERR')}</span>
-          </div>
-        </div>
-
-        ${subDataHtml ? `<div class="data-chips-container">${subDataHtml}</div>` : ''}
-
-        <div class="target-card-footer">
-          <span><i class="fa-regular fa-clock"></i> ${escapeHTML(st.hit_time || 'Just now')}</span>
-          <span>${escapeHTML(st.message || '')}</span>
-        </div>
-      </div>
-    `;
-  });
-
-  container.innerHTML = html;
-}
-
-// Fetch logs (with client-side fallback)
 async function fetchLogs(showSpinner = true) {
   const tbody = document.getElementById('logsTableBody');
   const refreshIcon = document.getElementById('refreshTableIcon');
@@ -766,7 +719,7 @@ async function fetchLogs(showSpinner = true) {
   if (showSpinner && (!state.cachedLogs || state.cachedLogs.length === 0)) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="9" class="text-center table-loading">
+        <td colspan="6" class="text-center table-loading">
           <div class="spinner-inline"></div>
           <span>Loading server monitoring logs...</span>
         </td>
@@ -839,10 +792,9 @@ function filterAndRenderClientLogs() {
     const q = state.filters.search.toLowerCase();
     filtered = filtered.filter(l => {
       const sName = (l.service_name || l['service name'] || '').toLowerCase();
-      const sUrl = (l.url || '').toLowerCase();
       const sMsg = (l.message || '').toLowerCase();
       const sErr = (l.error_detail || '').toLowerCase();
-      return sName.includes(q) || sUrl.includes(q) || sMsg.includes(q) || sErr.includes(q);
+      return sName.includes(q) || sMsg.includes(q) || sErr.includes(q);
     });
   }
 
@@ -864,7 +816,7 @@ function renderLogsTable(logs, total) {
   if (!logs || logs.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="9" class="text-center" style="padding:40px; color:var(--text-muted);">
+        <td colspan="6" class="text-center" style="padding:40px; color:var(--text-muted);">
           <i class="fa-solid fa-inbox" style="font-size:24px; margin-bottom:8px; display:block;"></i>
           No monitoring logs match the specified criteria.
         </td>
@@ -884,27 +836,9 @@ function renderLogsTable(logs, total) {
       ? `<span class="type-badge backend"><i class="fa-solid fa-microchip"></i> backend</span>`
       : `<span class="type-badge frontend"><i class="fa-solid fa-globe"></i> frontend</span>`;
 
-    let dataPreview = '';
-    if (item.data && Object.keys(item.data).length > 0) {
-      let chips = '';
-      for (const [key, val] of Object.entries(item.data)) {
-        if (typeof val === 'boolean') {
-          const chipClass = val ? 'pass' : 'fail';
-          const icon = val ? '✓' : '✗';
-          chips += `<span class="data-chip ${chipClass}">${escapeHTML(key)}: ${icon}</span>`;
-        } else {
-          chips += `<span class="data-chip">${escapeHTML(key)}: ${escapeHTML(String(val))}</span>`;
-        }
-      }
-      dataPreview = `<div class="data-chips-container">${chips}</div>`;
-    } else {
-      dataPreview = `<span class="text-muted font-mono" style="font-size:11px;">${item.type === 'frontend' ? 'DOM & Assets OK' : '{}'}</span>`;
-    }
-
     const rowNum = (state.currentPage - 1) * state.limit + index + 1;
     const sName = item.service_name || item['service name'] || 'Unnamed';
     const hitTime = item.hit_time || item['hit time'] || 'N/A';
-    const targetUrl = item.url || state.targets.find(t => t.name === sName || t.id === item.target_id)?.url || '';
 
     html += `
       <tr class="${isSuccess ? 'row-success' : 'row-failure'}">
@@ -913,26 +847,11 @@ function renderLogsTable(logs, total) {
           <div class="table-service-name" style="font-weight:600; color:var(--text-primary);">${escapeHTML(sName)}</div>
         </td>
         <td>${typeBadge}</td>
-        <td class="table-url-cell">
-          ${targetUrl ? `
-            <a href="${escapeHTML(targetUrl)}" target="_blank" rel="noopener noreferrer" class="table-url-link" title="${escapeHTML(targetUrl)}">
-              <i class="fa-solid fa-arrow-up-right-from-square"></i> ${escapeHTML(targetUrl)}
-            </a>
-          ` : `<span class="text-muted font-mono" style="font-size:12px;">--</span>`}
-        </td>
         <td class="text-center">${statusBadge}</td>
         <td class="font-mono text-muted" style="white-space:nowrap; font-size:12px;">${escapeHTML(hitTime)}</td>
-        <td>
-          <span class="table-message-text" title="${escapeHTML(item.message || '')}">
-            ${escapeHTML(item.message || (isSuccess ? 'Service OK' : item.error_detail || 'Error'))}
-          </span>
-        </td>
-        <td>
-          ${dataPreview}
-        </td>
         <td class="text-center">
-          <button class="btn btn-ghost btn-sm" onclick="inspectLog('${escapeHTML(item.id || index)}')" title="View Full Log JSON">
-            <i class="fa-solid fa-eye text-cyan"></i>
+          <button class="btn btn-ghost btn-sm" onclick="inspectLog('${escapeHTML(item.id || index)}')" title="Inspect Full Log">
+            <i class="fa-solid fa-eye text-cyan"></i> Inspect
           </button>
         </td>
       </tr>
@@ -981,42 +900,58 @@ window.goToPage = function (page) {
 };
 
 window.onLimitChange = function () {
-  state.limit = parseInt(document.getElementById('limitSelect').value, 10) || 25;
-  state.currentPage = 1;
-  fetchLogs();
-};
-
-// ============================================================================
-// FILTERS
-// ============================================================================
-window.onFilterChange = function () {
-  state.filters.serviceName = document.getElementById('filterService').value;
-  state.filters.type = document.getElementById('filterType').value;
-  state.filters.status = document.getElementById('filterStatus').value;
-  state.filters.fromDate = document.getElementById('filterFromDate').value;
-  state.filters.toDate = document.getElementById('filterToDate').value;
-  state.currentPage = 1;
-  fetchLogs();
-};
-
-function updateFilterDropdown() {
-  const select = document.getElementById('filterService');
-  if (select) {
-    let options = '<option value="all">All Services</option>';
-    state.targets.forEach((t) => {
-      options += `<option value="${escapeHTML(t.name)}">${escapeHTML(t.name)}</option>`;
-    });
-    select.innerHTML = options;
+  const limitSelect = document.getElementById('limitSelect');
+  if (limitSelect) {
+    state.limit = parseInt(limitSelect.value, 10);
+    state.currentPage = 1;
+    fetchLogs();
   }
-}
+};
+
+window.onFilterChange = function () {
+  const serviceSel = document.getElementById('filterService');
+  const typeSel = document.getElementById('filterType');
+  const statusSel = document.getElementById('filterStatus');
+  const fromInput = document.getElementById('filterFromDate');
+  const toInput = document.getElementById('filterToDate');
+
+  state.filters.serviceName = serviceSel ? serviceSel.value : 'all';
+  state.filters.type = typeSel ? typeSel.value : 'all';
+  state.filters.status = statusSel ? statusSel.value : 'all';
+  state.filters.fromDate = fromInput ? fromInput.value : '';
+  state.filters.toDate = toInput ? toInput.value : '';
+  state.currentPage = 1;
+
+  fetchLogs();
+};
+
+window.debounceSearch = function () {
+  clearTimeout(state.searchTimer);
+  state.searchTimer = setTimeout(() => {
+    const input = document.getElementById('filterSearch');
+    state.filters.search = input ? input.value.trim() : '';
+    state.currentPage = 1;
+    fetchLogs();
+  }, 300);
+};
+
+window.clearSearch = function () {
+  const input = document.getElementById('filterSearch');
+  if (input) input.value = '';
+  state.filters.search = '';
+  state.currentPage = 1;
+  fetchLogs();
+};
 
 window.setQuickDate = function (preset, btn) {
   document.querySelectorAll('.date-presets-group .btn-preset').forEach((b) => b.classList.remove('active'));
-  btn.classList.add('active');
+  if (btn) btn.classList.add('active');
 
   const today = new Date().toISOString().split('T')[0];
   const fromElem = document.getElementById('filterFromDate');
   const toElem = document.getElementById('filterToDate');
+
+  if (!fromElem || !toElem) return;
 
   if (preset === 'all') {
     fromElem.value = '';
@@ -1034,35 +969,13 @@ window.setQuickDate = function (preset, btn) {
   window.onFilterChange();
 };
 
-window.debounceSearch = function () {
-  clearTimeout(state.searchTimer);
-  const val = document.getElementById('filterSearch').value.trim();
-  const clearBtn = document.getElementById('clearSearchBtn');
-  if (clearBtn) clearBtn.style.display = val.length > 0 ? 'block' : 'none';
-
-  state.searchTimer = setTimeout(() => {
-    state.filters.search = val;
-    state.currentPage = 1;
-    fetchLogs();
-  }, 300);
-};
-
-window.clearSearch = function () {
-  document.getElementById('filterSearch').value = '';
-  document.getElementById('clearSearchBtn').style.display = 'none';
-  state.filters.search = '';
-  state.currentPage = 1;
-  fetchLogs();
-};
-
 window.resetAllFilters = function () {
-  document.getElementById('filterService').value = 'all';
-  document.getElementById('filterType').value = 'all';
-  document.getElementById('filterStatus').value = 'all';
-  document.getElementById('filterFromDate').value = '';
-  document.getElementById('filterToDate').value = '';
-  document.getElementById('filterSearch').value = '';
-  document.getElementById('clearSearchBtn').style.display = 'none';
+  if (document.getElementById('filterService')) document.getElementById('filterService').value = 'all';
+  if (document.getElementById('filterType')) document.getElementById('filterType').value = 'all';
+  if (document.getElementById('filterStatus')) document.getElementById('filterStatus').value = 'all';
+  if (document.getElementById('filterFromDate')) document.getElementById('filterFromDate').value = '';
+  if (document.getElementById('filterToDate')) document.getElementById('filterToDate').value = '';
+  if (document.getElementById('filterSearch')) document.getElementById('filterSearch').value = '';
 
   document.querySelectorAll('.date-presets-group .btn-preset').forEach((b) => b.classList.remove('active'));
   const firstPreset = document.querySelector('.date-presets-group .btn-preset');
@@ -1081,7 +994,110 @@ window.resetAllFilters = function () {
   showToast('Filters reset to default', 'info');
 };
 
-window.exportCSV = function () {
+function openMobileFilterModal() {
+  const serviceSel = document.getElementById('mobileFilterService');
+  const typeSel = document.getElementById('mobileFilterType');
+  const statusSel = document.getElementById('mobileFilterStatus');
+  const fromInput = document.getElementById('mobileFilterFromDate');
+  const toInput = document.getElementById('mobileFilterToDate');
+  const searchInput = document.getElementById('mobileFilterSearch');
+
+  if (serviceSel) serviceSel.value = state.filters.serviceName || 'all';
+  if (typeSel) typeSel.value = state.filters.type || 'all';
+  if (statusSel) statusSel.value = state.filters.status || 'all';
+  if (fromInput) fromInput.value = state.filters.fromDate || '';
+  if (toInput) toInput.value = state.filters.toDate || '';
+  if (searchInput) searchInput.value = state.filters.search || '';
+
+  const modal = document.getElementById('mobileFilterModal');
+  if (modal) modal.classList.remove('hidden');
+}
+
+function applyMobileFilters(e) {
+  if (e) e.preventDefault();
+
+  const serviceSel = document.getElementById('mobileFilterService');
+  const typeSel = document.getElementById('mobileFilterType');
+  const statusSel = document.getElementById('mobileFilterStatus');
+  const fromInput = document.getElementById('mobileFilterFromDate');
+  const toInput = document.getElementById('mobileFilterToDate');
+  const searchInput = document.getElementById('mobileFilterSearch');
+
+  state.filters = {
+    serviceName: serviceSel ? serviceSel.value : 'all',
+    type: typeSel ? typeSel.value : 'all',
+    status: statusSel ? statusSel.value : 'all',
+    fromDate: fromInput ? fromInput.value : '',
+    toDate: toInput ? toInput.value : '',
+    search: searchInput ? searchInput.value.trim() : '',
+  };
+
+  if (document.getElementById('filterService')) document.getElementById('filterService').value = state.filters.serviceName;
+  if (document.getElementById('filterType')) document.getElementById('filterType').value = state.filters.type;
+  if (document.getElementById('filterStatus')) document.getElementById('filterStatus').value = state.filters.status;
+  if (document.getElementById('filterFromDate')) document.getElementById('filterFromDate').value = state.filters.fromDate;
+  if (document.getElementById('filterToDate')) document.getElementById('filterToDate').value = state.filters.toDate;
+  if (document.getElementById('filterSearch')) document.getElementById('filterSearch').value = state.filters.search;
+
+  state.currentPage = 1;
+  const modal = document.getElementById('mobileFilterModal');
+  if (modal) modal.classList.add('hidden');
+  fetchLogs();
+}
+
+function setMobileQuickDate(preset, btn) {
+  const container = btn.closest('.preset-buttons');
+  if (container) {
+    container.querySelectorAll('.btn-preset').forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+  const fromElem = document.getElementById('mobileFilterFromDate');
+  const toElem = document.getElementById('mobileFilterToDate');
+
+  if (!fromElem || !toElem) return;
+
+  if (preset === 'all') {
+    fromElem.value = '';
+    toElem.value = '';
+  } else if (preset === 'today') {
+    fromElem.value = today;
+    toElem.value = today;
+  } else if (preset === '7days') {
+    const d = new Date();
+    d.setDate(d.getDate() - 7);
+    fromElem.value = d.toISOString().split('T')[0];
+    toElem.value = today;
+  }
+}
+
+function resetMobileFilters() {
+  const serviceSel = document.getElementById('mobileFilterService');
+  const typeSel = document.getElementById('mobileFilterType');
+  const statusSel = document.getElementById('mobileFilterStatus');
+  const fromInput = document.getElementById('mobileFilterFromDate');
+  const toInput = document.getElementById('mobileFilterToDate');
+  const searchInput = document.getElementById('mobileFilterSearch');
+
+  if (serviceSel) serviceSel.value = 'all';
+  if (typeSel) typeSel.value = 'all';
+  if (statusSel) statusSel.value = 'all';
+  if (fromInput) fromInput.value = '';
+  if (toInput) toInput.value = '';
+  if (searchInput) searchInput.value = '';
+
+  resetAllFilters();
+  const modal = document.getElementById('mobileFilterModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+window.openMobileFilterModal = openMobileFilterModal;
+window.applyMobileFilters = applyMobileFilters;
+window.setMobileQuickDate = setMobileQuickDate;
+window.resetMobileFilters = resetMobileFilters;
+
+window.exportCSV = function() {
   const allLogs = state.cachedLogs || [];
   if (allLogs.length === 0) {
     showToast('No logs available to export.', 'info');
@@ -1113,7 +1129,7 @@ window.exportCSV = function () {
 };
 
 // ============================================================================
-// ACTIONS: CHECK NOW & TEST EMAIL
+// ACTIONS: CHECK ALL & SINGLE SERVICE TRIGGER & TEST EMAIL
 // ============================================================================
 window.triggerManualCheck = async function () {
   const btn = document.getElementById('btnCheckNow');
@@ -1127,51 +1143,236 @@ window.triggerManualCheck = async function () {
     if (res.ok) {
       const data = await res.json();
       if (data.success) {
-        state.nextCheckSeconds = (state.summary?.interval_minutes || 5) * 60;
-        showToast('Instant health check completed!', 'success');
+        showToast('Instant health check completed across all services!', 'success');
         fetchStatus();
         fetchLogs();
       }
     } else {
-      showToast('Manual check endpoint active on backend server.', 'info');
+      showToast('Manual check endpoint triggered.', 'info');
     }
   } catch (err) {
-    showToast('Scheduled 5-minute automated checks run on Go backend.', 'info');
+    showToast('Probes triggered on Go backend.', 'info');
   } finally {
     btn.disabled = false;
     icon.classList.remove('fa-spin');
   }
 };
 
+window.triggerSingleServiceCheck = async function(targetId) {
+  try {
+    showToast(`Triggering health probe for service...`, 'info');
+    const res = await fetch(`/api/check-now?target_id=${encodeURIComponent(targetId)}`, { method: 'POST' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success) {
+        const resItem = data.results ? data.results[0] : null;
+        const statusStr = resItem && resItem.status ? 'UP / Healthy' : 'DOWN / Failure';
+        showToast(`Service check completed: ${statusStr}`, resItem && resItem.status ? 'success' : 'error');
+        fetchStatus();
+        fetchLogs();
+        loadTargets();
+      }
+    } else {
+      showToast('Single service probe completed.', 'info');
+    }
+  } catch (err) {
+    showToast('Service check triggered.', 'info');
+  }
+};
+
 window.triggerTestEmail = async function () {
   const btn = document.getElementById('btnTestEmail');
   const statusElem = document.getElementById('testEmailStatus');
-  btn.disabled = true;
-  statusElem.innerHTML = `<span class="text-cyan"><div class="spinner-inline"></div> Sending test alert...</span>`;
+  if (btn) btn.disabled = true;
+  if (statusElem) statusElem.innerHTML = `<span class="text-cyan"><div class="spinner-inline"></div> Sending test alert...</span>`;
 
   try {
     const res = await fetch('/api/test-email', { method: 'POST' });
     if (res.ok) {
       const data = await res.json();
       if (data.success) {
-        statusElem.innerHTML = `<span class="text-green"><i class="fa-solid fa-check"></i> ${escapeHTML(data.message)}</span>`;
-        showToast('Test alert email sent successfully!', 'success');
+        showToast('Test alert email sent successfully to all recipients!', 'success');
+        if (statusElem) statusElem.innerHTML = `<span class="text-green"><i class="fa-solid fa-check"></i> Sent successfully</span>`;
       } else {
-        statusElem.innerHTML = `<span class="text-red"><i class="fa-solid fa-xmark"></i> ${escapeHTML(data.error || 'Failed')}</span>`;
-        showToast('Failed sending email: ' + (data.error || ''), 'error');
+        showToast(`Failed: ${data.error || 'Check email settings'}`, 'error');
+        if (statusElem) statusElem.innerHTML = `<span class="text-red">${escapeHTML(data.error || 'Error')}</span>`;
       }
-    } else {
-      statusElem.innerHTML = `<span class="text-muted">SMTP triggers configured on Go backend</span>`;
     }
   } catch (err) {
-    statusElem.innerHTML = `<span class="text-muted">SMTP service active on backend</span>`;
+    showToast('Test email request failed.', 'error');
   } finally {
-    btn.disabled = false;
+    if (btn) btn.disabled = false;
   }
 };
 
 // ============================================================================
-// TARGETS MANAGEMENT (PERSISTED IN FIREBASE REALTIME DB)
+// USER MANAGEMENT (USER MODULE IN SETTINGS)
+// ============================================================================
+async function loadUsers() {
+  try {
+    const res = await fetch('/api/users');
+    if (res.ok) {
+      const users = await res.json();
+      if (Array.isArray(users)) {
+        state.users = users;
+      }
+    }
+  } catch (err) {}
+
+  renderUsersTable(state.users);
+}
+
+function renderUsersTable(users) {
+  const tbody = document.getElementById('usersTableBody');
+  if (!tbody) return;
+
+  if (!users || users.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="4" class="text-center" style="padding:24px; color:var(--text-muted);">
+          No users added yet. Click "Add New User" to register user recipients.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  let html = '';
+  users.forEach((u, index) => {
+    html += `
+      <tr>
+        <td class="text-center font-mono text-muted">#${index + 1}</td>
+        <td><strong style="color:var(--text-primary);">${escapeHTML(u.name)}</strong></td>
+        <td><span class="user-email-tag">${escapeHTML(u.email)}</span></td>
+        <td class="text-center">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="editUser('${u.id}')" title="Edit User">
+            <i class="fa-solid fa-pen text-cyan"></i> Edit
+          </button>
+          <button type="button" class="btn btn-ghost btn-sm text-red" onclick="deleteUser('${u.id}')" title="Delete User">
+            <i class="fa-solid fa-trash"></i> Delete
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = html;
+}
+
+function showAddUserForm() {
+  resetUserForm();
+  const title = document.getElementById('userFormTitle');
+  if (title) title.innerHTML = `<i class="fa-solid fa-user-plus"></i> Add New User`;
+  const card = document.getElementById('userFormCard');
+  if (card) card.classList.remove('hidden');
+}
+
+function hideUserForm() {
+  const card = document.getElementById('userFormCard');
+  if (card) card.classList.add('hidden');
+}
+
+function resetUserForm() {
+  const userFormId = document.getElementById('userFormId');
+  const userFormName = document.getElementById('userFormName');
+  const userFormEmail = document.getElementById('userFormEmail');
+  if (userFormId) userFormId.value = '';
+  if (userFormName) userFormName.value = '';
+  if (userFormEmail) userFormEmail.value = '';
+}
+
+function editUser(id) {
+  const user = state.users.find(u => u.id === id);
+  if (!user) return;
+
+  const userFormId = document.getElementById('userFormId');
+  const userFormName = document.getElementById('userFormName');
+  const userFormEmail = document.getElementById('userFormEmail');
+  const userFormTitle = document.getElementById('userFormTitle');
+  const userFormCard = document.getElementById('userFormCard');
+
+  if (userFormId) userFormId.value = user.id;
+  if (userFormName) userFormName.value = user.name;
+  if (userFormEmail) userFormEmail.value = user.email;
+
+  if (userFormTitle) userFormTitle.innerHTML = `<i class="fa-solid fa-user-pen"></i> Edit User: ${escapeHTML(user.name)}`;
+  if (userFormCard) userFormCard.classList.remove('hidden');
+}
+
+async function handleSaveUser(e) {
+  if (e) e.preventDefault();
+
+  const id = document.getElementById('userFormId')?.value;
+  const name = document.getElementById('userFormName')?.value.trim();
+  const email = document.getElementById('userFormEmail')?.value.trim();
+
+  if (!name || !email) {
+    showToast('Name and Email Id are required', 'error');
+    return;
+  }
+
+  const userData = {
+    id: id || 'user_' + Date.now(),
+    name,
+    email
+  };
+
+  try {
+    const endpoint = id ? `/api/users/${id}` : '/api/users';
+    const method = id ? 'PUT' : 'POST';
+
+    const res = await fetch(endpoint, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(userData)
+    });
+
+    if (res.ok) {
+      showToast(`User "${name}" saved!`, 'success');
+      hideUserForm();
+      loadUsers();
+      return;
+    }
+  } catch (err) {}
+
+  const idx = state.users.findIndex(u => u.id === userData.id);
+  if (idx >= 0) {
+    state.users[idx] = userData;
+  } else {
+    state.users.push(userData);
+  }
+
+  hideUserForm();
+  renderUsersTable(state.users);
+  showToast(`User "${name}" updated!`, 'success');
+}
+
+async function deleteUser(id) {
+  if (!confirm('Are you sure you want to delete this user?')) return;
+
+  try {
+    const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      showToast('User removed successfully', 'info');
+      loadUsers();
+      return;
+    }
+  } catch (err) {}
+
+  state.users = state.users.filter(u => u.id !== id);
+  renderUsersTable(state.users);
+  showToast('User removed', 'info');
+}
+
+window.showAddUserForm = showAddUserForm;
+window.hideUserForm = hideUserForm;
+window.resetUserForm = resetUserForm;
+window.editUser = editUser;
+window.handleSaveUser = handleSaveUser;
+window.deleteUser = deleteUser;
+
+// ============================================================================
+// SERVICE TARGETS MANAGEMENT (SERVICE MODULE IN SETTINGS)
 // ============================================================================
 async function loadTargets() {
   // 1. Try backend API
@@ -1185,7 +1386,6 @@ async function loadTargets() {
       }
     }
   } catch (err) {
-    // 2. Try direct Firebase RTDB fetch
     if (state.firebaseDb) {
       try {
         const snap = await get(ref(state.firebaseDb, 'targets'));
@@ -1202,45 +1402,132 @@ async function loadTargets() {
   }
 
   updateFilterDropdown();
-  const badge = document.getElementById('targetCountBadge');
-  if (badge) badge.textContent = state.targets.length;
-  renderTargetsManagerList(state.targets);
+  renderServicesConfigList(state.targets);
   updateFirebaseBadgeUI();
 }
 
-function renderTargetsManagerList(targets) {
-  const container = document.getElementById('targetsConfigList');
-  if (!container) return;
+function updateFilterDropdown() {
+  const select = document.getElementById('filterService');
+  const mobileSelect = document.getElementById('mobileFilterService');
+  let options = '<option value="all">All Services</option>';
+  state.targets.forEach((t) => {
+    options += `<option value="${escapeHTML(t.name)}">${escapeHTML(t.name)}</option>`;
+  });
+  if (select) select.innerHTML = options;
+  if (mobileSelect) mobileSelect.innerHTML = options;
+}
 
-  if (targets.length === 0) {
-    container.innerHTML = `<div class="card-skeleton">No targets configured.</div>`;
+function renderServicesConfigList(targets) {
+  const tbody = document.getElementById('servicesTableBody');
+  if (!tbody) return;
+
+  if (!targets || targets.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" class="text-center" style="padding:28px; color:var(--text-muted);">
+          No services configured. Click "Add New Service" above to register endpoints.
+        </td>
+      </tr>
+    `;
     return;
   }
 
   let html = '';
-  targets.forEach((t) => {
+  targets.forEach((t, index) => {
     html += `
-      <div class="target-config-item">
-        <div class="target-config-info">
-          <div class="target-config-name">${escapeHTML(t.name)}</div>
-          <span class="type-badge ${t.type === 'backend' ? 'backend' : 'frontend'}">${t.type}</span>
-          <span class="target-config-url">${escapeHTML(t.url)}</span>
-        </div>
-        <div class="target-config-actions">
-          <button type="button" class="btn btn-ghost btn-sm" onclick="editTarget('${t.id}')" title="Edit">
-            <i class="fa-solid fa-pen-to-square"></i>
+      <tr>
+        <td class="text-center font-mono text-muted">#${index + 1}</td>
+        <td><strong style="color:var(--text-primary);">${escapeHTML(t.name)}</strong></td>
+        <td><span class="type-badge ${t.type === 'backend' ? 'backend' : 'frontend'}">${t.type}</span></td>
+        <td class="font-mono text-muted" style="white-space:nowrap; font-size:12px;"><i class="fa-regular fa-clock"></i> Every 5 Mins</td>
+        <td class="text-center">
+          ${t.enabled ? '<span class="status-badge success" style="font-size:10.5px;">Active</span>' : '<span class="status-badge failure" style="font-size:10.5px;">Disabled</span>'}
+        </td>
+        <td class="text-center" style="white-space:nowrap;">
+          <button type="button" class="btn btn-action btn-sm" onclick="triggerSingleServiceCheck('${t.id}')" title="Trigger instant check for this service">
+            <i class="fa-solid fa-play"></i> Trigger
           </button>
-          <button type="button" class="btn btn-ghost btn-sm text-red" onclick="deleteTarget('${t.id}')" title="Delete">
+        </td>
+        <td class="text-center" style="white-space:nowrap;">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="editServiceTarget('${t.id}')" title="Edit Service">
+            <i class="fa-solid fa-pen text-cyan"></i>
+          </button>
+          <button type="button" class="btn btn-ghost btn-sm text-red" onclick="deleteServiceTarget('${t.id}')" title="Delete Service">
             <i class="fa-solid fa-trash"></i>
           </button>
-        </div>
-      </div>
+        </td>
+      </tr>
     `;
   });
+
+  tbody.innerHTML = html;
+}
+
+function showAddServiceForm() {
+  resetServiceForm();
+  const title = document.getElementById('serviceFormTitle');
+  if (title) title.innerHTML = `<i class="fa-solid fa-plus-circle"></i> Add New Service Target`;
+  renderTargetUserCheckboxes([]);
+  const card = document.getElementById('serviceFormCard');
+  if (card) card.classList.remove('hidden');
+}
+
+function hideServiceForm() {
+  const card = document.getElementById('serviceFormCard');
+  if (card) card.classList.add('hidden');
+}
+
+function resetServiceForm() {
+  const targetFormId = document.getElementById('targetFormId');
+  const targetFormName = document.getElementById('targetFormName');
+  const targetFormType = document.getElementById('targetFormType');
+  const targetFormURL = document.getElementById('targetFormURL');
+  const targetFormMethod = document.getElementById('targetFormMethod');
+  const targetFormKeys = document.getElementById('targetFormKeys');
+  const targetFormEnabled = document.getElementById('targetFormEnabled');
+
+  if (targetFormId) targetFormId.value = '';
+  if (targetFormName) targetFormName.value = '';
+  if (targetFormType) targetFormType.value = 'backend';
+  if (targetFormURL) targetFormURL.value = '';
+  if (targetFormMethod) targetFormMethod.value = 'GET';
+  if (targetFormKeys) targetFormKeys.value = 'service, db';
+  if (targetFormEnabled) targetFormEnabled.checked = true;
+  state.targetCustomEmails = [];
+  renderTargetEmailChips();
+  renderTargetUserCheckboxes([]);
+}
+
+window.showAddServiceForm = showAddServiceForm;
+window.hideServiceForm = hideServiceForm;
+window.resetServiceForm = resetServiceForm;
+
+function renderTargetUserCheckboxes(selectedEmails = []) {
+  const container = document.getElementById('targetUserCheckboxes');
+  if (!container) return;
+
+  if (state.users.length === 0) {
+    container.innerHTML = `<span class="empty-emails-placeholder">No users registered in User List yet. Go to "User" tab to add users.</span>`;
+    return;
+  }
+
+  const selectedSet = new Set((selectedEmails || []).map(e => e.toLowerCase()));
+
+  let html = '';
+  state.users.forEach(u => {
+    const isChecked = selectedSet.has(u.email.toLowerCase());
+    html += `
+      <label class="checkbox-label-user">
+        <input type="checkbox" name="targetUserEmail" value="${escapeHTML(u.email)}" ${isChecked ? 'checked' : ''}>
+        <span><strong>${escapeHTML(u.name)}</strong> <span class="user-email-tag">(${escapeHTML(u.email)})</span></span>
+      </label>
+    `;
+  });
+
   container.innerHTML = html;
 }
 
-window.editTarget = function (id) {
+window.editServiceTarget = function(id) {
   const target = state.targets.find((t) => t.id === id);
   if (!target) return;
 
@@ -1251,20 +1538,97 @@ window.editTarget = function (id) {
   document.getElementById('targetFormURL').value = target.url;
   document.getElementById('targetFormKeys').value = (target.expected_keys || []).join(', ');
   document.getElementById('targetFormEnabled').checked = target.enabled;
+
+  const recipientEmails = Array.isArray(target.recipient_emails) ? target.recipient_emails : [];
+
+  // Separate emails into system users vs custom emails
+  const userEmailsSet = new Set(state.users.map(u => u.email.toLowerCase()));
+  const customEmails = [];
+  recipientEmails.forEach(e => {
+    if (!userEmailsSet.has(e.toLowerCase())) {
+      customEmails.push(e);
+    }
+  });
+
+  state.targetCustomEmails = customEmails;
+  renderTargetEmailChips();
+  renderTargetUserCheckboxes(recipientEmails);
+
+  document.getElementById('serviceFormTitle').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Edit Service Target: ${escapeHTML(target.name)}`;
+  document.getElementById('serviceFormCard').classList.remove('hidden');
+  document.getElementById('serviceFormCard').scrollIntoView({ behavior: 'smooth' });
 };
 
-window.resetTargetForm = function () {
-  document.getElementById('targetFormId').value = '';
-  document.getElementById('targetFormName').value = '';
-  document.getElementById('targetFormType').value = 'backend';
-  document.getElementById('targetFormMethod').value = 'GET';
-  document.getElementById('targetFormURL').value = '';
-  document.getElementById('targetFormKeys').value = 'service, db';
-  document.getElementById('targetFormEnabled').checked = true;
+// Custom Emails Chips Manager inside Target Form
+function renderTargetEmailChips() {
+  const container = document.getElementById('targetEmailChipsList');
+  if (!container) return;
+
+  if (state.targetCustomEmails.length === 0) {
+    container.innerHTML = `<span class="empty-emails-placeholder">No additional custom emails added.</span>`;
+    return;
+  }
+
+  const chips = state.targetCustomEmails.map((email, idx) => `
+    <div class="email-chip">
+      <i class="fa-solid fa-envelope"></i>
+      <span>${escapeHTML(email)}</span>
+      <button type="button" class="btn-remove-chip" onclick="removeTargetEmailChip(${idx})" title="Remove ${escapeHTML(email)}">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  `).join('');
+
+  container.innerHTML = chips;
+}
+
+window.addTargetEmailFromInput = function() {
+  const input = document.getElementById('targetEmailInput');
+  if (!input) return;
+  const val = input.value.trim();
+  if (!val) return;
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(val)) {
+    showToast(`"${val}" is not a valid email address.`, 'error');
+    return;
+  }
+
+  if (state.targetCustomEmails.includes(val)) {
+    showToast(`"${val}" is already added.`, 'info');
+    input.value = '';
+    return;
+  }
+
+  state.targetCustomEmails.push(val);
+  input.value = '';
+  renderTargetEmailChips();
+  showToast(`Added custom email: ${val}`, 'success');
 };
 
-window.handleSaveTarget = async function (e) {
+window.removeTargetEmailChip = function(index) {
+  const removed = state.targetCustomEmails.splice(index, 1);
+  renderTargetEmailChips();
+  if (removed.length > 0) {
+    showToast(`Removed ${removed[0]}`, 'info');
+  }
+};
+
+window.handleTargetEmailKey = function(e) {
+  if (e.key === 'Enter' || e.key === ',' || e.key === ';') {
+    e.preventDefault();
+    window.addTargetEmailFromInput();
+  }
+};
+
+window.handleSaveServiceTarget = async function(e) {
   e.preventDefault();
+
+  const pendingInput = document.getElementById('targetEmailInput');
+  if (pendingInput && pendingInput.value.trim()) {
+    window.addTargetEmailFromInput();
+  }
+
   const id = document.getElementById('targetFormId').value;
   const name = document.getElementById('targetFormName').value.trim();
   const type = document.getElementById('targetFormType').value;
@@ -1277,6 +1641,15 @@ window.handleSaveTarget = async function (e) {
     ? keysStr.split(',').map((k) => k.trim()).filter(Boolean)
     : [];
 
+  // Gather checked user emails
+  const checkedUserEmails = [];
+  document.querySelectorAll('input[name="targetUserEmail"]:checked').forEach(cb => {
+    checkedUserEmails.push(cb.value);
+  });
+
+  // Combine checked user emails + custom email chips
+  const recipientEmails = Array.from(new Set([...checkedUserEmails, ...state.targetCustomEmails]));
+
   const targetData = {
     id: id || 'target_' + Date.now(),
     name,
@@ -1285,6 +1658,8 @@ window.handleSaveTarget = async function (e) {
     method,
     expected_keys,
     enabled,
+    interval_minutes: 5,
+    recipient_emails: recipientEmails,
   };
 
   // 1. Send to Backend API
@@ -1292,11 +1667,19 @@ window.handleSaveTarget = async function (e) {
     const endpoint = id ? `/api/targets/${id}` : '/api/targets';
     const httpMethod = id ? 'PUT' : 'POST';
 
-    await fetch(endpoint, {
+    const res = await fetch(endpoint, {
       method: httpMethod,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(targetData),
     });
+
+    if (res.ok) {
+      showToast(`Service target "${name}" saved with ${recipientEmails.length} recipient(s)!`, 'success');
+      hideServiceForm();
+      loadTargets();
+      fetchStatus();
+      return;
+    }
   } catch (err) { }
 
   // 2. Direct Sync to Firebase Realtime DB
@@ -1316,18 +1699,24 @@ window.handleSaveTarget = async function (e) {
     state.targets.push(targetData);
   }
 
+  hideServiceForm();
   loadTargets();
-  resetTargetForm();
   fetchStatus();
-  showToast(`Target "${name}" saved & synced to Firebase!`, 'success');
+  showToast(`Service target "${name}" saved!`, 'success');
 };
 
-window.deleteTarget = async function (id) {
-  if (!confirm('Are you sure you want to delete this target?')) return;
+window.deleteServiceTarget = async function(id) {
+  if (!confirm('Are you sure you want to delete this service target?')) return;
 
   // 1. Call Backend API
   try {
-    await fetch(`/api/targets/${id}`, { method: 'DELETE' });
+    const res = await fetch(`/api/targets/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      showToast('Service target removed successfully', 'info');
+      loadTargets();
+      fetchStatus();
+      return;
+    }
   } catch (err) { }
 
   // 2. Remove from Firebase Realtime DB
@@ -1343,195 +1732,90 @@ window.deleteTarget = async function (id) {
   state.targets = state.targets.filter(t => t.id !== id);
   loadTargets();
   fetchStatus();
-  showToast('Target removed from local store and Firebase DB', 'info');
+  showToast('Service target removed from list', 'info');
 };
 
 // ============================================================================
-// MULTI-EMAIL RECIPIENTS CHIP MANAGER
+// SETTINGS MANAGEMENT (FIREBASE, USERS, AUTO DELETION)
 // ============================================================================
-window.renderEmailChips = function () {
-  const container = document.getElementById('emailChipsContainer');
-  if (!container) return;
-
-  const chips = state.recipientEmails.map((email, idx) => `
-    <div class="email-chip">
-      <i class="fa-solid fa-envelope"></i>
-      <span>${escapeHTML(email)}</span>
-      <button type="button" class="btn-remove-chip" onclick="removeEmailChip(${idx})" title="Remove ${escapeHTML(email)}">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-  `).join('');
-
-  container.innerHTML = chips + `
-    <input type="email" id="newEmailInput" class="email-chip-input" placeholder="Type email and press Enter..." onkeydown="handleEmailInputKey(event)" autocomplete="off">
-  `;
-};
-
-window.addEmailFromInput = function () {
-  const input = document.getElementById('newEmailInput');
-  if (!input) return;
-  const val = input.value.trim();
-  if (!val) return;
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(val)) {
-    showToast(`"${val}" is not a valid email address.`, 'error');
-    return;
-  }
-
-  if (state.recipientEmails.includes(val)) {
-    showToast(`"${val}" is already in the recipient list.`, 'info');
-    input.value = '';
-    return;
-  }
-
-  state.recipientEmails.push(val);
-  input.value = '';
-  window.renderEmailChips();
-  showToast(`Added ${val} to alert recipients`, 'success');
-  const newInput = document.getElementById('newEmailInput');
-  if (newInput) newInput.focus();
-};
-
-window.removeEmailChip = function (index) {
-  if (state.recipientEmails.length <= 1) {
-    showToast('At least one recipient email is required for alerts.', 'error');
-    return;
-  }
-  const removed = state.recipientEmails.splice(index, 1);
-  window.renderEmailChips();
-  if (removed.length > 0) {
-    showToast(`Removed ${removed[0]}`, 'info');
-  }
-};
-
-window.handleEmailInputKey = function (e) {
-  if (e.key === 'Enter' || e.key === ',' || e.key === ';') {
-    e.preventDefault();
-    window.addEmailFromInput();
-  }
-};
-
-// ============================================================================
-// SETTINGS MANAGEMENT (FIREBASE, USERS, EMAIL ALERTS)
-// ============================================================================
-window.openSettingsModal = async function () {
+async function loadSettingsData() {
   try {
     const res = await fetch('/api/config');
     if (res.ok) {
       const cfg = await res.json();
-      document.getElementById('setFirebaseEnabled').checked = cfg.firebase?.enabled ?? true;
-      document.getElementById('setFirebaseURL').value = cfg.firebase?.database_url || firebaseConfig.databaseURL;
-      document.getElementById('setFirebaseCollection').value = cfg.firebase?.collection || 'server_monitoring_logs';
-      document.getElementById('setFirebaseAuth').value = cfg.firebase?.auth_secret || '';
+      const setFbAutoDelEn = document.getElementById('setFirebaseAutoDeleteEnabled');
+      const setFbAutoDelDays = document.getElementById('setFirebaseAutoDeleteDays');
+      const setAuthUser = document.getElementById('setAuthUsername');
 
-      document.getElementById('setAuthUsername').value = cfg.auth?.username || state.currentUser || 'Zadroit';
-      document.getElementById('setAuthPassword').value = '';
-
-      document.getElementById('setEmailEnabled').checked = cfg.email?.enabled ?? true;
-      document.getElementById('setEmailFrom').value = cfg.email?.from_email || '';
-      document.getElementById('setEmailPassword').value = cfg.email?.app_password || '';
-
-      if (Array.isArray(cfg.email?.to_emails) && cfg.email.to_emails.length > 0) {
-        state.recipientEmails = [...cfg.email.to_emails];
-      }
-
-      document.getElementById('setIntervalMins').value = cfg.monitoring?.interval_minutes || 5;
-      document.getElementById('setTimeoutSecs').value = cfg.monitoring?.request_timeout_seconds || 15;
+      if (setFbAutoDelEn) setFbAutoDelEn.checked = cfg.firebase?.auto_delete_enabled ?? true;
+      if (setFbAutoDelDays) setFbAutoDelDays.value = cfg.firebase?.auto_delete_days || 7;
+      if (setAuthUser) setAuthUser.value = cfg.auth?.username || 'Zadroit';
     }
-  } catch (err) {
-    document.getElementById('setAuthUsername').value = state.currentUser || 'Zadroit';
-  }
+  } catch (err) {}
+}
 
-  window.renderEmailChips();
-  openModal('settingsModal');
-};
+function setAutoDeleteDaysPreset(days) {
+  const input = document.getElementById('setFirebaseAutoDeleteDays');
+  if (input) input.value = days;
+}
 
-window.handleSaveSettings = async function (e) {
+async function purgeOldLogsNow() {
+  const daysInput = document.getElementById('setFirebaseAutoDeleteDays');
+  const days = daysInput ? (parseInt(daysInput.value, 10) || 7) : 7;
+
+  if (!confirm(`Are you sure you want to purge all monitoring logs older than ${days} days?`)) return;
+
+  try {
+    const res = await fetch(`/api/purge-logs?days=${days}`, { method: 'POST' });
+    if (res.ok) {
+      const data = await res.json();
+      showToast(data.message || `Purged logs older than ${days} days!`, 'success');
+      fetchStatus();
+      fetchLogs();
+      return;
+    }
+  } catch (err) {}
+
+  showToast(`Purge request sent for logs older than ${days} days.`, 'info');
+}
+
+window.setAutoDeleteDaysPreset = setAutoDeleteDaysPreset;
+window.purgeOldLogsNow = purgeOldLogsNow;
+
+window.handleSaveUserSettings = async function(e) {
   e.preventDefault();
+  const username = document.getElementById('setAuthUsername').value.trim();
+  const password = document.getElementById('setAuthPassword').value;
 
-  const pendingInput = document.getElementById('newEmailInput');
-  if (pendingInput && pendingInput.value.trim()) {
-    window.addEmailFromInput();
-  }
-
-  if (state.recipientEmails.length === 0) {
-    showToast('Please add at least one recipient email address.', 'error');
-    return;
-  }
-
-  const newUsername = document.getElementById('setAuthUsername').value.trim() || 'Zadroit';
-  const newPassword = document.getElementById('setAuthPassword').value;
+  let currentCfg = {};
+  try {
+    const r = await fetch('/api/config');
+    if (r.ok) currentCfg = await r.json();
+  } catch (err) {}
 
   const newConfig = {
+    ...currentCfg,
     auth: {
-      username: newUsername,
-      password: newPassword,
-    },
-    firebase: {
-      enabled: document.getElementById('setFirebaseEnabled').checked,
-      type: 'realtime',
-      api_key: firebaseConfig.apiKey,
-      auth_domain: firebaseConfig.authDomain,
-      database_url: document.getElementById('setFirebaseURL').value.trim() || firebaseConfig.databaseURL,
-      project_id: firebaseConfig.projectId,
-      storage_bucket: firebaseConfig.storageBucket,
-      messaging_sender_id: firebaseConfig.messagingSenderId,
-      app_id: firebaseConfig.appId,
-      measurement_id: firebaseConfig.measurementId,
-      collection: document.getElementById('setFirebaseCollection').value.trim() || 'server_monitoring_logs',
-      auth_secret: document.getElementById('setFirebaseAuth').value.trim(),
-    },
-    email: {
-      enabled: document.getElementById('setEmailEnabled').checked,
-      smtp_host: 'smtp.gmail.com',
-      smtp_port: 587,
-      from_email: document.getElementById('setEmailFrom').value.trim(),
-      app_password: document.getElementById('setEmailPassword').value,
-      to_emails: state.recipientEmails,
-    },
-    monitoring: {
-      interval_minutes: parseInt(document.getElementById('setIntervalMins').value, 10) || 5,
-      request_timeout_seconds: parseInt(document.getElementById('setTimeoutSecs').value, 10) || 15,
-    },
-    targets: state.targets,
+      username: username || 'Zadroit',
+      password: password || currentCfg.auth?.password || 'ZadGugSlm06',
+    }
   };
 
-  // 1. Save to Backend API
   try {
-    await fetch('/api/config', {
+    const res = await fetch('/api/config', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newConfig),
     });
-  } catch (err) { }
 
-  // 2. Direct Sync to Firebase Realtime DB
-  if (state.firebaseDb) {
-    try {
-      await set(ref(state.firebaseDb, 'email_config'), newConfig.email);
-      if (newUsername && newPassword) {
-        await set(ref(state.firebaseDb, 'auth'), { username: newUsername, password: newPassword });
-        await set(ref(state.firebaseDb, `users/${newUsername}`), {
-          username: newUsername,
-          password: newPassword,
-          role: 'admin',
-          updated_at: new Date().toISOString()
-        });
-      }
-    } catch (fbErr) {
-      console.warn('[FIREBASE SETTINGS SAVE ERROR]', fbErr);
+    if (res.ok) {
+      showToast('User credentials updated successfully!', 'success');
+      document.getElementById('setAuthPassword').value = '';
+      return;
     }
-  }
+  } catch (err) {}
 
-  state.currentUser = newUsername;
-  localStorage.setItem('zadroit_username', newUsername);
-
-  showToast(`Settings & Firebase credentials saved! (${state.recipientEmails.length} recipient(s))`, 'success');
-  closeModal('settingsModal');
-  attachFirebaseRealtimeListeners();
-  fetchStatus();
+  showToast('User credentials updated!', 'success');
 };
 
 // ============================================================================
@@ -1577,9 +1861,16 @@ window.inspectLog = function (id) {
       </div>
     </div>
 
+    ${logItem.message ? `
+      <div style="background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:12px 16px;">
+        <strong style="color:var(--text-secondary); display:block; margin-bottom:4px;"><i class="fa-solid fa-comment-dots"></i> Status Message:</strong>
+        <span style="color:var(--text-primary); font-size:13px;">${escapeHTML(logItem.message)}</span>
+      </div>
+    ` : ''}
+
     ${logItem.error_detail ? `
       <div style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.35); border-radius:var(--radius-md); padding:12px 16px;">
-        <strong style="color:#f87171; display:block; margin-bottom:4px;"><i class="fa-solid fa-triangle-exclamation"></i> Error Detail:</strong>
+        <strong style="color:#f87171; display:block; margin-bottom:4px;"><i class="fa-solid fa-triangle-exclamation"></i> Error Details:</strong>
         <span style="color:#fca5a5; font-size:13px;">${escapeHTML(logItem.error_detail)}</span>
       </div>
     ` : ''}
@@ -1606,12 +1897,7 @@ window.closeModal = function (id) {
   document.getElementById(id).classList.add('hidden');
 };
 
-window.openTargetModal = function () {
-  loadTargets();
-  openModal('targetModal');
-};
-
-window.handleBackdropClick = function (e, modalId) {
+window.handleBackdropClick = function(e, modalId) {
   if (e.target.id === modalId) {
     closeModal(modalId);
   }

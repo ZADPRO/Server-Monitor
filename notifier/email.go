@@ -33,23 +33,31 @@ func GetNotifier() *EmailNotifier {
 	return notifierInstance
 }
 
-// SendFailureAlert sends an alert email for a failing service check
-func (n *EmailNotifier) SendFailureAlert(cfg models.EmailConfig, result models.HealthCheckResult) error {
+// SendFailureAlert sends an alert email for a failing service check to target recipients (or fallback to global recipients)
+func (n *EmailNotifier) SendFailureAlert(cfg models.EmailConfig, recipientEmails []string, result models.HealthCheckResult) error {
 	if !cfg.Enabled {
 		log.Printf("[NOTIFIER] Email notification disabled in config.")
 		return nil
 	}
 
-	if len(cfg.ToEmails) == 0 || cfg.FromEmail == "" || cfg.AppPassword == "" {
-		log.Printf("[NOTIFIER] Email notification skipped: missing from/to/password credentials")
-		return fmt.Errorf("email credentials not fully configured")
+	recipients := recipientEmails
+	if len(recipients) == 0 {
+		recipients = cfg.ToEmails
 	}
+
+	if len(recipients) == 0 || cfg.FromEmail == "" || cfg.AppPassword == "" {
+		log.Printf("[NOTIFIER] Email notification skipped for %s: missing recipient emails or credentials", result.ServiceName)
+		return fmt.Errorf("email credentials or recipient emails not fully configured")
+	}
+
+	effectiveCfg := cfg
+	effectiveCfg.ToEmails = recipients
 
 	subject := fmt.Sprintf("🚨 [ALERT] Service Failure: %s is DOWN", result.ServiceName)
 	htmlBody := n.buildAlertHTML(result)
 	plainText := n.buildAlertPlainText(result)
 
-	return n.sendMail(cfg, subject, plainText, htmlBody)
+	return n.sendMail(effectiveCfg, subject, plainText, htmlBody)
 }
 
 // SendTestEmail sends a test alert email to verify SMTP configuration

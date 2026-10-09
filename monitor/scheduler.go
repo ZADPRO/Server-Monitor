@@ -1,6 +1,7 @@
 package monitor
 
 import (
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -12,13 +13,15 @@ import (
 )
 
 type Scheduler struct {
-	cfgManager *config.ConfigManager
-	storage    storage.Storage
-	notifier   *notifier.EmailNotifier
-	ticker     *time.Ticker
-	stopChan   chan struct{}
-	runningMu  sync.Mutex
-	isChecking bool
+	cfgManager     *config.ConfigManager
+	storage        storage.Storage
+	notifier       *notifier.EmailNotifier
+	ticker         *time.Ticker
+	stopChan       chan struct{}
+	runningMu      sync.Mutex
+	isChecking     bool
+	lastCheckedMap map[string]time.Time
+	lastCheckMu    sync.Mutex
 }
 
 var (
@@ -30,10 +33,11 @@ var (
 func InitScheduler(cfgMgr *config.ConfigManager, store storage.Storage) *Scheduler {
 	schedOnce.Do(func() {
 		schedInstance = &Scheduler{
-			cfgManager: cfgMgr,
-			storage:    store,
-			notifier:   notifier.GetNotifier(),
-			stopChan:   make(chan struct{}),
+			cfgManager:     cfgMgr,
+			storage:        store,
+			notifier:       notifier.GetNotifier(),
+			stopChan:       make(chan struct{}),
+			lastCheckedMap: make(map[string]time.Time),
 		}
 	})
 	return schedInstance
@@ -44,15 +48,9 @@ func GetScheduler() *Scheduler {
 	return schedInstance
 }
 
-// Start begins periodic monitoring
+// Start begins periodic monitoring ticker (runs strictly every 5 minutes for all targets)
 func (s *Scheduler) Start() {
-	cfg := s.cfgManager.Get()
-	interval := time.Duration(cfg.Monitoring.IntervalMinutes) * time.Minute
-	if interval <= 0 {
-		interval = 5 * time.Minute
-	}
-
-	log.Printf("[SCHEDULER] Starting monitoring scheduler with interval: %v", interval)
+	log.Printf("[SCHEDULER] Starting monitoring scheduler (strictly every 5 mins)...")
 
 	// Run immediate initial check in background
 	go func() {
@@ -60,14 +58,13 @@ func (s *Scheduler) Start() {
 		s.RunChecksNow()
 	}()
 
-	s.ticker = time.NewTicker(interval)
+	s.ticker = time.NewTicker(5 * time.Minute)
 
 	go func() {
 		for {
 			select {
 			case <-s.ticker.C:
-				log.Printf("[SCHEDULER] Triggering scheduled health check cycle...")
-				s.RunChecksNow()
+				s.checkDueTargets()
 			case <-s.stopChan:
 				log.Printf("[SCHEDULER] Monitoring scheduler stopped.")
 				return
@@ -84,8 +81,109 @@ func (s *Scheduler) Stop() {
 	close(s.stopChan)
 }
 
-// RunChecksNow triggers an immediate health check across all enabled targets
+// checkDueTargets checks all enabled targets strictly every 5 minutes
+func (s *Scheduler) checkDueTargets() {
+	targets := s.cfgManager.GetTargets()
+	now := time.Now()
+
+	s.lastCheckMu.Lock()
+	var dueTargets []models.Target
+	for _, target := range targets {
+		if !target.Enabled {
+			continue
+		}
+		s.lastCheckedMap[target.ID] = now
+		dueTargets = append(dueTargets, target)
+	}
+	s.lastCheckMu.Unlock()
+
+	if len(dueTargets) == 0 {
+		return
+	}
+
+	log.Printf("[SCHEDULER] Executing 5-minute health check cycle for %d enabled target(s)...", len(dueTargets))
+	s.executeTargets(dueTargets)
+
+	// Check if auto deletion is enabled and purge old logs
+	cfg := s.cfgManager.Get()
+	if cfg.Firebase.AutoDeleteEnabled && cfg.Firebase.AutoDeleteDays > 0 {
+		s.storage.PurgeOldLogs(cfg.Firebase.AutoDeleteDays)
+	}
+}
+
+// RunChecksNow triggers an immediate health check across ALL enabled targets
 func (s *Scheduler) RunChecksNow() []models.HealthCheckResult {
+	targets := s.cfgManager.GetTargets()
+	var enabledTargets []models.Target
+	now := time.Now()
+
+	s.lastCheckMu.Lock()
+	for _, t := range targets {
+		if t.Enabled {
+			s.lastCheckedMap[t.ID] = now
+			enabledTargets = append(enabledTargets, t)
+		}
+	}
+	s.lastCheckMu.Unlock()
+
+	return s.executeTargets(enabledTargets)
+}
+
+// RunCheckForSingleTarget triggers an immediate health check for a single target by ID
+func (s *Scheduler) RunCheckForSingleTarget(targetID string) (*models.HealthCheckResult, error) {
+	targets := s.cfgManager.GetTargets()
+	var foundTarget *models.Target
+	for _, t := range targets {
+		if t.ID == targetID {
+			foundTarget = &t
+			break
+		}
+	}
+
+	if foundTarget == nil {
+		return nil, fmt.Errorf("target with ID '%s' not found", targetID)
+	}
+
+	s.lastCheckMu.Lock()
+	s.lastCheckedMap[foundTarget.ID] = time.Now()
+	s.lastCheckMu.Unlock()
+
+	cfg := s.cfgManager.Get()
+	timeout := time.Duration(cfg.Monitoring.RequestTimeoutSeconds) * time.Second
+	if timeout <= 0 {
+		timeout = 15 * time.Second
+	}
+
+	var res models.HealthCheckResult
+	if foundTarget.Type == "backend" {
+		res = CheckBackend(*foundTarget, timeout)
+	} else {
+		res = CheckFrontend(*foundTarget, timeout)
+	}
+
+	if err := s.storage.SaveLog(res); err != nil {
+		log.Printf("[STORAGE ERROR] Failed to save log for %s: %v", foundTarget.Name, err)
+	}
+
+	if !res.Status {
+		log.Printf("[ALERT] Target %s (%s) is DOWN! Failure recipient(s): %v. Error: %s", foundTarget.Name, foundTarget.URL, foundTarget.RecipientEmails, res.ErrorDetail)
+		go func(alertRes models.HealthCheckResult, recs []string) {
+			if err := s.notifier.SendFailureAlert(cfg.Email, recs, alertRes); err != nil {
+				log.Printf("[EMAIL ALERT ERROR] Failed sending alert for %s: %v", alertRes.ServiceName, err)
+			}
+		}(res, foundTarget.RecipientEmails)
+	} else {
+		log.Printf("[HEALTHY] Target %s (%s) is OK (%dms)", foundTarget.Name, foundTarget.URL, res.ResponseTimeMs)
+	}
+
+	return &res, nil
+}
+
+func (s *Scheduler) executeTargets(targets []models.Target) []models.HealthCheckResult {
+	if len(targets) == 0 {
+		return nil
+	}
+
 	s.runningMu.Lock()
 	if s.isChecking {
 		s.runningMu.Unlock()
@@ -102,7 +200,6 @@ func (s *Scheduler) RunChecksNow() []models.HealthCheckResult {
 	}()
 
 	cfg := s.cfgManager.Get()
-	targets := s.cfgManager.GetTargets()
 	timeout := time.Duration(cfg.Monitoring.RequestTimeoutSeconds) * time.Second
 	if timeout <= 0 {
 		timeout = 15 * time.Second
@@ -112,10 +209,6 @@ func (s *Scheduler) RunChecksNow() []models.HealthCheckResult {
 	resultsChan := make(chan models.HealthCheckResult, len(targets))
 
 	for _, target := range targets {
-		if !target.Enabled {
-			continue
-		}
-
 		wg.Add(1)
 		go func(t models.Target) {
 			defer wg.Done()
@@ -126,19 +219,17 @@ func (s *Scheduler) RunChecksNow() []models.HealthCheckResult {
 				res = CheckFrontend(t, timeout)
 			}
 
-			// Store result in storage (which also handles Firebase DB push)
 			if err := s.storage.SaveLog(res); err != nil {
 				log.Printf("[STORAGE ERROR] Failed to save log for %s: %v", t.Name, err)
 			}
 
-			// If status is false (failed), send alert email
 			if !res.Status {
-				log.Printf("[ALERT] Target %s (%s) is DOWN! Error: %s", t.Name, t.URL, res.ErrorDetail)
-				go func(alertRes models.HealthCheckResult) {
-					if err := s.notifier.SendFailureAlert(cfg.Email, alertRes); err != nil {
+				log.Printf("[ALERT] Target %s (%s) is DOWN! Failure recipient(s): %v. Error: %s", t.Name, t.URL, t.RecipientEmails, res.ErrorDetail)
+				go func(alertRes models.HealthCheckResult, recs []string) {
+					if err := s.notifier.SendFailureAlert(cfg.Email, recs, alertRes); err != nil {
 						log.Printf("[EMAIL ALERT ERROR] Failed sending alert for %s: %v", alertRes.ServiceName, err)
 					}
-				}(res)
+				}(res, t.RecipientEmails)
 			} else {
 				log.Printf("[HEALTHY] Target %s (%s) is OK (%dms)", t.Name, t.URL, res.ResponseTimeMs)
 			}
@@ -157,3 +248,4 @@ func (s *Scheduler) RunChecksNow() []models.HealthCheckResult {
 
 	return results
 }
+

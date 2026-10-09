@@ -12,5 +12,6 @@ type Storage interface {
 	GetSummary() models.ServerSummary
 	GetFirebaseClient() *FirebaseClient
 	SyncFromFirebase() (int, error)
+	PurgeOldLogs(days int) (int, error)
 	Close() error
 }

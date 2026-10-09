@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"serverMonitoring/models"
 )
@@ -77,7 +78,9 @@ func (ls *LocalStorage) load() error {
 func (ls *LocalStorage) persistUnlocked() error {
 	dir := filepath.Dir(ls.filePath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
-		return err
+		dir = os.TempDir()
+		ls.filePath = filepath.Join(dir, "logs.json")
+		_ = os.MkdirAll(dir, 0755)
 	}
 
 	data, err := json.MarshalIndent(ls.logs, "", "  ")
@@ -85,7 +88,14 @@ func (ls *LocalStorage) persistUnlocked() error {
 		return err
 	}
 
-	return os.WriteFile(ls.filePath, data, 0644)
+	writeErr := os.WriteFile(ls.filePath, data, 0644)
+	if writeErr != nil {
+		// Fallback for read-only serverless filesystem like Vercel
+		tmpPath := filepath.Join(os.TempDir(), "logs.json")
+		_ = os.WriteFile(tmpPath, data, 0644)
+	}
+
+	return nil
 }
 
 // SaveLog saves a new health check result, sends to Firebase, and updates in-memory and disk records
@@ -319,6 +329,38 @@ func (ls *LocalStorage) GetSummary() models.ServerSummary {
 		LastCheckTime:  lastCheck,
 		TargetStatuses: targetStatuses,
 	}
+}
+
+// PurgeOldLogs removes logs older than the specified number of days
+func (ls *LocalStorage) PurgeOldLogs(days int) (int, error) {
+	if days <= 0 {
+		return 0, nil
+	}
+
+	ls.mu.Lock()
+	defer ls.mu.Unlock()
+
+	cutoff := time.Now().AddDate(0, 0, -days).Unix()
+	newLogs := make([]models.HealthCheckResult, 0)
+	deletedCount := 0
+
+	for _, l := range ls.logs {
+		if l.Timestamp >= cutoff {
+			newLogs = append(newLogs, l)
+		} else {
+			deletedCount++
+		}
+	}
+
+	if deletedCount > 0 {
+		ls.logs = newLogs
+		if err := ls.persistUnlocked(); err != nil {
+			log.Printf("[STORAGE PURGE WARNING] Could not persist purged logs: %v", err)
+		}
+		log.Printf("[STORAGE PURGE] Successfully purged %d log(s) older than %d day(s)", deletedCount, days)
+	}
+
+	return deletedCount, nil
 }
 
 // Close persists remaining logs
