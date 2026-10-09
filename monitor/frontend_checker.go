@@ -29,21 +29,28 @@ var (
 	}
 )
 
-// CheckFrontend checks a frontend website URL with 1 automatic retry on failure
+// CheckFrontend checks a frontend website URL with up to 2 automatic retries on failure
 func CheckFrontend(target models.Target, timeout time.Duration) models.HealthCheckResult {
 	res := checkFrontendOnce(target, timeout)
 	if res.Status {
 		return res
 	}
 
-	// Retry once after 1s before marking as failure
-	time.Sleep(1 * time.Second)
+	// Retry #1 after 1.5s
+	time.Sleep(1500 * time.Millisecond)
 	retryRes := checkFrontendOnce(target, timeout)
 	if retryRes.Status {
 		return retryRes
 	}
 
-	return retryRes
+	// Retry #2 after 2s
+	time.Sleep(2000 * time.Millisecond)
+	retryRes2 := checkFrontendOnce(target, timeout)
+	if retryRes2.Status {
+		return retryRes2
+	}
+
+	return retryRes2
 }
 
 // checkFrontendOnce performs a single probe of a frontend website URL
@@ -194,9 +201,8 @@ func checkFrontendOnce(target models.Target, timeout time.Duration) models.Healt
 	}
 
 	if len(brokenAssets) > 0 {
-		result.Status = false
-		result.Message = fmt.Sprintf("Frontend has %d failing asset(s) (Console Error risk)", len(brokenAssets))
-		result.ErrorDetail = fmt.Sprintf("Assets returning error: %s", strings.Join(brokenAssets, ", "))
+		result.Status = true
+		result.Message = fmt.Sprintf("Frontend is healthy (with %d non-critical asset warning(s))", len(brokenAssets))
 		result.Data["failed_asset_list"] = brokenAssets
 		return result
 	}

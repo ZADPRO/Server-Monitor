@@ -12,21 +12,28 @@ import (
 	"serverMonitoring/models"
 )
 
-// CheckBackend checks a backend API endpoint with 1 automatic retry on failure
+// CheckBackend checks a backend API endpoint with up to 2 automatic retries on failure
 func CheckBackend(target models.Target, timeout time.Duration) models.HealthCheckResult {
 	res := checkBackendOnce(target, timeout)
 	if res.Status {
 		return res
 	}
 
-	// Retry once after 1s before marking as failure
-	time.Sleep(1 * time.Second)
+	// Retry #1 after 1.5s
+	time.Sleep(1500 * time.Millisecond)
 	retryRes := checkBackendOnce(target, timeout)
 	if retryRes.Status {
 		return retryRes
 	}
 
-	return retryRes
+	// Retry #2 after 2s (handles slow cloud container spin-up)
+	time.Sleep(2000 * time.Millisecond)
+	retryRes2 := checkBackendOnce(target, timeout)
+	if retryRes2.Status {
+		return retryRes2
+	}
+
+	return retryRes2
 }
 
 // checkBackendOnce performs a single probe of a backend API endpoint
