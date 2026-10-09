@@ -146,16 +146,25 @@
         <div class="banner-left">
           <div class="firebase-live-dot"></div>
           <div class="banner-text-wrap">
-            <span class="banner-title"><i class="fa-solid fa-fire-flame-curved text-amber"></i> Firebase Real-time Sync
-              Active</span>
-            <span class="banner-sub" id="firebaseEndpointLabel">Listening to
-              https://server-monitor-8ffb0-default-rtdb.firebaseio.com/</span>
+            <span class="banner-title"><i class="fa-solid fa-fire-flame-curved text-amber"></i> Firebase Real-time Cloud Storage</span>
+            <span class="banner-sub" id="firebaseEndpointLabel">Listening to https://server-monitor-8ffb0-default-rtdb.firebaseio.com/</span>
           </div>
+        </div>
+        <div class="firebase-entity-pills" id="firebaseEntityPills">
+          <span class="pill-badge"><i class="fa-solid fa-list-check"></i> Targets Synced</span>
+          <span class="pill-badge"><i class="fa-solid fa-user-shield"></i> Users Synced</span>
+          <span class="pill-badge"><i class="fa-solid fa-envelope"></i> Emails Synced</span>
+          <span class="pill-badge"><i class="fa-solid fa-database"></i> Logs Live</span>
         </div>
         <div class="banner-right">
           <span class="stream-badge" id="firebaseStreamBadge"><i class="fa-solid fa-bolt"></i> Live Stream Active</span>
+          <button class="btn btn-xs btn-action" id="btnSyncAllFb" onclick="syncAllToFirebase()"
+            title="Push all local targets, users, emails to Firebase DB">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <span>Sync All to Firebase</span>
+          </button>
           <button class="btn btn-xs btn-outline" onclick="syncNowFromFirebase()"
-            title="Force pull all historical logs from Firebase">
+            title="Force pull all historical data from Firebase">
             <i class="fa-solid fa-arrows-rotate" id="syncFbIcon"></i>
             <span>Pull From Firebase</span>
           </button>
@@ -531,8 +540,7 @@
               <i class="fa-solid fa-fire-flame-curved text-amber"></i>
               <h4>Firebase Database Configuration</h4>
             </div>
-            <p class="settings-hint">Health check logs (service name, status, hit time, message, data) are synced in
-              real-time to your Firebase DB.</p>
+            <p class="settings-hint">Health check logs, monitored targets, users, and email recipients are synced in real-time to your Firebase DB.</p>
 
             <div class="form-group">
               <label class="checkbox-label">
@@ -552,6 +560,25 @@
               <div class="form-group">
                 <label>Auth Secret / Token (Optional)</label>
                 <input type="password" id="setFirebaseAuth" placeholder="Optional database secret">
+              </div>
+            </div>
+          </div>
+
+          <!-- User / Admin Credentials Section -->
+          <div class="settings-section">
+            <div class="section-title-sm">
+              <i class="fa-solid fa-user-shield text-purple"></i>
+              <h4>Dashboard Login & User Credentials</h4>
+            </div>
+            <p class="settings-hint">Stored securely in Firebase (/auth & /users) and local storage for instant dashboard authentication.</p>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Admin Username</label>
+                <input type="text" id="setAuthUsername" placeholder="Zadroit" required>
+              </div>
+              <div class="form-group">
+                <label>Change Password (leave blank to keep current)</label>
+                <input type="password" id="setAuthPassword" placeholder="••••••••">
               </div>
             </div>
           </div>

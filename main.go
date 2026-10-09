@@ -53,9 +53,9 @@ func main() {
 	log.Printf("[CONFIG] Loaded successfully. Monitored targets: %d, Check interval: %d min(s)", len(cfg.Targets), cfg.Monitoring.IntervalMinutes)
 
 	// 2. Initialize Firebase & Local storage
-
-
 	fbClient := storage.NewFirebaseClient(cfg.Firebase)
+	cfgMgr.SetFirebaseClient(fbClient)
+
 	store, err := storage.NewLocalStorage(filepath.Join(dataDir, "logs.json"), 5000, fbClient)
 	if err != nil {
 		log.Fatalf("[FATAL] Failed to initialize storage: %v", err)
@@ -63,7 +63,14 @@ func main() {
 	defer store.Close()
 
 	if cfg.Firebase.Enabled && cfg.Firebase.DatabaseURL != "" {
-		log.Printf("[FIREBASE] Connected to Firebase DB endpoint: %s (Collection: %s)", cfg.Firebase.DatabaseURL, cfg.Firebase.Collection)
+		log.Printf("[FIREBASE] Connected to Firebase DB endpoint: %s", cfg.Firebase.DatabaseURL)
+		// Perform initial bidirectional sync of Targets, Users, and Email settings
+		go func() {
+			time.Sleep(500 * time.Millisecond)
+			if err := cfgMgr.SyncWithFirebase(); err != nil {
+				log.Printf("[FIREBASE SYNC NOTICE] Initial sync completed with notice: %v", err)
+			}
+		}()
 	} else {
 		log.Printf("[FIREBASE] Firebase DB integration disabled or URL empty. Logs stored locally.")
 	}

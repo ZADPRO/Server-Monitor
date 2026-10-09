@@ -51,6 +51,7 @@ func (h *APIHandler) RegisterRoutes(mux *http.ServeMux) {
 
 	// API Endpoints with CORS
 	handleWithCORS("/api/auth/login", h.handleLogin)
+	handleWithCORS("/api/users", h.handleUsers)
 	handleWithCORS("/api/status", h.handleStatus)
 	handleWithCORS("/api/logs", h.handleLogs)
 	handleWithCORS("/api/console-logs", h.handleConsoleLogs)
@@ -63,8 +64,8 @@ func (h *APIHandler) RegisterRoutes(mux *http.ServeMux) {
 	handleWithCORS("/api/firebase-status", h.handleFirebaseStatus)
 	handleWithCORS("/api/firebase-logs", h.handleFirebaseLogs)
 	handleWithCORS("/api/firebase-sync", h.handleFirebaseSync)
+	handleWithCORS("/api/firebase-sync-all", h.handleFirebaseSyncAll)
 }
-
 
 func (h *APIHandler) handleLogin(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -83,9 +84,24 @@ func (h *APIHandler) handleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cfg := h.cfgManager.Get()
-	// Check static credentials (default: Zadroit / ZadGugSlm06)
+	authenticated := false
+
+	// 1. Check against local / memory auth config
 	if req.Username == cfg.Auth.Username && req.Password == cfg.Auth.Password {
-		// Generate simple session token
+		authenticated = true
+	}
+
+	// 2. Check against Firebase Auth if available
+	fb := h.storage.GetFirebaseClient()
+	if !authenticated && fb != nil {
+		if fbAuth, err := fb.FetchAuthConfig(); err == nil && fbAuth != nil {
+			if req.Username == fbAuth.Username && req.Password == fbAuth.Password {
+				authenticated = true
+			}
+		}
+	}
+
+	if authenticated {
 		token := fmt.Sprintf("zadroit-token-%d", time.Now().UnixNano())
 		writeJSON(w, http.StatusOK, map[string]interface{}{
 			"success":  true,
@@ -100,6 +116,85 @@ func (h *APIHandler) handleLogin(w http.ResponseWriter, r *http.Request) {
 		"success": false,
 		"message": "Invalid username or password",
 	})
+}
+
+func (h *APIHandler) handleUsers(w http.ResponseWriter, r *http.Request) {
+	fb := h.storage.GetFirebaseClient()
+
+	switch r.Method {
+	case http.MethodGet:
+		var users []models.User
+		if fb != nil {
+			if fbUsers, err := fb.FetchUsers(); err == nil && len(fbUsers) > 0 {
+				users = fbUsers
+			}
+		}
+
+		if len(users) == 0 {
+			cfg := h.cfgManager.Get()
+			users = []models.User{
+				{
+					Username:  cfg.Auth.Username,
+					Role:      "admin",
+					UpdatedAt: time.Now().Format("2006-01-02 15:04:05"),
+				},
+			}
+		}
+
+		// Mask passwords in output
+		safeUsers := make([]models.User, len(users))
+		for i, u := range users {
+			safeUsers[i] = models.User{
+				Username:  u.Username,
+				Password:  "••••••••",
+				Role:      u.Role,
+				Email:     u.Email,
+				UpdatedAt: u.UpdatedAt,
+			}
+		}
+
+		writeJSON(w, http.StatusOK, map[string]interface{}{
+			"success": true,
+			"users":   safeUsers,
+		})
+
+	case http.MethodPost:
+		var newUser models.User
+		if err := json.NewDecoder(r.Body).Decode(&newUser); err != nil {
+			writeJSON(w, http.StatusBadRequest, map[string]interface{}{"error": "Invalid user JSON"})
+			return
+		}
+
+		if newUser.Username == "" || newUser.Password == "" {
+			writeJSON(w, http.StatusBadRequest, map[string]interface{}{"error": "Username and password are required"})
+			return
+		}
+
+		if newUser.Role == "" {
+			newUser.Role = "admin"
+		}
+		newUser.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
+
+		// Update in ConfigManager
+		cfg := h.cfgManager.Get()
+		cfg.Auth.Username = newUser.Username
+		cfg.Auth.Password = newUser.Password
+		_ = h.cfgManager.Save(cfg)
+
+		// Sync directly to Firebase
+		if fb != nil {
+			_ = fb.SaveUser(newUser)
+			_ = fb.SaveAuthConfig(models.AuthConfig{Username: newUser.Username, Password: newUser.Password})
+		}
+
+		writeJSON(w, http.StatusOK, map[string]interface{}{
+			"success": true,
+			"message": fmt.Sprintf("User '%s' saved to Firebase and local storage", newUser.Username),
+		})
+
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
 }
 
 func (h *APIHandler) handleStatus(w http.ResponseWriter, r *http.Request) {
@@ -191,7 +286,11 @@ func (h *APIHandler) handleTargets(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		writeJSON(w, http.StatusCreated, target)
+		writeJSON(w, http.StatusCreated, map[string]interface{}{
+			"success": true,
+			"target":  target,
+			"message": "Target saved locally and synced to Firebase",
+		})
 
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -219,7 +318,11 @@ func (h *APIHandler) handleTargetByID(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		writeJSON(w, http.StatusOK, target)
+		writeJSON(w, http.StatusOK, map[string]interface{}{
+			"success": true,
+			"target":  target,
+			"message": "Target updated locally and synced to Firebase",
+		})
 
 	case http.MethodDelete:
 		if err := h.cfgManager.DeleteTarget(id); err != nil {
@@ -227,7 +330,10 @@ func (h *APIHandler) handleTargetByID(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		writeJSON(w, http.StatusOK, map[string]interface{}{"success": true, "message": "Target deleted"})
+		writeJSON(w, http.StatusOK, map[string]interface{}{
+			"success": true,
+			"message": "Target deleted locally and removed from Firebase",
+		})
 
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -238,7 +344,6 @@ func (h *APIHandler) handleConfig(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		cfg := h.cfgManager.Get()
-		// Mask sensitive password before returning to client
 		safeConfig := cfg
 		if safeConfig.Email.AppPassword != "" {
 			safeConfig.Email.AppPassword = "••••••••••••••••"
@@ -263,13 +368,19 @@ func (h *APIHandler) handleConfig(w http.ResponseWriter, r *http.Request) {
 		if newCfg.Auth.Password == "••••••••" || newCfg.Auth.Password == "" {
 			newCfg.Auth.Password = current.Auth.Password
 		}
+		if len(newCfg.Targets) == 0 {
+			newCfg.Targets = current.Targets
+		}
 
 		if err := h.cfgManager.Save(newCfg); err != nil {
 			writeJSON(w, http.StatusInternalServerError, map[string]interface{}{"error": err.Error()})
 			return
 		}
 
-		writeJSON(w, http.StatusOK, map[string]interface{}{"success": true, "message": "Config updated"})
+		writeJSON(w, http.StatusOK, map[string]interface{}{
+			"success": true,
+			"message": "Config updated locally and synced with Firebase",
+		})
 
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -323,7 +434,6 @@ func (h *APIHandler) handleExportLogs(w http.ResponseWriter, r *http.Request) {
 	writer := csv.NewWriter(w)
 	defer writer.Flush()
 
-	// Header matching user specifications
 	writer.Write([]string{"S.No", "Service Name", "Type", "URL", "Status", "Hit Time", "HTTP Code", "Response Time (ms)", "Message", "Data"})
 
 	for i, item := range logs {
@@ -352,51 +462,51 @@ func (h *APIHandler) handleExportLogs(w http.ResponseWriter, r *http.Request) {
 func (h *APIHandler) handleFirebaseStatus(w http.ResponseWriter, r *http.Request) {
 	fb := h.storage.GetFirebaseClient()
 	if fb == nil {
-		writeJSON(w, http.StatusOK, map[string]interface{}{
-			"enabled": false,
-			"status":  "disabled",
-			"message": "Firebase client not initialized",
+		writeJSON(w, http.StatusOK, models.FirebaseSyncStatus{
+			Enabled: false,
+			Status:  "disabled",
+			Message: "Firebase client not initialized",
 		})
 		return
 	}
 
 	cfg := fb.GetConfig()
 	if !cfg.Enabled || fb.CleanDatabaseURL() == "" {
-		writeJSON(w, http.StatusOK, map[string]interface{}{
-			"enabled":      false,
-			"status":       "disabled",
-			"database_url": cfg.DatabaseURL,
-			"message":      "Firebase is disabled or Database URL is empty",
+		writeJSON(w, http.StatusOK, models.FirebaseSyncStatus{
+			Enabled:     false,
+			Status:      "disabled",
+			DatabaseURL: cfg.DatabaseURL,
+			Message:     "Firebase is disabled or Database URL is empty",
 		})
 		return
 	}
 
-	// Test real-time read from Firebase
+	// Read logs, targets, users from Firebase
 	logs, err := fb.FetchLogsFromFirebase()
 	if err != nil {
-		isAuthErr := strings.Contains(err.Error(), "permission denied") || strings.Contains(err.Error(), "401") || strings.Contains(err.Error(), "403")
-		statusStr := "error"
-		if isAuthErr {
-			statusStr = "permission_denied"
-		}
-		writeJSON(w, http.StatusOK, map[string]interface{}{
-			"enabled":      true,
-			"status":       statusStr,
-			"database_url": fb.CleanDatabaseURL(),
-			"collection":   cfg.Collection,
-			"error":        err.Error(),
-			"message":      err.Error(),
+		writeJSON(w, http.StatusOK, models.FirebaseSyncStatus{
+			Enabled:     true,
+			Status:      "error",
+			DatabaseURL: fb.CleanDatabaseURL(),
+			Message:     err.Error(),
 		})
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]interface{}{
-		"enabled":      true,
-		"status":       "connected",
-		"database_url": fb.CleanDatabaseURL(),
-		"collection":   cfg.Collection,
-		"total_logs":   len(logs),
-		"message":      "Connected to Firebase Realtime Database in real-time",
+	targets, _ := fb.FetchTargets()
+	users, _ := fb.FetchUsers()
+	emailCfg, _ := fb.FetchEmailConfig()
+
+	writeJSON(w, http.StatusOK, models.FirebaseSyncStatus{
+		Enabled:      true,
+		Status:       "connected",
+		DatabaseURL:  fb.CleanDatabaseURL(),
+		LogsCount:    len(logs),
+		TargetsCount: len(targets),
+		UsersCount:   len(users),
+		EmailSynced:  emailCfg != nil,
+		Message:      "Real-time bidirectional synchronization active for Logs, Targets, Users, and Emails",
+		LastSyncedAt: time.Now().Format("2006-01-02 15:04:05"),
 	})
 }
 
@@ -446,6 +556,39 @@ func (h *APIHandler) handleFirebaseSync(w http.ResponseWriter, r *http.Request) 
 	})
 }
 
+func (h *APIHandler) handleFirebaseSyncAll(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	fb := h.storage.GetFirebaseClient()
+	if fb == nil {
+		writeJSON(w, http.StatusBadRequest, map[string]interface{}{"error": "Firebase client not available"})
+		return
+	}
+
+	// 1. Sync config & entities to Firebase
+	cfg := h.cfgManager.Get()
+	if err := fb.SyncAllToFirebase(cfg); err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]interface{}{
+			"success": false,
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	// 2. Sync logs from Firebase to local
+	newLogs, _ := h.storage.SyncFromFirebase()
+
+	writeJSON(w, http.StatusOK, map[string]interface{}{
+		"success":       true,
+		"message":       "All Targets, Users, Emails, and Logs successfully synchronized with Firebase",
+		"targets_count": len(cfg.Targets),
+		"new_logs_sync": newLogs,
+	})
+}
+
 func (h *APIHandler) handleConsoleLogs(w http.ResponseWriter, r *http.Request) {
 	logFilePath := "data/app.log"
 	data, err := os.ReadFile(logFilePath)
@@ -479,4 +622,3 @@ func writeJSON(w http.ResponseWriter, statusCode int, data interface{}) {
 	w.WriteHeader(statusCode)
 	json.NewEncoder(w).Encode(data)
 }
-

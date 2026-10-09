@@ -70,6 +70,28 @@ type AuthConfig struct {
 	Password string `json:"password"`
 }
 
+// User represents a system user stored in Firebase / Local auth
+type User struct {
+	Username  string `json:"username"`
+	Password  string `json:"password,omitempty"`
+	Role      string `json:"role,omitempty"`
+	Email     string `json:"email,omitempty"`
+	UpdatedAt string `json:"updated_at,omitempty"`
+}
+
+// FirebaseSyncStatus represents sync status across all entities
+type FirebaseSyncStatus struct {
+	Enabled       bool   `json:"enabled"`
+	Status        string `json:"status"`
+	DatabaseURL   string `json:"database_url"`
+	LogsCount     int    `json:"logs_count"`
+	TargetsCount  int    `json:"targets_count"`
+	UsersCount    int    `json:"users_count"`
+	EmailSynced   bool   `json:"email_synced"`
+	Message       string `json:"message"`
+	LastSyncedAt  string `json:"last_synced_at,omitempty"`
+}
+
 // MonitoringConfig configuration for check loop
 type MonitoringConfig struct {
 	IntervalMinutes       int `json:"interval_minutes"`

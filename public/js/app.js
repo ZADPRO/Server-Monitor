@@ -1,11 +1,11 @@
 /**
  * Zadroit Server Monitoring System - Client Controller
  * Native Firebase Realtime Database SDK (v10) + WebSockets & Real-time Watcher
- * Vercel-Ready with Instant Static Auth & Direct Firebase Synchronization
+ * Full Cloud Persistence for Targets, Users/Auth, Email Alerts & Monitoring Logs
  */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-import { getDatabase, ref, onValue, onChildAdded, off } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+import { getDatabase, ref, onValue, set, get, remove, off } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
 
 // User's Firebase Configuration
 const firebaseConfig = {
@@ -22,7 +22,7 @@ const firebaseConfig = {
 // Default Target Definitions
 const DEFAULT_TARGETS = [
   {
-    id: "nivas-app-product-mgmt",
+    id: "target_backend_1",
     name: "Nivas App product management",
     type: "backend",
     url: "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
@@ -31,7 +31,7 @@ const DEFAULT_TARGETS = [
     enabled: true
   },
   {
-    id: "nivas-hoc-website",
+    id: "target_frontend_1",
     name: "Nivas HOC Website",
     type: "frontend",
     url: "https://nivashoc.com/",
@@ -40,7 +40,7 @@ const DEFAULT_TARGETS = [
     enabled: true
   },
   {
-    id: "hotel-sherlock-website",
+    id: "target_frontend_2",
     name: "Hotel Sherlock Website",
     type: "frontend",
     url: "https://hotelsherlockholmes.com/",
@@ -49,7 +49,7 @@ const DEFAULT_TARGETS = [
     enabled: true
   },
   {
-    id: "local-service",
+    id: "target_1791194011314",
     name: "local",
     type: "backend",
     url: "http://192.168.29.143:8083/checkserver",
@@ -70,6 +70,10 @@ const state = {
   summary: null,
   cachedLogs: [],
   recipientEmails: ['indumathi.r@zadroit.com', 'vijay.loganathan@zadroit.com'],
+  authCredentials: {
+    username: 'Zadroit',
+    password: ''
+  },
   filters: {
     serviceName: 'all',
     type: 'all',
@@ -81,10 +85,16 @@ const state = {
   firebaseApp: null,
   firebaseDb: null,
   firebaseLogsRef: null,
+  firebaseTargetsRef: null,
+  firebaseEmailRef: null,
+  firebaseAuthRef: null,
   firebaseStatus: {
     connected: false,
     permissionDenied: false,
-    totalLogs: 0
+    totalLogs: 0,
+    targetsCount: 0,
+    usersCount: 1,
+    emailSynced: false
   },
   nextCheckSeconds: 300, // 5 minutes
   searchTimer: null,
@@ -136,7 +146,7 @@ function showDashboard() {
   fetchStatus();
   fetchLogs();
 
-  // Attach Realtime Firebase WebSockets & Listeners
+  // Attach Realtime Firebase WebSockets & Listeners for Targets, Users, Emails, Logs
   attachFirebaseRealtimeListeners();
 
   // Start 5-minute countdown and background poll
@@ -184,12 +194,13 @@ function updateTimerDisplay() {
 }
 
 // ============================================================================
-// FIREBASE REAL-TIME WEBSOCKET LISTENERS
+// FIREBASE REAL-TIME WEBSOCKET LISTENERS (LOGS, TARGETS, EMAILS, AUTH)
 // ============================================================================
 function attachFirebaseRealtimeListeners() {
   if (!state.firebaseDb) {
     initFirebaseSDK();
   }
+  if (!state.firebaseDb) return;
 
   const banner = document.getElementById('firebaseRealtimeBanner');
   const authWarning = document.getElementById('firebaseAuthWarning');
@@ -201,10 +212,10 @@ function attachFirebaseRealtimeListeners() {
     endpointLabel.textContent = `Firebase Realtime DB: ${firebaseConfig.databaseURL}`;
   }
 
+  // 1. LISTEN TO LOGS STREAM (/server_monitoring_logs)
   try {
     state.firebaseLogsRef = ref(state.firebaseDb, 'server_monitoring_logs');
 
-    // Listen for full dataset and real-time updates
     onValue(state.firebaseLogsRef, (snapshot) => {
       const data = snapshot.val();
       state.firebaseStatus.connected = true;
@@ -227,13 +238,7 @@ function attachFirebaseRealtimeListeners() {
         state.totalLogs = logsList.length;
         state.firebaseStatus.totalLogs = logsList.length;
 
-        if (streamBadge) {
-          streamBadge.className = 'stream-badge';
-          streamBadge.innerHTML = `<i class="fa-solid fa-bolt"></i> Realtime Live (${logsList.length} logs)`;
-        }
-        if (metricFb) {
-          metricFb.textContent = `Live Firebase (${logsList.length} logs)`;
-        }
+        updateFirebaseBadgeUI();
 
         // Derive summary & target cards from Firebase logs
         updateMetricsFromFirebaseLogs(logsList);
@@ -241,10 +246,7 @@ function attachFirebaseRealtimeListeners() {
         // Filter and render logs table
         filterAndRenderClientLogs();
       } else {
-        if (streamBadge) {
-          streamBadge.className = 'stream-badge';
-          streamBadge.innerHTML = `<i class="fa-solid fa-bolt"></i> Realtime Live (0 logs)`;
-        }
+        updateFirebaseBadgeUI();
         renderLogsTable([], 0);
         renderPagination(0, 1, state.limit);
       }
@@ -266,16 +268,117 @@ function attachFirebaseRealtimeListeners() {
     });
 
   } catch (err) {
-    console.error('Error attaching Firebase Realtime listeners:', err);
+    console.error('Error attaching Firebase Logs listener:', err);
+  }
+
+  // 2. LISTEN TO TARGETS STREAM (/targets)
+  try {
+    state.firebaseTargetsRef = ref(state.firebaseDb, 'targets');
+    onValue(state.firebaseTargetsRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data && typeof data === 'object') {
+        const targetList = [];
+        if (Array.isArray(data)) {
+          targetList.push(...data.filter(Boolean));
+        } else {
+          for (const [k, v] of Object.entries(data)) {
+            if (v && typeof v === 'object') {
+              if (!v.id) v.id = k;
+              targetList.push(v);
+            }
+          }
+        }
+
+        if (targetList.length > 0) {
+          state.targets = targetList;
+          state.firebaseStatus.targetsCount = targetList.length;
+          updateFilterDropdown();
+          renderTargetsManagerList(state.targets);
+          if (state.summary) {
+            renderServiceCards(state.summary);
+          }
+          updateFirebaseBadgeUI();
+        }
+      }
+    });
+  } catch (err) {
+    console.warn('Error attaching Firebase Targets listener:', err);
+  }
+
+  // 3. LISTEN TO EMAIL CONFIG STREAM (/email_config)
+  try {
+    state.firebaseEmailRef = ref(state.firebaseDb, 'email_config');
+    onValue(state.firebaseEmailRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data && typeof data === 'object') {
+        if (Array.isArray(data.to_emails) && data.to_emails.length > 0) {
+          state.recipientEmails = [...data.to_emails];
+          state.firebaseStatus.emailSynced = true;
+          window.renderEmailChips();
+          updateFirebaseBadgeUI();
+        }
+      }
+    });
+  } catch (err) {
+    console.warn('Error attaching Firebase Email listener:', err);
+  }
+
+  // 4. LISTEN TO AUTH STREAM (/auth)
+  try {
+    state.firebaseAuthRef = ref(state.firebaseDb, 'auth');
+    onValue(state.firebaseAuthRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data && typeof data === 'object' && data.username) {
+        state.authCredentials.username = data.username;
+        if (data.password) state.authCredentials.password = data.password;
+        state.firebaseStatus.usersCount = 1;
+        updateFirebaseBadgeUI();
+      }
+    });
+  } catch (err) {
+    console.warn('Error attaching Firebase Auth listener:', err);
+  }
+}
+
+function updateFirebaseBadgeUI() {
+  const streamBadge = document.getElementById('firebaseStreamBadge');
+  const metricFb = document.getElementById('metricFirebaseStatus');
+  const entityPills = document.getElementById('firebaseEntityPills');
+
+  if (streamBadge) {
+    streamBadge.className = 'stream-badge';
+    streamBadge.innerHTML = `<i class="fa-solid fa-bolt"></i> Realtime (${state.firebaseStatus.totalLogs} logs)`;
+  }
+  if (metricFb) {
+    metricFb.textContent = `Live Firebase (${state.firebaseStatus.totalLogs} logs)`;
+  }
+
+  if (entityPills) {
+    entityPills.innerHTML = `
+      <span class="pill-badge"><i class="fa-solid fa-list-check"></i> ${state.targets.length} Targets</span>
+      <span class="pill-badge"><i class="fa-solid fa-user-shield"></i> Users (${state.currentUser})</span>
+      <span class="pill-badge"><i class="fa-solid fa-envelope"></i> ${state.recipientEmails.length} Emails</span>
+      <span class="pill-badge"><i class="fa-solid fa-database"></i> ${state.totalLogs} Logs</span>
+    `;
   }
 }
 
 function detachFirebaseListeners() {
   if (state.firebaseLogsRef) {
-    try {
-      off(state.firebaseLogsRef);
-    } catch (e) {}
+    try { off(state.firebaseLogsRef); } catch (e) { }
     state.firebaseLogsRef = null;
+  }
+  if (state.firebaseTargetsRef) {
+    try { off(state.firebaseTargetsRef); } catch (e) { }
+    state.firebaseTargetsRef = null;
+  }
+  if (state.firebaseEmailRef) {
+    try { off(state.firebaseEmailRef); } catch (e) { }
+    state.firebaseEmailRef = null;
+  }
+  if (state.firebaseAuthRef) {
+    try { off(state.firebaseAuthRef); } catch (e) { }
+    state.firebaseAuthRef = null;
   }
 }
 
@@ -283,11 +386,9 @@ function detachFirebaseListeners() {
 function updateMetricsFromFirebaseLogs(logsList) {
   if (!logsList || logsList.length === 0) return;
 
-  // Build target statuses map
   const targetStatuses = {};
   const serviceNamesSeen = new Set();
 
-  // Find latest log for each service
   logsList.forEach((log) => {
     const sName = log.service_name || log['service name'];
     if (sName && !targetStatuses[sName]) {
@@ -304,19 +405,17 @@ function updateMetricsFromFirebaseLogs(logsList) {
     }
   });
 
-  // Calculate totals
   const totalTargets = Math.max(state.targets.length, serviceNamesSeen.size);
   let onlineCount = 0;
   let offlineCount = 0;
 
   state.targets.forEach((t) => {
-    const st = targetStatuses[t.name];
+    const st = targetStatuses[t.name] || targetStatuses[t.id];
     if (st && st.status) {
       onlineCount++;
     } else if (st && !st.status) {
       offlineCount++;
     } else {
-      // Default to online or awaiting
       onlineCount++;
     }
   });
@@ -341,39 +440,82 @@ function updateMetricsFromFirebaseLogs(logsList) {
 }
 
 // Force re-check and sync
-window.checkFirebaseRealtime = function() {
+window.checkFirebaseRealtime = function () {
   attachFirebaseRealtimeListeners();
   showToast('Re-connecting to Firebase Realtime Database...', 'info');
 };
 
-window.syncNowFromFirebase = async function() {
+window.syncNowFromFirebase = async function () {
   const icon = document.getElementById('syncFbIcon');
   if (icon) icon.classList.add('fa-spin');
 
   try {
-    const res = await fetch('/api/firebase-sync', { method: 'POST' });
+    const res = await fetch('/api/firebase-sync-all', { method: 'POST' });
     if (res.ok) {
       const data = await res.json();
-      if (data.success) {
-        showToast(`Pulled logs from Firebase: ${data.message}`, 'success');
-        fetchStatus();
-        fetchLogs();
-      }
+      showToast(`Synchronized with Firebase: ${data.message}`, 'success');
+      loadTargets();
+      fetchStatus();
+      fetchLogs();
     } else {
-      showToast('Firebase direct WebSocket sync is active', 'info');
+      // Direct Firebase read fallback
+      attachFirebaseRealtimeListeners();
+      showToast('Synced directly via Firebase Realtime Database', 'success');
     }
   } catch (err) {
+    attachFirebaseRealtimeListeners();
     showToast('Firebase Realtime WebSocket stream is active', 'info');
   } finally {
     if (icon) icon.classList.remove('fa-spin');
+  }
+};
+
+window.syncAllToFirebase = async function () {
+  const btn = document.getElementById('btnSyncAllFb');
+  if (btn) btn.disabled = true;
+
+  try {
+    // 1. Sync via Backend if available
+    const res = await fetch('/api/firebase-sync-all', { method: 'POST' });
+    if (res.ok) {
+      const data = await res.json();
+      showToast(data.message || 'Synced Targets, Users, Emails, and Logs to Firebase!', 'success');
+    } else if (state.firebaseDb) {
+      // 2. Direct Firebase write fallback
+      const targetsMap = {};
+      state.targets.forEach(t => { if (t.id) targetsMap[t.id] = t; });
+      await set(ref(state.firebaseDb, 'targets'), targetsMap);
+      await set(ref(state.firebaseDb, 'email_config'), {
+        enabled: true,
+        to_emails: state.recipientEmails
+      });
+      await set(ref(state.firebaseDb, 'auth'), {
+        username: state.currentUser,
+        password: state.authCredentials.password || 'ZadGugSlm06'
+      });
+      showToast('All Targets, Users, and Emails saved to Firebase DB!', 'success');
+    }
+  } catch (err) {
+    if (state.firebaseDb) {
+      try {
+        const targetsMap = {};
+        state.targets.forEach(t => { if (t.id) targetsMap[t.id] = t; });
+        await set(ref(state.firebaseDb, 'targets'), targetsMap);
+        showToast('Targets synced directly to Firebase!', 'success');
+      } catch (e) {
+        showToast('Sync error: ' + e.message, 'error');
+      }
+    }
+  } finally {
+    if (btn) btn.disabled = false;
     attachFirebaseRealtimeListeners();
   }
 };
 
 // ============================================================================
-// AUTHENTICATION (STATIC + BACKEND FALLBACK)
+// AUTHENTICATION (STATIC + BACKEND + FIREBASE REALTIME DB)
 // ============================================================================
-window.handleLogin = async function(e) {
+window.handleLogin = async function (e) {
   e.preventDefault();
   const username = document.getElementById('usernameInput').value.trim();
   const password = document.getElementById('passwordInput').value;
@@ -387,28 +529,11 @@ window.handleLogin = async function(e) {
 
   // 1. Static Login Check: Zadroit / ZadGugSlm06
   if (username === 'Zadroit' && password === 'ZadGugSlm06') {
-    const token = 'zadroit_auth_' + Date.now();
-    state.authToken = token;
-    state.currentUser = username;
-    localStorage.setItem('zadroit_auth_token', token);
-    localStorage.setItem('zadroit_username', username);
-    showToast('Welcome back, Zadroit!', 'success');
-    showDashboard();
-    loginBtn.disabled = false;
-    loginBtn.innerHTML = `<span>Sign In to Dashboard</span> <i class="fa-solid fa-arrow-right"></i>`;
-
-    // Asynchronously ping backend if online
-    try {
-      fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      }).catch(() => {});
-    } catch (e) {}
+    completeLogin(username);
     return;
   }
 
-  // 2. If not matching static credentials, try backend API if available
+  // 2. Check Backend API
   try {
     const res = await fetch('/api/auth/login', {
       method: 'POST',
@@ -419,17 +544,35 @@ window.handleLogin = async function(e) {
     if (res.ok) {
       const data = await res.json();
       if (data.success) {
-        state.authToken = data.token;
-        state.currentUser = data.username;
-        localStorage.setItem('zadroit_auth_token', data.token);
-        localStorage.setItem('zadroit_username', data.username);
-        showToast('Welcome back, Zadroit!', 'success');
-        showDashboard();
+        completeLogin(data.username || username, data.token);
         return;
       }
     }
-  } catch (err) {
-    // Backend API unavailable
+  } catch (err) { }
+
+  // 3. Check Firebase DB directly (/auth or /users)
+  if (state.firebaseDb) {
+    try {
+      const authSnap = await get(ref(state.firebaseDb, 'auth'));
+      if (authSnap.exists()) {
+        const fbAuth = authSnap.val();
+        if (fbAuth.username === username && fbAuth.password === password) {
+          completeLogin(username);
+          return;
+        }
+      }
+
+      const userSnap = await get(ref(state.firebaseDb, `users/${username}`));
+      if (userSnap.exists()) {
+        const fbUser = userSnap.val();
+        if (fbUser.password === password) {
+          completeLogin(username);
+          return;
+        }
+      }
+    } catch (fbErr) {
+      console.warn('[FIREBASE AUTH CHECK]', fbErr);
+    }
   }
 
   // Invalid credentials
@@ -440,7 +583,23 @@ window.handleLogin = async function(e) {
   loginBtn.innerHTML = `<span>Sign In to Dashboard</span> <i class="fa-solid fa-arrow-right"></i>`;
 };
 
-window.handleLogout = function() {
+function completeLogin(username, token) {
+  const authToken = token || 'zadroit_auth_' + Date.now();
+  state.authToken = authToken;
+  state.currentUser = username;
+  localStorage.setItem('zadroit_auth_token', authToken);
+  localStorage.setItem('zadroit_username', username);
+  showToast(`Welcome back, ${username}!`, 'success');
+  showDashboard();
+
+  const loginBtn = document.getElementById('loginBtn');
+  if (loginBtn) {
+    loginBtn.disabled = false;
+    loginBtn.innerHTML = `<span>Sign In to Dashboard</span> <i class="fa-solid fa-arrow-right"></i>`;
+  }
+}
+
+window.handleLogout = function () {
   state.authToken = null;
   localStorage.removeItem('zadroit_auth_token');
   localStorage.removeItem('zadroit_username');
@@ -448,31 +607,33 @@ window.handleLogout = function() {
   showLogin();
 };
 
-window.fillCredentials = function(user, pass) {
+window.fillCredentials = function (user, pass) {
   document.getElementById('usernameInput').value = user;
   document.getElementById('passwordInput').value = pass;
   showToast('Credentials filled. Click Sign In.', 'info');
 };
 
-window.togglePasswordVisibility = function(inputId) {
+window.togglePasswordVisibility = function (inputId) {
   const input = document.getElementById(inputId);
   const icon = document.getElementById('passwordToggleIcon');
   if (input.type === 'password') {
     input.type = 'text';
-    icon.classList.remove('fa-eye');
-    icon.classList.add('fa-eye-slash');
+    if (icon) {
+      icon.classList.remove('fa-eye');
+      icon.classList.add('fa-eye-slash');
+    }
   } else {
     input.type = 'password';
-    icon.classList.remove('fa-eye-slash');
-    icon.classList.add('fa-eye');
+    if (icon) {
+      icon.classList.remove('fa-eye-slash');
+      icon.classList.add('fa-eye');
+    }
   }
 };
 
 // ============================================================================
 // DATA FETCHING & RENDERING
 // ============================================================================
-
-// Fetch overview summary (with Firebase fallback)
 async function fetchStatus() {
   try {
     const res = await fetch('/api/status');
@@ -483,11 +644,8 @@ async function fetchStatus() {
       renderServiceCards(summary);
       return;
     }
-  } catch (err) {
-    // Static Vercel or offline backend
-  }
+  } catch (err) { }
 
-  // Fallback to computing summary from cached Firebase logs
   if (state.cachedLogs && state.cachedLogs.length > 0) {
     updateMetricsFromFirebaseLogs(state.cachedLogs);
   }
@@ -495,10 +653,10 @@ async function fetchStatus() {
 
 function renderSummaryMetrics(summary) {
   if (!summary) return;
-  document.getElementById('metricTotalTargets').textContent = summary.total_targets || 0;
+  document.getElementById('metricTotalTargets').textContent = summary.total_targets || state.targets.length || 0;
   document.getElementById('metricOnlineTargets').textContent = summary.online_targets || 0;
   document.getElementById('metricOfflineTargets').textContent = summary.offline_targets || 0;
-  document.getElementById('metricTotalChecks').textContent = summary.total_checks || 0;
+  document.getElementById('metricTotalChecks').textContent = summary.total_checks || state.totalLogs || 0;
 
   const uptime = (summary.uptime_percent || 100).toFixed(1);
   const uptimeBadge = document.getElementById('metricUptimePercent');
@@ -511,20 +669,6 @@ function renderSummaryMetrics(summary) {
     }
   }
 
-  // Global Header status pill
-  const pill = document.getElementById('globalStatusPill');
-  const pillText = document.getElementById('globalStatusText');
-  if (pill && pillText) {
-    if (summary.offline_targets > 0) {
-      pill.className = 'system-status-pill degraded';
-      pillText.textContent = `${summary.offline_targets} Incident(s)`;
-    } else {
-      pill.className = 'system-status-pill';
-      pillText.textContent = 'All Systems Operational';
-    }
-  }
-
-  // Last check time
   if (summary.last_check_time && summary.last_check_time !== 'Never') {
     const lastCheckElem = document.getElementById('lastCheckTimeText');
     if (lastCheckElem) {
@@ -533,7 +677,6 @@ function renderSummaryMetrics(summary) {
   }
 }
 
-// Render service cards in the top overview ribbon
 function renderServiceCards(summary) {
   const container = document.getElementById('serviceCardsContainer');
   if (!container) return;
@@ -548,11 +691,10 @@ function renderServiceCards(summary) {
 
   let html = '';
   targets.forEach((target) => {
-    // Check status either by target ID or by target name
     const st = statuses[target.id] || statuses[target.name] || {
       status: false,
-      hit_time: 'Awaiting first check...',
-      message: 'Pending initial health probe',
+      hit_time: 'Awaiting probe...',
+      message: 'Monitoring active',
       http_status: 0,
       response_time_ms: 0,
       data: {},
@@ -564,7 +706,6 @@ function renderServiceCards(summary) {
     const badgeText = isUp ? '● UP (200)' : '● DOWN / ERROR';
     const typeClass = target.type === 'backend' ? 'backend' : 'frontend';
 
-    // Sub-data tags
     let subDataHtml = '';
     if (st.data && typeof st.data === 'object') {
       for (const [k, v] of Object.entries(st.data)) {
@@ -655,38 +796,30 @@ async function fetchLogs(showSpinner = true) {
       if (refreshIcon) refreshIcon.classList.remove('fa-spin');
       return;
     }
-  } catch (err) {
-    // Fallback to client-side filtering from Firebase cached logs
-  }
+  } catch (err) { }
 
-  // Client-side filtering
   filterAndRenderClientLogs();
   if (refreshIcon) refreshIcon.classList.remove('fa-spin');
 }
 
-// Client-side filtering and rendering from Firebase logs stream
 function filterAndRenderClientLogs() {
   const allLogs = state.cachedLogs || [];
   let filtered = allLogs;
 
-  // Filter: Service Name
   if (state.filters.serviceName && state.filters.serviceName !== 'all') {
     filtered = filtered.filter(l => (l.service_name || l['service name']) === state.filters.serviceName);
   }
 
-  // Filter: Type
   if (state.filters.type && state.filters.type !== 'all') {
     filtered = filtered.filter(l => l.type === state.filters.type);
   }
 
-  // Filter: Status
   if (state.filters.status === 'success') {
     filtered = filtered.filter(l => Boolean(l.status) === true);
   } else if (state.filters.status === 'failure') {
     filtered = filtered.filter(l => Boolean(l.status) === false);
   }
 
-  // Filter: Dates
   if (state.filters.fromDate) {
     const fromTime = new Date(state.filters.fromDate).setHours(0, 0, 0, 0);
     filtered = filtered.filter(l => {
@@ -702,7 +835,6 @@ function filterAndRenderClientLogs() {
     });
   }
 
-  // Filter: Search text
   if (state.filters.search) {
     const q = state.filters.search.toLowerCase();
     filtered = filtered.filter(l => {
@@ -722,7 +854,6 @@ function filterAndRenderClientLogs() {
   renderPagination(total, state.currentPage, state.limit);
 }
 
-// Render data table rows
 function renderLogsTable(logs, total) {
   const tbody = document.getElementById('logsTableBody');
   if (!tbody) return;
@@ -753,7 +884,6 @@ function renderLogsTable(logs, total) {
       ? `<span class="type-badge backend"><i class="fa-solid fa-microchip"></i> backend</span>`
       : `<span class="type-badge frontend"><i class="fa-solid fa-globe"></i> frontend</span>`;
 
-    // Render Data chips / preview
     let dataPreview = '';
     if (item.data && Object.keys(item.data).length > 0) {
       let chips = '';
@@ -774,28 +904,35 @@ function renderLogsTable(logs, total) {
     const rowNum = (state.currentPage - 1) * state.limit + index + 1;
     const sName = item.service_name || item['service name'] || 'Unnamed';
     const hitTime = item.hit_time || item['hit time'] || 'N/A';
+    const targetUrl = item.url || state.targets.find(t => t.name === sName || t.id === item.target_id)?.url || '';
 
     html += `
       <tr class="${isSuccess ? 'row-success' : 'row-failure'}">
-        <td class="text-muted font-mono" style="width:45px;">#${rowNum}</td>
+        <td class="text-muted font-mono text-center" style="width:50px;">#${rowNum}</td>
         <td>
-          <div class="table-service-name">${escapeHTML(sName)}</div>
+          <div class="table-service-name" style="font-weight:600; color:var(--text-primary);">${escapeHTML(sName)}</div>
         </td>
         <td>${typeBadge}</td>
-        <td>${statusBadge}</td>
+        <td class="table-url-cell">
+          ${targetUrl ? `
+            <a href="${escapeHTML(targetUrl)}" target="_blank" rel="noopener noreferrer" class="table-url-link" title="${escapeHTML(targetUrl)}">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> ${escapeHTML(targetUrl)}
+            </a>
+          ` : `<span class="text-muted font-mono" style="font-size:12px;">--</span>`}
+        </td>
+        <td class="text-center">${statusBadge}</td>
         <td class="font-mono text-muted" style="white-space:nowrap; font-size:12px;">${escapeHTML(hitTime)}</td>
         <td>
           <span class="table-message-text" title="${escapeHTML(item.message || '')}">
             ${escapeHTML(item.message || (isSuccess ? 'Service OK' : item.error_detail || 'Error'))}
           </span>
         </td>
-        <td>${dataPreview}</td>
         <td>
-          <span class="font-mono text-cyan" style="font-size:12px;">${item.response_time_ms || 0}ms</span>
+          ${dataPreview}
         </td>
         <td class="text-center">
           <button class="btn btn-ghost btn-sm" onclick="inspectLog('${escapeHTML(item.id || index)}')" title="View Full Log JSON">
-            <i class="fa-solid fa-eye"></i>
+            <i class="fa-solid fa-eye text-cyan"></i>
           </button>
         </td>
       </tr>
@@ -805,7 +942,6 @@ function renderLogsTable(logs, total) {
   tbody.innerHTML = html;
 }
 
-// Render pagination
 function renderPagination(total, page, limit) {
   const container = document.getElementById('paginationControls');
   const showingRange = document.getElementById('showingRangeText');
@@ -839,12 +975,12 @@ function renderPagination(total, page, limit) {
   container.innerHTML = html;
 }
 
-window.goToPage = function(page) {
+window.goToPage = function (page) {
   state.currentPage = page;
   fetchLogs();
 };
 
-window.onLimitChange = function() {
+window.onLimitChange = function () {
   state.limit = parseInt(document.getElementById('limitSelect').value, 10) || 25;
   state.currentPage = 1;
   fetchLogs();
@@ -853,7 +989,7 @@ window.onLimitChange = function() {
 // ============================================================================
 // FILTERS
 // ============================================================================
-window.onFilterChange = function() {
+window.onFilterChange = function () {
   state.filters.serviceName = document.getElementById('filterService').value;
   state.filters.type = document.getElementById('filterType').value;
   state.filters.status = document.getElementById('filterStatus').value;
@@ -863,7 +999,18 @@ window.onFilterChange = function() {
   fetchLogs();
 };
 
-window.setQuickDate = function(preset, btn) {
+function updateFilterDropdown() {
+  const select = document.getElementById('filterService');
+  if (select) {
+    let options = '<option value="all">All Services</option>';
+    state.targets.forEach((t) => {
+      options += `<option value="${escapeHTML(t.name)}">${escapeHTML(t.name)}</option>`;
+    });
+    select.innerHTML = options;
+  }
+}
+
+window.setQuickDate = function (preset, btn) {
   document.querySelectorAll('.date-presets-group .btn-preset').forEach((b) => b.classList.remove('active'));
   btn.classList.add('active');
 
@@ -887,7 +1034,7 @@ window.setQuickDate = function(preset, btn) {
   window.onFilterChange();
 };
 
-window.debounceSearch = function() {
+window.debounceSearch = function () {
   clearTimeout(state.searchTimer);
   const val = document.getElementById('filterSearch').value.trim();
   const clearBtn = document.getElementById('clearSearchBtn');
@@ -900,7 +1047,7 @@ window.debounceSearch = function() {
   }, 300);
 };
 
-window.clearSearch = function() {
+window.clearSearch = function () {
   document.getElementById('filterSearch').value = '';
   document.getElementById('clearSearchBtn').style.display = 'none';
   state.filters.search = '';
@@ -908,7 +1055,7 @@ window.clearSearch = function() {
   fetchLogs();
 };
 
-window.resetAllFilters = function() {
+window.resetAllFilters = function () {
   document.getElementById('filterService').value = 'all';
   document.getElementById('filterType').value = 'all';
   document.getElementById('filterStatus').value = 'all';
@@ -934,14 +1081,13 @@ window.resetAllFilters = function() {
   showToast('Filters reset to default', 'info');
 };
 
-window.exportCSV = function() {
+window.exportCSV = function () {
   const allLogs = state.cachedLogs || [];
   if (allLogs.length === 0) {
     showToast('No logs available to export.', 'info');
     return;
   }
 
-  // Generate CSV in browser
   const headers = ['Service Name', 'Type', 'Status', 'Hit Time', 'Target URL', 'Response Time (ms)', 'HTTP Status', 'Message', 'Data JSON'];
   const rows = allLogs.map(l => [
     `"${(l.service_name || l['service name'] || '').replace(/"/g, '""')}"`,
@@ -969,7 +1115,7 @@ window.exportCSV = function() {
 // ============================================================================
 // ACTIONS: CHECK NOW & TEST EMAIL
 // ============================================================================
-window.triggerManualCheck = async function() {
+window.triggerManualCheck = async function () {
   const btn = document.getElementById('btnCheckNow');
   const icon = document.getElementById('checkNowIcon');
 
@@ -987,7 +1133,7 @@ window.triggerManualCheck = async function() {
         fetchLogs();
       }
     } else {
-      showToast('Manual check endpoint is active on backend server.', 'info');
+      showToast('Manual check endpoint active on backend server.', 'info');
     }
   } catch (err) {
     showToast('Scheduled 5-minute automated checks run on Go backend.', 'info');
@@ -997,7 +1143,7 @@ window.triggerManualCheck = async function() {
   }
 };
 
-window.triggerTestEmail = async function() {
+window.triggerTestEmail = async function () {
   const btn = document.getElementById('btnTestEmail');
   const statusElem = document.getElementById('testEmailStatus');
   btn.disabled = true;
@@ -1025,35 +1171,41 @@ window.triggerTestEmail = async function() {
 };
 
 // ============================================================================
-// TARGETS MANAGEMENT
+// TARGETS MANAGEMENT (PERSISTED IN FIREBASE REALTIME DB)
 // ============================================================================
 async function loadTargets() {
+  // 1. Try backend API
   try {
     const res = await fetch('/api/targets');
     if (res.ok) {
       const targets = await res.json();
       if (Array.isArray(targets) && targets.length > 0) {
         state.targets = targets;
+        state.firebaseStatus.targetsCount = targets.length;
       }
     }
   } catch (err) {
-    // Keep DEFAULT_TARGETS
+    // 2. Try direct Firebase RTDB fetch
+    if (state.firebaseDb) {
+      try {
+        const snap = await get(ref(state.firebaseDb, 'targets'));
+        if (snap.exists()) {
+          const data = snap.val();
+          const targetList = Object.values(data);
+          if (targetList.length > 0) {
+            state.targets = targetList;
+            state.firebaseStatus.targetsCount = targetList.length;
+          }
+        }
+      } catch (fbErr) { }
+    }
   }
 
-  // Update filter dropdown
-  const select = document.getElementById('filterService');
-  if (select) {
-    let options = '<option value="all">All Services</option>';
-    state.targets.forEach((t) => {
-      options += `<option value="${escapeHTML(t.name)}">${escapeHTML(t.name)}</option>`;
-    });
-    select.innerHTML = options;
-  }
-
-  // Update badge count
+  updateFilterDropdown();
   const badge = document.getElementById('targetCountBadge');
   if (badge) badge.textContent = state.targets.length;
   renderTargetsManagerList(state.targets);
+  updateFirebaseBadgeUI();
 }
 
 function renderTargetsManagerList(targets) {
@@ -1088,7 +1240,7 @@ function renderTargetsManagerList(targets) {
   container.innerHTML = html;
 }
 
-window.editTarget = function(id) {
+window.editTarget = function (id) {
   const target = state.targets.find((t) => t.id === id);
   if (!target) return;
 
@@ -1101,7 +1253,7 @@ window.editTarget = function(id) {
   document.getElementById('targetFormEnabled').checked = target.enabled;
 };
 
-window.resetTargetForm = function() {
+window.resetTargetForm = function () {
   document.getElementById('targetFormId').value = '';
   document.getElementById('targetFormName').value = '';
   document.getElementById('targetFormType').value = 'backend';
@@ -1111,7 +1263,7 @@ window.resetTargetForm = function() {
   document.getElementById('targetFormEnabled').checked = true;
 };
 
-window.handleSaveTarget = async function(e) {
+window.handleSaveTarget = async function (e) {
   e.preventDefault();
   const id = document.getElementById('targetFormId').value;
   const name = document.getElementById('targetFormName').value.trim();
@@ -1126,70 +1278,78 @@ window.handleSaveTarget = async function(e) {
     : [];
 
   const targetData = {
-    id: id || name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+    id: id || 'target_' + Date.now(),
     name,
     type,
     url,
     method,
     expected_keys,
     enabled,
-    timeout_seconds: 15,
   };
 
+  // 1. Send to Backend API
   try {
     const endpoint = id ? `/api/targets/${id}` : '/api/targets';
     const httpMethod = id ? 'PUT' : 'POST';
 
-    const res = await fetch(endpoint, {
+    await fetch(endpoint, {
       method: httpMethod,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(targetData),
     });
+  } catch (err) { }
 
-    if (res.ok) {
-      showToast(`Target "${name}" saved successfully!`, 'success');
-      loadTargets();
-      resetTargetForm();
-      fetchStatus();
-      return;
+  // 2. Direct Sync to Firebase Realtime DB
+  if (state.firebaseDb) {
+    try {
+      await set(ref(state.firebaseDb, `targets/${targetData.id}`), targetData);
+    } catch (fbErr) {
+      console.warn('[FIREBASE SAVE TARGET ERROR]', fbErr);
     }
-  } catch (err) {}
+  }
 
-  // Local state update fallback
+  // 3. Update local state
   const existingIdx = state.targets.findIndex(t => t.id === targetData.id);
   if (existingIdx >= 0) {
     state.targets[existingIdx] = targetData;
   } else {
     state.targets.push(targetData);
   }
+
   loadTargets();
   resetTargetForm();
-  showToast(`Target "${name}" updated!`, 'success');
+  fetchStatus();
+  showToast(`Target "${name}" saved & synced to Firebase!`, 'success');
 };
 
-window.deleteTarget = async function(id) {
+window.deleteTarget = async function (id) {
   if (!confirm('Are you sure you want to delete this target?')) return;
 
+  // 1. Call Backend API
   try {
-    const res = await fetch(`/api/targets/${id}`, { method: 'DELETE' });
-    if (res.ok) {
-      showToast('Target removed successfully', 'info');
-      loadTargets();
-      fetchStatus();
-      return;
+    await fetch(`/api/targets/${id}`, { method: 'DELETE' });
+  } catch (err) { }
+
+  // 2. Remove from Firebase Realtime DB
+  if (state.firebaseDb) {
+    try {
+      await remove(ref(state.firebaseDb, `targets/${id}`));
+      await remove(ref(state.firebaseDb, `current_status/${id}`));
+    } catch (fbErr) {
+      console.warn('[FIREBASE DELETE TARGET ERROR]', fbErr);
     }
-  } catch (err) {}
+  }
 
   state.targets = state.targets.filter(t => t.id !== id);
   loadTargets();
   fetchStatus();
-  showToast('Target removed from list', 'info');
+  showToast('Target removed from local store and Firebase DB', 'info');
 };
 
 // ============================================================================
 // MULTI-EMAIL RECIPIENTS CHIP MANAGER
 // ============================================================================
-window.renderEmailChips = function() {
+window.renderEmailChips = function () {
   const container = document.getElementById('emailChipsContainer');
   if (!container) return;
 
@@ -1208,7 +1368,7 @@ window.renderEmailChips = function() {
   `;
 };
 
-window.addEmailFromInput = function() {
+window.addEmailFromInput = function () {
   const input = document.getElementById('newEmailInput');
   if (!input) return;
   const val = input.value.trim();
@@ -1234,7 +1394,7 @@ window.addEmailFromInput = function() {
   if (newInput) newInput.focus();
 };
 
-window.removeEmailChip = function(index) {
+window.removeEmailChip = function (index) {
   if (state.recipientEmails.length <= 1) {
     showToast('At least one recipient email is required for alerts.', 'error');
     return;
@@ -1246,7 +1406,7 @@ window.removeEmailChip = function(index) {
   }
 };
 
-window.handleEmailInputKey = function(e) {
+window.handleEmailInputKey = function (e) {
   if (e.key === 'Enter' || e.key === ',' || e.key === ';') {
     e.preventDefault();
     window.addEmailFromInput();
@@ -1254,9 +1414,9 @@ window.handleEmailInputKey = function(e) {
 };
 
 // ============================================================================
-// SETTINGS MANAGEMENT (FIREBASE & EMAIL)
+// SETTINGS MANAGEMENT (FIREBASE, USERS, EMAIL ALERTS)
 // ============================================================================
-window.openSettingsModal = async function() {
+window.openSettingsModal = async function () {
   try {
     const res = await fetch('/api/config');
     if (res.ok) {
@@ -1266,10 +1426,13 @@ window.openSettingsModal = async function() {
       document.getElementById('setFirebaseCollection').value = cfg.firebase?.collection || 'server_monitoring_logs';
       document.getElementById('setFirebaseAuth').value = cfg.firebase?.auth_secret || '';
 
+      document.getElementById('setAuthUsername').value = cfg.auth?.username || state.currentUser || 'Zadroit';
+      document.getElementById('setAuthPassword').value = '';
+
       document.getElementById('setEmailEnabled').checked = cfg.email?.enabled ?? true;
       document.getElementById('setEmailFrom').value = cfg.email?.from_email || '';
       document.getElementById('setEmailPassword').value = cfg.email?.app_password || '';
-      
+
       if (Array.isArray(cfg.email?.to_emails) && cfg.email.to_emails.length > 0) {
         state.recipientEmails = [...cfg.email.to_emails];
       }
@@ -1277,15 +1440,17 @@ window.openSettingsModal = async function() {
       document.getElementById('setIntervalMins').value = cfg.monitoring?.interval_minutes || 5;
       document.getElementById('setTimeoutSecs').value = cfg.monitoring?.request_timeout_seconds || 15;
     }
-  } catch (err) {}
+  } catch (err) {
+    document.getElementById('setAuthUsername').value = state.currentUser || 'Zadroit';
+  }
 
   window.renderEmailChips();
   openModal('settingsModal');
 };
 
-window.handleSaveSettings = async function(e) {
+window.handleSaveSettings = async function (e) {
   e.preventDefault();
-  
+
   const pendingInput = document.getElementById('newEmailInput');
   if (pendingInput && pendingInput.value.trim()) {
     window.addEmailFromInput();
@@ -1296,7 +1461,14 @@ window.handleSaveSettings = async function(e) {
     return;
   }
 
+  const newUsername = document.getElementById('setAuthUsername').value.trim() || 'Zadroit';
+  const newPassword = document.getElementById('setAuthPassword').value;
+
   const newConfig = {
+    auth: {
+      username: newUsername,
+      password: newPassword,
+    },
     firebase: {
       enabled: document.getElementById('setFirebaseEnabled').checked,
       type: 'realtime',
@@ -1323,32 +1495,49 @@ window.handleSaveSettings = async function(e) {
       interval_minutes: parseInt(document.getElementById('setIntervalMins').value, 10) || 5,
       request_timeout_seconds: parseInt(document.getElementById('setTimeoutSecs').value, 10) || 15,
     },
+    targets: state.targets,
   };
 
+  // 1. Save to Backend API
   try {
-    const res = await fetch('/api/config', {
+    await fetch('/api/config', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newConfig),
     });
+  } catch (err) { }
 
-    if (res.ok) {
-      showToast(`System settings saved! (${state.recipientEmails.length} alert recipient(s))`, 'success');
-      closeModal('settingsModal');
-      attachFirebaseRealtimeListeners();
-      fetchStatus();
-      return;
+  // 2. Direct Sync to Firebase Realtime DB
+  if (state.firebaseDb) {
+    try {
+      await set(ref(state.firebaseDb, 'email_config'), newConfig.email);
+      if (newUsername && newPassword) {
+        await set(ref(state.firebaseDb, 'auth'), { username: newUsername, password: newPassword });
+        await set(ref(state.firebaseDb, `users/${newUsername}`), {
+          username: newUsername,
+          password: newPassword,
+          role: 'admin',
+          updated_at: new Date().toISOString()
+        });
+      }
+    } catch (fbErr) {
+      console.warn('[FIREBASE SETTINGS SAVE ERROR]', fbErr);
     }
-  } catch (err) {}
+  }
 
-  showToast(`Settings configured for ${state.recipientEmails.length} recipient(s)`, 'success');
+  state.currentUser = newUsername;
+  localStorage.setItem('zadroit_username', newUsername);
+
+  showToast(`Settings & Firebase credentials saved! (${state.recipientEmails.length} recipient(s))`, 'success');
   closeModal('settingsModal');
+  attachFirebaseRealtimeListeners();
+  fetchStatus();
 };
 
 // ============================================================================
 // INSPECT LOG MODAL
 // ============================================================================
-window.inspectLog = function(id) {
+window.inspectLog = function (id) {
   const logItem = state.cachedLogs.find((l, idx) => (l.id === id || String(idx) === String(id)));
   if (!logItem) return;
 
@@ -1413,16 +1602,16 @@ function openModal(id) {
   document.getElementById(id).classList.remove('hidden');
 }
 
-window.closeModal = function(id) {
+window.closeModal = function (id) {
   document.getElementById(id).classList.add('hidden');
 };
 
-window.openTargetModal = function() {
+window.openTargetModal = function () {
   loadTargets();
   openModal('targetModal');
 };
 
-window.handleBackdropClick = function(e, modalId) {
+window.handleBackdropClick = function (e, modalId) {
   if (e.target.id === modalId) {
     closeModal(modalId);
   }

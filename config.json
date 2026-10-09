@@ -37,18 +37,6 @@
   },
   "targets": [
     {
-      "id": "target_backend_1",
-      "name": "Nivas App product management",
-      "type": "backend",
-      "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
-      "method": "GET",
-      "enabled": true,
-      "expected_keys": [
-        "service",
-        "db"
-      ]
-    },
-    {
       "id": "target_frontend_1",
       "name": "Nivas HOC Website",
       "type": "frontend",
@@ -69,6 +57,18 @@
       "name": "local",
       "type": "backend",
       "url": "http://192.168.29.143:8083/checkserver",
+      "method": "GET",
+      "enabled": true,
+      "expected_keys": [
+        "service",
+        "db"
+      ]
+    },
+    {
+      "id": "target_backend_1",
+      "name": "Nivas App product management",
+      "type": "backend",
+      "url": "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
       "method": "GET",
       "enabled": true,
       "expected_keys": [
