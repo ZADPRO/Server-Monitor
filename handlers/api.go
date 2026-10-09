@@ -51,7 +51,6 @@ func (h *APIHandler) RegisterRoutes(mux *http.ServeMux) {
 
 	// API Endpoints with CORS
 	handleWithCORS("/api/auth/login", h.handleLogin)
-	handleWithCORS("/api/users", h.handleUsers)
 	handleWithCORS("/api/status", h.handleStatus)
 	handleWithCORS("/api/logs", h.handleLogs)
 	handleWithCORS("/api/console-logs", h.handleConsoleLogs)
