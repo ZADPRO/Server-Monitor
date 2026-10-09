@@ -148,7 +148,7 @@ func (cm *ConfigManager) reload() error {
 		cfg.Monitoring.IntervalMinutes = 5
 	}
 	if cfg.Monitoring.RequestTimeoutSeconds <= 0 {
-		cfg.Monitoring.RequestTimeoutSeconds = 15
+		cfg.Monitoring.RequestTimeoutSeconds = 60
 	}
 	if cfg.Email.SMTPHost == "" {
 		cfg.Email.SMTPHost = "smtp.gmail.com"
@@ -479,7 +479,7 @@ func GetDefaultConfig() models.Config {
 		},
 		Monitoring: models.MonitoringConfig{
 			IntervalMinutes:       5,
-			RequestTimeoutSeconds: 15,
+			RequestTimeoutSeconds: 60,
 		},
 		Email: models.EmailConfig{
 			Enabled:     true,

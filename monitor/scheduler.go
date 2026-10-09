@@ -186,7 +186,7 @@ func (s *Scheduler) RunCheckForSingleTarget(targetID string) (*models.HealthChec
 	cfg := s.cfgManager.Get()
 	timeout := time.Duration(cfg.Monitoring.RequestTimeoutSeconds) * time.Second
 	if timeout <= 0 {
-		timeout = 15 * time.Second
+		timeout = 60 * time.Second
 	}
 
 	var res models.HealthCheckResult
@@ -237,7 +237,7 @@ func (s *Scheduler) executeTargets(targets []models.Target) []models.HealthCheck
 	cfg := s.cfgManager.Get()
 	timeout := time.Duration(cfg.Monitoring.RequestTimeoutSeconds) * time.Second
 	if timeout <= 0 {
-		timeout = 15 * time.Second
+		timeout = 60 * time.Second
 	}
 
 	var wg sync.WaitGroup

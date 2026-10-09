@@ -9,7 +9,7 @@
   },
   "monitoring": {
     "interval_minutes": 5,
-    "request_timeout_seconds": 25
+    "request_timeout_seconds": 60
   },
   "email": {
     "enabled": true,
