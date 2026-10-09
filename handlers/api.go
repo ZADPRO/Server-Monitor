@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -119,10 +120,160 @@ func (h *APIHandler) handleLogin(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h *APIHandler) handleStatus(w http.ResponseWriter, r *http.Request) {
-	summary := h.storage.GetSummary()
+func (h *APIHandler) computeSummary() models.ServerSummary {
+	fb := h.storage.GetFirebaseClient()
+	var targets []models.Target
+	var logs []models.HealthCheckResult
+
+	if fb != nil {
+		targets, _ = fb.FetchTargets()
+		logs, _ = fb.FetchLogsFromFirebase()
+	}
+
+	if len(targets) == 0 && len(logs) == 0 {
+		return h.storage.GetSummary()
+	}
+
+	// Sort logs newest first
+	sort.Slice(logs, func(i, j int) bool {
+		return logs[i].Timestamp > logs[j].Timestamp
+	})
+
+	totalChecks := len(logs)
+	passedChecks := 0
+	failedChecks := 0
+	targetStatuses := make(map[string]models.HealthCheckResult)
+
+	for _, l := range logs {
+		if l.Status {
+			passedChecks++
+		} else {
+			failedChecks++
+		}
+
+		// Keep newest status per target ID / service name
+		if l.TargetID != "" {
+			if _, exists := targetStatuses[l.TargetID]; !exists {
+				targetStatuses[l.TargetID] = l
+			}
+		}
+		if l.ServiceName != "" {
+			if _, exists := targetStatuses[l.ServiceName]; !exists {
+				targetStatuses[l.ServiceName] = l
+			}
+		}
+	}
+
+	uptimePercent := 100.0
+	if totalChecks > 0 {
+		uptimePercent = (float64(passedChecks) / float64(totalChecks)) * 100.0
+	}
+
+	onlineTargets := 0
+	offlineTargets := 0
+	for _, t := range targets {
+		st, exists := targetStatuses[t.ID]
+		if !exists {
+			st, exists = targetStatuses[t.Name]
+		}
+		if exists && st.Status {
+			onlineTargets++
+		} else if exists && !st.Status {
+			offlineTargets++
+		}
+	}
+
+	lastCheck := "Never"
+	if len(logs) > 0 {
+		lastCheck = logs[0].HitTime
+	}
+
 	cfg := h.cfgManager.Get()
-	summary.IntervalMins = cfg.Monitoring.IntervalMinutes
+	intervalMins := cfg.Monitoring.IntervalMinutes
+	if intervalMins <= 0 {
+		intervalMins = 5
+	}
+
+	return models.ServerSummary{
+		TotalTargets:   len(targets),
+		OnlineTargets:  onlineTargets,
+		OfflineTargets: offlineTargets,
+		TotalChecks:    totalChecks,
+		PassedChecks:   passedChecks,
+		FailedChecks:   failedChecks,
+		UptimePercent:  uptimePercent,
+		LastCheckTime:  lastCheck,
+		TargetStatuses: targetStatuses,
+		IntervalMins:   intervalMins,
+	}
+}
+
+func filterLogs(allLogs []models.HealthCheckResult, filter models.LogFilter) []models.HealthCheckResult {
+	sort.Slice(allLogs, func(i, j int) bool {
+		return allLogs[i].Timestamp > allLogs[j].Timestamp
+	})
+
+	filtered := make([]models.HealthCheckResult, 0, len(allLogs))
+	for _, item := range allLogs {
+		if filter.ServiceName != "" && filter.ServiceName != "all" {
+			if !strings.EqualFold(item.ServiceName, filter.ServiceName) && !strings.Contains(strings.ToLower(item.ServiceName), strings.ToLower(filter.ServiceName)) {
+				continue
+			}
+		}
+
+		if filter.Type != "" && filter.Type != "all" {
+			if !strings.EqualFold(item.Type, filter.Type) {
+				continue
+			}
+		}
+
+		if filter.Status != "" && filter.Status != "all" {
+			if filter.Status == "success" && !item.Status {
+				continue
+			}
+			if (filter.Status == "failure" || filter.Status == "failed") && item.Status {
+				continue
+			}
+		}
+
+		hitDate := ""
+		if len(item.HitTime) >= 10 {
+			hitDate = item.HitTime[:10]
+		}
+
+		if filter.FromDate != "" && hitDate != "" {
+			if hitDate < filter.FromDate {
+				continue
+			}
+		}
+
+		if filter.ToDate != "" && hitDate != "" {
+			if hitDate > filter.ToDate {
+				continue
+			}
+		}
+
+		if filter.Search != "" {
+			term := strings.ToLower(filter.Search)
+			dataBytes, _ := json.Marshal(item.Data)
+			match := strings.Contains(strings.ToLower(item.ServiceName), term) ||
+				strings.Contains(strings.ToLower(item.URL), term) ||
+				strings.Contains(strings.ToLower(item.Message), term) ||
+				strings.Contains(strings.ToLower(item.ErrorDetail), term) ||
+				strings.Contains(strings.ToLower(string(dataBytes)), term)
+			if !match {
+				continue
+			}
+		}
+
+		filtered = append(filtered, item)
+	}
+
+	return filtered
+}
+
+func (h *APIHandler) handleStatus(w http.ResponseWriter, r *http.Request) {
+	summary := h.computeSummary()
 	writeJSON(w, http.StatusOK, summary)
 }
 
@@ -149,14 +300,55 @@ func (h *APIHandler) handleLogs(w http.ResponseWriter, r *http.Request) {
 		Limit:       limit,
 	}
 
-	logs, total, err := h.storage.GetLogs(filter)
-	if err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]interface{}{"error": err.Error()})
+	var allLogs []models.HealthCheckResult
+	fb := h.storage.GetFirebaseClient()
+	if fb != nil {
+		fbLogs, err := fb.FetchLogsFromFirebase()
+		if err == nil {
+			allLogs = fbLogs
+		}
+	}
+
+	if len(allLogs) == 0 {
+		logs, total, err := h.storage.GetLogs(filter)
+		if err == nil {
+			writeJSON(w, http.StatusOK, map[string]interface{}{
+				"logs":  logs,
+				"total": total,
+				"page":  page,
+				"limit": limit,
+			})
+			return
+		}
+	}
+
+	filtered := filterLogs(allLogs, filter)
+	total := len(filtered)
+	start := (page - 1) * limit
+	if start >= total {
+		writeJSON(w, http.StatusOK, map[string]interface{}{
+			"logs":  []models.HealthCheckResult{},
+			"total": total,
+			"page":  page,
+			"limit": limit,
+		})
 		return
 	}
 
+	end := start + limit
+	if end > total {
+		end = total
+	}
+
+	paginated := filtered[start:end]
+	resultSlice := make([]models.HealthCheckResult, len(paginated))
+	for i, item := range paginated {
+		item.SNo = start + i + 1
+		resultSlice[i] = item
+	}
+
 	writeJSON(w, http.StatusOK, map[string]interface{}{
-		"logs":  logs,
+		"logs":  resultSlice,
 		"total": total,
 		"page":  page,
 		"limit": limit,
@@ -187,7 +379,7 @@ func (h *APIHandler) handleCheckNow(w http.ResponseWriter, r *http.Request) {
 			})
 			return
 		}
-		summary := h.storage.GetSummary()
+		summary := h.computeSummary()
 		writeJSON(w, http.StatusOK, map[string]interface{}{
 			"success": true,
 			"results": []models.HealthCheckResult{*res},
@@ -197,7 +389,7 @@ func (h *APIHandler) handleCheckNow(w http.ResponseWriter, r *http.Request) {
 	}
 
 	results := h.scheduler.RunChecksNow()
-	summary := h.storage.GetSummary()
+	summary := h.computeSummary()
 
 	writeJSON(w, http.StatusOK, map[string]interface{}{
 		"success": true,
@@ -207,9 +399,18 @@ func (h *APIHandler) handleCheckNow(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *APIHandler) handleTargets(w http.ResponseWriter, r *http.Request) {
+	fb := h.storage.GetFirebaseClient()
+
 	switch r.Method {
 	case http.MethodGet:
-		targets := h.cfgManager.GetTargets()
+		var targets []models.Target
+		var err error
+		if fb != nil {
+			targets, err = fb.FetchTargets()
+		}
+		if err != nil || targets == nil {
+			targets = []models.Target{}
+		}
 		writeJSON(w, http.StatusOK, targets)
 
 	case http.MethodPost:
@@ -233,15 +434,17 @@ func (h *APIHandler) handleTargets(w http.ResponseWriter, r *http.Request) {
 			target.IntervalMinutes = 5
 		}
 
-		if err := h.cfgManager.AddTarget(target); err != nil {
-			writeJSON(w, http.StatusBadRequest, map[string]interface{}{"error": err.Error()})
-			return
+		if fb != nil {
+			if err := fb.SaveTarget(target); err != nil {
+				writeJSON(w, http.StatusInternalServerError, map[string]interface{}{"error": err.Error()})
+				return
+			}
 		}
 
 		writeJSON(w, http.StatusCreated, map[string]interface{}{
 			"success": true,
 			"target":  target,
-			"message": "Target saved locally and synced to Firebase",
+			"message": "Target saved directly to Firebase",
 		})
 
 	default:
@@ -269,13 +472,32 @@ func (h *APIHandler) handleTargetByID(w http.ResponseWriter, r *http.Request) {
 			writeJSON(w, http.StatusBadRequest, map[string]interface{}{"success": false, "error": err.Error()})
 			return
 		}
-		summary := h.storage.GetSummary()
+		summary := h.computeSummary()
 		writeJSON(w, http.StatusOK, map[string]interface{}{"success": true, "results": []models.HealthCheckResult{*res}, "summary": summary})
 		return
 	}
 
 	id := path
+	fb := h.storage.GetFirebaseClient()
+
 	switch r.Method {
+	case http.MethodGet:
+		var target *models.Target
+		if fb != nil {
+			targets, _ := fb.FetchTargets()
+			for _, t := range targets {
+				if t.ID == id {
+					target = &t
+					break
+				}
+			}
+		}
+		if target == nil {
+			writeJSON(w, http.StatusNotFound, map[string]interface{}{"error": "Target not found"})
+			return
+		}
+		writeJSON(w, http.StatusOK, target)
+
 	case http.MethodPut:
 		var target models.Target
 		if err := json.NewDecoder(r.Body).Decode(&target); err != nil {
@@ -287,26 +509,30 @@ func (h *APIHandler) handleTargetByID(w http.ResponseWriter, r *http.Request) {
 			target.IntervalMinutes = 5
 		}
 
-		if err := h.cfgManager.UpdateTarget(target); err != nil {
-			writeJSON(w, http.StatusNotFound, map[string]interface{}{"error": err.Error()})
-			return
+		if fb != nil {
+			if err := fb.SaveTarget(target); err != nil {
+				writeJSON(w, http.StatusInternalServerError, map[string]interface{}{"error": err.Error()})
+				return
+			}
 		}
 
 		writeJSON(w, http.StatusOK, map[string]interface{}{
 			"success": true,
 			"target":  target,
-			"message": "Target updated locally and synced to Firebase",
+			"message": "Target updated directly in Firebase",
 		})
 
 	case http.MethodDelete:
-		if err := h.cfgManager.DeleteTarget(id); err != nil {
-			writeJSON(w, http.StatusNotFound, map[string]interface{}{"error": err.Error()})
-			return
+		if fb != nil {
+			if err := fb.DeleteTarget(id); err != nil {
+				writeJSON(w, http.StatusInternalServerError, map[string]interface{}{"error": err.Error()})
+				return
+			}
 		}
 
 		writeJSON(w, http.StatusOK, map[string]interface{}{
 			"success": true,
-			"message": "Target deleted locally and removed from Firebase",
+			"message": "Target deleted from Firebase",
 		})
 
 	default:
@@ -315,9 +541,18 @@ func (h *APIHandler) handleTargetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *APIHandler) handleUsers(w http.ResponseWriter, r *http.Request) {
+	fb := h.storage.GetFirebaseClient()
+
 	switch r.Method {
 	case http.MethodGet:
-		users := h.cfgManager.GetUsers()
+		var users []models.User
+		var err error
+		if fb != nil {
+			users, err = fb.FetchUsers()
+		}
+		if err != nil || users == nil {
+			users = []models.User{}
+		}
 		writeJSON(w, http.StatusOK, users)
 
 	case http.MethodPost:
@@ -335,9 +570,11 @@ func (h *APIHandler) handleUsers(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if err := h.cfgManager.AddUser(user); err != nil {
-			writeJSON(w, http.StatusBadRequest, map[string]interface{}{"error": err.Error()})
-			return
+		if fb != nil {
+			if err := fb.SaveUser(user); err != nil {
+				writeJSON(w, http.StatusInternalServerError, map[string]interface{}{"error": err.Error()})
+				return
+			}
 		}
 
 		writeJSON(w, http.StatusCreated, user)
@@ -354,6 +591,8 @@ func (h *APIHandler) handleUserByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fb := h.storage.GetFirebaseClient()
+
 	switch r.Method {
 	case http.MethodPut:
 		var user models.User
@@ -363,20 +602,24 @@ func (h *APIHandler) handleUserByID(w http.ResponseWriter, r *http.Request) {
 		}
 		user.ID = id
 
-		if err := h.cfgManager.UpdateUser(user); err != nil {
-			writeJSON(w, http.StatusNotFound, map[string]interface{}{"error": err.Error()})
-			return
+		if fb != nil {
+			if err := fb.SaveUser(user); err != nil {
+				writeJSON(w, http.StatusInternalServerError, map[string]interface{}{"error": err.Error()})
+				return
+			}
 		}
 
 		writeJSON(w, http.StatusOK, user)
 
 	case http.MethodDelete:
-		if err := h.cfgManager.DeleteUser(id); err != nil {
-			writeJSON(w, http.StatusNotFound, map[string]interface{}{"error": err.Error()})
-			return
+		if fb != nil {
+			if err := fb.DeleteUser(id); err != nil {
+				writeJSON(w, http.StatusInternalServerError, map[string]interface{}{"error": err.Error()})
+				return
+			}
 		}
 
-		writeJSON(w, http.StatusOK, map[string]interface{}{"success": true, "message": "User deleted"})
+		writeJSON(w, http.StatusOK, map[string]interface{}{"success": true, "message": "User deleted from Firebase"})
 
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -462,14 +705,24 @@ func (h *APIHandler) handleExportLogs(w http.ResponseWriter, r *http.Request) {
 		ToDate:      q.Get("to_date"),
 		Search:      q.Get("search"),
 		Page:        1,
-		Limit:       10000,
+		Limit:       100000,
 	}
 
-	logs, _, err := h.storage.GetLogs(filter)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	var allLogs []models.HealthCheckResult
+	fb := h.storage.GetFirebaseClient()
+	if fb != nil {
+		fbLogs, err := fb.FetchLogsFromFirebase()
+		if err == nil {
+			allLogs = fbLogs
+		}
 	}
+
+	if len(allLogs) == 0 {
+		logs, _, _ := h.storage.GetLogs(filter)
+		allLogs = logs
+	}
+
+	filtered := filterLogs(allLogs, filter)
 
 	w.Header().Set("Content-Type", "text/csv")
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment;filename=server_logs_%s.csv", time.Now().Format("20060102_150405")))
@@ -479,7 +732,7 @@ func (h *APIHandler) handleExportLogs(w http.ResponseWriter, r *http.Request) {
 
 	writer.Write([]string{"S.No", "Service Name", "Type", "URL", "Status", "Hit Time", "HTTP Code", "Response Time (ms)", "Message", "Data"})
 
-	for i, item := range logs {
+	for i, item := range filtered {
 		statusStr := "FAILURE"
 		if item.Status {
 			statusStr = "SUCCESS"
@@ -679,20 +932,23 @@ func (h *APIHandler) handlePurgeLogs(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	count, err := h.storage.PurgeOldLogs(days)
-	if err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]interface{}{
-			"success": false,
-			"error":   err.Error(),
-		})
-		return
+	fb := h.storage.GetFirebaseClient()
+	fbPurged := 0
+	if fb != nil {
+		fbPurged, _ = fb.PurgeOldLogsFromFirebase(days)
+	}
+
+	localPurged, _ := h.storage.PurgeOldLogs(days)
+	totalPurged := fbPurged
+	if localPurged > totalPurged {
+		totalPurged = localPurged
 	}
 
 	writeJSON(w, http.StatusOK, map[string]interface{}{
 		"success":      true,
-		"purged_count": count,
+		"purged_count": totalPurged,
 		"days":         days,
-		"message":      fmt.Sprintf("Successfully purged %d log(s) older than %d day(s)", count, days),
+		"message":      fmt.Sprintf("Successfully purged %d log(s) older than %d day(s) from Firebase DB", totalPurged, days),
 	})
 }
 

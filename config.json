@@ -37,39 +37,5 @@
     "auto_delete_enabled": true,
     "auto_delete_days": 7
   },
-  "users": [
-    {
-      "id": "user_1",
-      "name": "Indumathi R",
-      "email": "indumathi.r@zadroit.com"
-    },
-    {
-      "id": "user_2",
-      "name": "Vijay Loganathan",
-      "email": "vijay.loganathan@zadroit.com"
-    },
-    {
-      "id": "user_1791200466394",
-      "name": "Thirukumara",
-      "email": "thirukumara.d@zadroit.com"
-    }
-  ],
-  "targets": [
-    {
-      "id": "target_frontend_1",
-      "name": "Nivas HOC Website",
-      "type": "frontend",
-      "url": "https://nivashoc.com/",
-      "method": "GET",
-      "enabled": true
-    },
-    {
-      "id": "target_frontend_2",
-      "name": "Hotel Sherlock Website",
-      "type": "frontend",
-      "url": "https://hotelsherlockholmes.com/",
-      "method": "GET",
-      "enabled": true
-    }
-  ]
+  "targets": []
 }

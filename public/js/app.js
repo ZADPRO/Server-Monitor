@@ -19,79 +19,18 @@ const firebaseConfig = {
   measurementId: "G-Q7R2VPN390"
 };
 
-// Default Definitions
-const DEFAULT_USERS = [
-  {
-    id: "user_1",
-    name: "Indumathi R",
-    email: "indumathi.r@zadroit.com"
-  },
-  {
-    id: "user_2",
-    name: "Vijay Loganathan",
-    email: "vijay.loganathan@zadroit.com"
-  }
-];
-
-const DEFAULT_TARGETS = [
-  {
-    id: "target_backend_1",
-    name: "Nivas App product management",
-    type: "backend",
-    url: "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
-    method: "GET",
-    expected_keys: ["service", "db"],
-    enabled: true,
-    interval_minutes: 5,
-    recipient_emails: ["indumathi.r@zadroit.com", "vijay.loganathan@zadroit.com"]
-  },
-  {
-    id: "target_frontend_1",
-    name: "Nivas HOC Website",
-    type: "frontend",
-    url: "https://nivashoc.com/",
-    method: "GET",
-    expected_keys: [],
-    enabled: true,
-    interval_minutes: 5,
-    recipient_emails: ["indumathi.r@zadroit.com"]
-  },
-  {
-    id: "target_frontend_2",
-    name: "Hotel Sherlock Website",
-    type: "frontend",
-    url: "https://hotelsherlockholmes.com/",
-    method: "GET",
-    expected_keys: [],
-    enabled: true,
-    interval_minutes: 15,
-    recipient_emails: ["indumathi.r@zadroit.com"]
-  },
-  {
-    id: "target_1791194011314",
-    name: "local",
-    type: "backend",
-    url: "http://192.168.29.143:8083/checkserver",
-    method: "GET",
-    expected_keys: ["service", "db"],
-    enabled: true,
-    interval_minutes: 5,
-    recipient_emails: ["vijay.loganathan@zadroit.com"]
-  }
-];
-
-// Application State
+// Application State (Strictly loaded and synchronized from Firebase Realtime Database)
 const state = {
   authToken: localStorage.getItem('zadroit_auth_token') || null,
   currentUser: localStorage.getItem('zadroit_username') || 'Zadroit',
   currentPage: 1,
   limit: 25,
   totalLogs: 0,
-  users: [...DEFAULT_USERS],
-  targets: [...DEFAULT_TARGETS],
+  users: [],
+  targets: [],
   summary: null,
   cachedLogs: [],
-  recipientEmails: ['indumathi.r@zadroit.com', 'vijay.loganathan@zadroit.com'],
+  recipientEmails: [],
   targetCustomEmails: [],
   authCredentials: {
     username: 'Zadroit',
@@ -117,7 +56,7 @@ const state = {
     permissionDenied: false,
     totalLogs: 0,
     targetsCount: 0,
-    usersCount: 1,
+    usersCount: 0,
     emailSynced: false
   },
   searchTimer: null,
@@ -314,8 +253,8 @@ function attachFirebaseRealtimeListeners() {
     state.firebaseTargetsRef = ref(state.firebaseDb, 'targets');
     onValue(state.firebaseTargetsRef, (snapshot) => {
       const data = snapshot.val();
+      const targetList = [];
       if (data && typeof data === 'object') {
-        const targetList = [];
         if (Array.isArray(data)) {
           targetList.push(...data.filter(Boolean));
         } else {
@@ -326,27 +265,54 @@ function attachFirebaseRealtimeListeners() {
             }
           }
         }
-
-        if (targetList.length > 0) {
-          state.targets = targetList;
-          state.firebaseStatus.targetsCount = targetList.length;
-          renderServicesConfigList(state.targets);
-          updateFilterDropdown();
-          updateFirebaseBadgeUI();
-        }
       }
+
+      state.targets = targetList;
+      state.firebaseStatus.targetsCount = targetList.length;
+      renderServicesConfigList(state.targets);
+      updateFilterDropdown();
+      updateFirebaseBadgeUI();
     });
   } catch (err) {
     console.warn('Error attaching Firebase Targets listener:', err);
   }
 
-  // 3. LISTEN TO EMAIL CONFIG STREAM (/email_config)
+  // 3. LISTEN TO USERS STREAM (/users)
+  try {
+    state.firebaseUsersRef = ref(state.firebaseDb, 'users');
+    onValue(state.firebaseUsersRef, (snapshot) => {
+      const data = snapshot.val();
+      const userList = [];
+      if (data && typeof data === 'object') {
+        if (Array.isArray(data)) {
+          userList.push(...data.filter(Boolean));
+        } else {
+          for (const [k, v] of Object.entries(data)) {
+            if (v && typeof v === 'object') {
+              if (!v.id) v.id = k;
+              userList.push(v);
+            }
+          }
+        }
+      }
+
+      state.users = userList;
+      state.firebaseStatus.usersCount = userList.length;
+      renderUsersTable(state.users);
+      renderTargetUserCheckboxes([]);
+      updateFirebaseBadgeUI();
+    });
+  } catch (err) {
+    console.warn('Error attaching Firebase Users listener:', err);
+  }
+
+  // 4. LISTEN TO EMAIL CONFIG STREAM (/email_config)
   try {
     state.firebaseEmailRef = ref(state.firebaseDb, 'email_config');
     onValue(state.firebaseEmailRef, (snapshot) => {
       const data = snapshot.val();
       if (data && typeof data === 'object') {
-        if (Array.isArray(data.to_emails) && data.to_emails.length > 0) {
+        if (Array.isArray(data.to_emails)) {
           state.recipientEmails = [...data.to_emails];
           state.firebaseStatus.emailSynced = true;
           updateFirebaseBadgeUI();
@@ -357,7 +323,7 @@ function attachFirebaseRealtimeListeners() {
     console.warn('Error attaching Firebase Email listener:', err);
   }
 
-  // 4. LISTEN TO AUTH STREAM (/auth)
+  // 5. LISTEN TO AUTH STREAM (/auth)
   try {
     state.firebaseAuthRef = ref(state.firebaseDb, 'auth');
     onValue(state.firebaseAuthRef, (snapshot) => {
@@ -365,7 +331,6 @@ function attachFirebaseRealtimeListeners() {
       if (data && typeof data === 'object' && data.username) {
         state.authCredentials.username = data.username;
         if (data.password) state.authCredentials.password = data.password;
-        state.firebaseStatus.usersCount = 1;
         updateFirebaseBadgeUI();
       }
     });
@@ -390,7 +355,7 @@ function updateFirebaseBadgeUI() {
   if (entityPills) {
     entityPills.innerHTML = `
       <span class="pill-badge"><i class="fa-solid fa-list-check"></i> ${state.targets.length} Targets</span>
-      <span class="pill-badge"><i class="fa-solid fa-user-shield"></i> Users (${state.currentUser})</span>
+      <span class="pill-badge"><i class="fa-solid fa-user-shield"></i> ${state.users.length} Users</span>
       <span class="pill-badge"><i class="fa-solid fa-envelope"></i> ${state.recipientEmails.length} Emails</span>
       <span class="pill-badge"><i class="fa-solid fa-database"></i> ${state.totalLogs} Logs</span>
     `;
@@ -405,6 +370,10 @@ function detachFirebaseListeners() {
   if (state.firebaseTargetsRef) {
     try { off(state.firebaseTargetsRef); } catch (e) { }
     state.firebaseTargetsRef = null;
+  }
+  if (state.firebaseUsersRef) {
+    try { off(state.firebaseUsersRef); } catch (e) { }
+    state.firebaseUsersRef = null;
   }
   if (state.firebaseEmailRef) {
     try { off(state.firebaseEmailRef); } catch (e) { }
@@ -1215,11 +1184,38 @@ async function loadUsers() {
       const users = await res.json();
       if (Array.isArray(users)) {
         state.users = users;
+        state.firebaseStatus.usersCount = users.length;
       }
     }
-  } catch (err) {}
+  } catch (err) {
+    if (state.firebaseDb) {
+      try {
+        const snap = await get(ref(state.firebaseDb, 'users'));
+        if (snap.exists()) {
+          const data = snap.val();
+          const userList = [];
+          if (Array.isArray(data)) {
+            userList.push(...data.filter(Boolean));
+          } else {
+            for (const [k, v] of Object.entries(data)) {
+              if (v && typeof v === 'object') {
+                if (!v.id) v.id = k;
+                userList.push(v);
+              }
+            }
+          }
+          state.users = userList;
+          state.firebaseStatus.usersCount = userList.length;
+        } else {
+          state.users = [];
+          state.firebaseStatus.usersCount = 0;
+        }
+      } catch (fbErr) { }
+    }
+  }
 
   renderUsersTable(state.users);
+  updateFirebaseBadgeUI();
 }
 
 function renderUsersTable(users) {
@@ -1230,7 +1226,7 @@ function renderUsersTable(users) {
     tbody.innerHTML = `
       <tr>
         <td colspan="4" class="text-center" style="padding:24px; color:var(--text-muted);">
-          No users added yet. Click "Add New User" to register user recipients.
+          No users added yet in Firebase. Click "Add New User" to register user recipients.
         </td>
       </tr>
     `;
@@ -1317,51 +1313,52 @@ async function handleSaveUser(e) {
     email
   };
 
+  // 1. Direct write to Firebase RTDB
+  if (state.firebaseDb) {
+    try {
+      await set(ref(state.firebaseDb, `users/${userData.id}`), userData);
+    } catch (fbErr) {
+      console.warn('[FIREBASE SAVE USER ERROR]', fbErr);
+    }
+  }
+
+  // 2. Call API
   try {
     const endpoint = id ? `/api/users/${id}` : '/api/users';
     const method = id ? 'PUT' : 'POST';
 
-    const res = await fetch(endpoint, {
+    await fetch(endpoint, {
       method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userData)
     });
-
-    if (res.ok) {
-      showToast(`User "${name}" saved!`, 'success');
-      hideUserForm();
-      loadUsers();
-      return;
-    }
   } catch (err) {}
 
-  const idx = state.users.findIndex(u => u.id === userData.id);
-  if (idx >= 0) {
-    state.users[idx] = userData;
-  } else {
-    state.users.push(userData);
-  }
-
   hideUserForm();
-  renderUsersTable(state.users);
-  showToast(`User "${name}" updated!`, 'success');
+  loadUsers();
+  showToast(`User "${name}" saved to Firebase!`, 'success');
 }
 
 async function deleteUser(id) {
   if (!confirm('Are you sure you want to delete this user?')) return;
 
-  try {
-    const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
-    if (res.ok) {
-      showToast('User removed successfully', 'info');
-      loadUsers();
-      return;
+  // 1. Direct remove from Firebase RTDB
+  if (state.firebaseDb) {
+    try {
+      await remove(ref(state.firebaseDb, `users/${id}`));
+    } catch (fbErr) {
+      console.warn('[FIREBASE DELETE USER ERROR]', fbErr);
     }
+  }
+
+  // 2. Call API
+  try {
+    await fetch(`/api/users/${id}`, { method: 'DELETE' });
   } catch (err) {}
 
   state.users = state.users.filter(u => u.id !== id);
   renderUsersTable(state.users);
-  showToast('User removed', 'info');
+  showToast('User removed from Firebase', 'info');
 }
 
 window.showAddUserForm = showAddUserForm;
@@ -1375,12 +1372,11 @@ window.deleteUser = deleteUser;
 // SERVICE TARGETS MANAGEMENT (SERVICE MODULE IN SETTINGS)
 // ============================================================================
 async function loadTargets() {
-  // 1. Try backend API
   try {
     const res = await fetch('/api/targets');
     if (res.ok) {
       const targets = await res.json();
-      if (Array.isArray(targets) && targets.length > 0) {
+      if (Array.isArray(targets)) {
         state.targets = targets;
         state.firebaseStatus.targetsCount = targets.length;
       }
@@ -1391,11 +1387,22 @@ async function loadTargets() {
         const snap = await get(ref(state.firebaseDb, 'targets'));
         if (snap.exists()) {
           const data = snap.val();
-          const targetList = Object.values(data);
-          if (targetList.length > 0) {
-            state.targets = targetList;
-            state.firebaseStatus.targetsCount = targetList.length;
+          const targetList = [];
+          if (Array.isArray(data)) {
+            targetList.push(...data.filter(Boolean));
+          } else {
+            for (const [k, v] of Object.entries(data)) {
+              if (v && typeof v === 'object') {
+                if (!v.id) v.id = k;
+                targetList.push(v);
+              }
+            }
           }
+          state.targets = targetList;
+          state.firebaseStatus.targetsCount = targetList.length;
+        } else {
+          state.targets = [];
+          state.firebaseStatus.targetsCount = 0;
         }
       } catch (fbErr) { }
     }
@@ -1662,27 +1669,7 @@ window.handleSaveServiceTarget = async function(e) {
     recipient_emails: recipientEmails,
   };
 
-  // 1. Send to Backend API
-  try {
-    const endpoint = id ? `/api/targets/${id}` : '/api/targets';
-    const httpMethod = id ? 'PUT' : 'POST';
-
-    const res = await fetch(endpoint, {
-      method: httpMethod,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(targetData),
-    });
-
-    if (res.ok) {
-      showToast(`Service target "${name}" saved with ${recipientEmails.length} recipient(s)!`, 'success');
-      hideServiceForm();
-      loadTargets();
-      fetchStatus();
-      return;
-    }
-  } catch (err) { }
-
-  // 2. Direct Sync to Firebase Realtime DB
+  // 1. Direct Sync to Firebase Realtime DB
   if (state.firebaseDb) {
     try {
       await set(ref(state.firebaseDb, `targets/${targetData.id}`), targetData);
@@ -1691,35 +1678,28 @@ window.handleSaveServiceTarget = async function(e) {
     }
   }
 
-  // 3. Update local state
-  const existingIdx = state.targets.findIndex(t => t.id === targetData.id);
-  if (existingIdx >= 0) {
-    state.targets[existingIdx] = targetData;
-  } else {
-    state.targets.push(targetData);
-  }
+  // 2. Send to Backend API
+  try {
+    const endpoint = id ? `/api/targets/${id}` : '/api/targets';
+    const httpMethod = id ? 'PUT' : 'POST';
+
+    await fetch(endpoint, {
+      method: httpMethod,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(targetData),
+    });
+  } catch (err) { }
 
   hideServiceForm();
   loadTargets();
   fetchStatus();
-  showToast(`Service target "${name}" saved!`, 'success');
+  showToast(`Service target "${name}" saved to Firebase!`, 'success');
 };
 
 window.deleteServiceTarget = async function(id) {
   if (!confirm('Are you sure you want to delete this service target?')) return;
 
-  // 1. Call Backend API
-  try {
-    const res = await fetch(`/api/targets/${id}`, { method: 'DELETE' });
-    if (res.ok) {
-      showToast('Service target removed successfully', 'info');
-      loadTargets();
-      fetchStatus();
-      return;
-    }
-  } catch (err) { }
-
-  // 2. Remove from Firebase Realtime DB
+  // 1. Remove from Firebase Realtime DB
   if (state.firebaseDb) {
     try {
       await remove(ref(state.firebaseDb, `targets/${id}`));
@@ -1729,10 +1709,15 @@ window.deleteServiceTarget = async function(id) {
     }
   }
 
+  // 2. Call Backend API
+  try {
+    await fetch(`/api/targets/${id}`, { method: 'DELETE' });
+  } catch (err) { }
+
   state.targets = state.targets.filter(t => t.id !== id);
   loadTargets();
   fetchStatus();
-  showToast('Service target removed from list', 'info');
+  showToast('Service target removed from Firebase', 'info');
 };
 
 // ============================================================================

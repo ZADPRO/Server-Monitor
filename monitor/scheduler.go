@@ -81,9 +81,20 @@ func (s *Scheduler) Stop() {
 	close(s.stopChan)
 }
 
+func (s *Scheduler) getTargets() []models.Target {
+	fb := s.storage.GetFirebaseClient()
+	if fb != nil {
+		targets, err := fb.FetchTargets()
+		if err == nil && targets != nil {
+			return targets
+		}
+	}
+	return []models.Target{}
+}
+
 // checkDueTargets checks all enabled targets strictly every 5 minutes
 func (s *Scheduler) checkDueTargets() {
-	targets := s.cfgManager.GetTargets()
+	targets := s.getTargets()
 	now := time.Now()
 
 	s.lastCheckMu.Lock()
@@ -107,13 +118,17 @@ func (s *Scheduler) checkDueTargets() {
 	// Check if auto deletion is enabled and purge old logs
 	cfg := s.cfgManager.Get()
 	if cfg.Firebase.AutoDeleteEnabled && cfg.Firebase.AutoDeleteDays > 0 {
-		s.storage.PurgeOldLogs(cfg.Firebase.AutoDeleteDays)
+		fb := s.storage.GetFirebaseClient()
+		if fb != nil {
+			_, _ = fb.PurgeOldLogsFromFirebase(cfg.Firebase.AutoDeleteDays)
+		}
+		_, _ = s.storage.PurgeOldLogs(cfg.Firebase.AutoDeleteDays)
 	}
 }
 
 // RunChecksNow triggers an immediate health check across ALL enabled targets
 func (s *Scheduler) RunChecksNow() []models.HealthCheckResult {
-	targets := s.cfgManager.GetTargets()
+	targets := s.getTargets()
 	var enabledTargets []models.Target
 	now := time.Now()
 
@@ -131,7 +146,7 @@ func (s *Scheduler) RunChecksNow() []models.HealthCheckResult {
 
 // RunCheckForSingleTarget triggers an immediate health check for a single target by ID
 func (s *Scheduler) RunCheckForSingleTarget(targetID string) (*models.HealthCheckResult, error) {
-	targets := s.cfgManager.GetTargets()
+	targets := s.getTargets()
 	var foundTarget *models.Target
 	for _, t := range targets {
 		if t.ID == targetID {

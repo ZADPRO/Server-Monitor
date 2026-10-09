@@ -398,7 +398,7 @@ func (cm *ConfigManager) DeleteUser(id string) error {
 	return err
 }
 
-// SyncWithFirebase pulls existing targets, auth, and email config from Firebase; if empty in Firebase, seeds from local
+// SyncWithFirebase pulls existing targets, auth, users, and email config from Firebase
 func (cm *ConfigManager) SyncWithFirebase() error {
 	cm.mu.Lock()
 	fb := cm.fbClient
@@ -406,25 +406,29 @@ func (cm *ConfigManager) SyncWithFirebase() error {
 		cm.mu.Unlock()
 		return nil
 	}
-	cfgCopy := *cm.config
 	cm.mu.Unlock()
 
-	// 1. Sync Targets
+	// 1. Sync Targets from Firebase
 	fbTargets, err := fb.FetchTargets()
 	if err == nil {
-		if len(fbTargets) > 0 {
-			cm.mu.Lock()
-			cm.config.Targets = fbTargets
-			_ = cm.saveUnlocked()
-			cm.mu.Unlock()
-			log.Printf("[CONFIG SYNC] Loaded %d targets from Firebase DB", len(fbTargets))
-		} else if len(cfgCopy.Targets) > 0 {
-			_ = fb.SaveAllTargets(cfgCopy.Targets)
-			log.Printf("[CONFIG SYNC] Seeded Firebase DB with %d local targets", len(cfgCopy.Targets))
-		}
+		cm.mu.Lock()
+		cm.config.Targets = fbTargets
+		_ = cm.saveUnlocked()
+		cm.mu.Unlock()
+		log.Printf("[CONFIG SYNC] Loaded %d targets from Firebase DB", len(fbTargets))
 	}
 
-	// 2. Sync Auth / User
+	// 2. Sync Users from Firebase
+	fbUsers, err := fb.FetchUsers()
+	if err == nil {
+		cm.mu.Lock()
+		cm.config.Users = fbUsers
+		_ = cm.saveUnlocked()
+		cm.mu.Unlock()
+		log.Printf("[CONFIG SYNC] Loaded %d users from Firebase DB", len(fbUsers))
+	}
+
+	// 3. Sync Auth / User
 	fbAuth, err := fb.FetchAuthConfig()
 	if err == nil && fbAuth != nil && fbAuth.Username != "" {
 		cm.mu.Lock()
@@ -432,12 +436,9 @@ func (cm *ConfigManager) SyncWithFirebase() error {
 		_ = cm.saveUnlocked()
 		cm.mu.Unlock()
 		log.Printf("[CONFIG SYNC] Loaded auth credentials from Firebase DB (User: %s)", fbAuth.Username)
-	} else if cfgCopy.Auth.Username != "" {
-		_ = fb.SaveAuthConfig(cfgCopy.Auth)
-		log.Printf("[CONFIG SYNC] Seeded Firebase DB with local auth credentials (%s)", cfgCopy.Auth.Username)
 	}
 
-	// 3. Sync Email Config
+	// 4. Sync Email Config
 	fbEmail, err := fb.FetchEmailConfig()
 	if err == nil && fbEmail != nil && len(fbEmail.ToEmails) > 0 {
 		cm.mu.Lock()
@@ -445,9 +446,6 @@ func (cm *ConfigManager) SyncWithFirebase() error {
 		_ = cm.saveUnlocked()
 		cm.mu.Unlock()
 		log.Printf("[CONFIG SYNC] Loaded email alert config from Firebase DB (%d recipients)", len(fbEmail.ToEmails))
-	} else if len(cfgCopy.Email.ToEmails) > 0 {
-		_ = fb.SaveEmailConfig(cfgCopy.Email)
-		log.Printf("[CONFIG SYNC] Seeded Firebase DB with local email config (%d recipients)", len(cfgCopy.Email.ToEmails))
 	}
 
 	return nil
@@ -509,54 +507,7 @@ func GetDefaultConfig() models.Config {
 			AutoDeleteEnabled: true,
 			AutoDeleteDays:    7,
 		},
-		Users: []models.User{
-			{ID: "user_1", Name: "Indumathi R", Email: "indumathi.r@zadroit.com"},
-			{ID: "user_2", Name: "Vijay Loganathan", Email: "vijay.loganathan@zadroit.com"},
-			{ID: "user_1791200466394", Name: "Thirukumara", Email: "thirukumara.d@zadroit.com"},
-		},
-		Targets: []models.Target{
-			{
-				ID:              "target_backend_1",
-				Name:            "Nivas App product management",
-				Type:            "backend",
-				URL:             "https://nivasappproduct-wishlist.brightoncloudtech.com/checkserver",
-				Method:          "GET",
-				Enabled:         true,
-				ExpectedKeys:    []string{"service", "db"},
-				IntervalMinutes: 5,
-				RecipientEmails: []string{"indumathi.r@zadroit.com", "vijay.loganathan@zadroit.com"},
-			},
-			{
-				ID:              "target_frontend_1",
-				Name:            "Nivas HOC Website",
-				Type:            "frontend",
-				URL:             "https://nivashoc.com/",
-				Method:          "GET",
-				Enabled:         true,
-				IntervalMinutes: 5,
-				RecipientEmails: []string{"indumathi.r@zadroit.com"},
-			},
-			{
-				ID:              "target_frontend_2",
-				Name:            "Hotel Sherlock Website",
-				Type:            "frontend",
-				URL:             "https://hotelsherlockholmes.com/",
-				Method:          "GET",
-				Enabled:         true,
-				IntervalMinutes: 15,
-				RecipientEmails: []string{"vijay.loganathan@zadroit.com", "thirukumara.d@zadroit.com"},
-			},
-			{
-				ID:              "target_1791194011314",
-				Name:            "local",
-				Type:            "backend",
-				URL:             "http://192.168.29.143:8083/checkserver",
-				Method:          "GET",
-				Enabled:         true,
-				ExpectedKeys:    []string{"service", "db"},
-				IntervalMinutes: 5,
-				RecipientEmails: []string{"vijay.loganathan@zadroit.com"},
-			},
-		},
+		Users:   []models.User{},
+		Targets: []models.Target{},
 	}
 }
