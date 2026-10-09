@@ -1,10 +1,6 @@
 {
-  "cleanUrls": true,
+  "version": 2,
   "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/index.go"
-    },
     {
       "source": "/((?!api/|assets/|css/|js/|favicon|.*\\..*).*)",
       "destination": "/index.html"

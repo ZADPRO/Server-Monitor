@@ -133,7 +133,7 @@
       <!-- ============================================================ -->
       <div id="pageDashboard" class="page-view">
         <!-- Firebase Real-time Stream Banner -->
-        <div id="firebaseRealtimeBanner" class="firebase-live-banner connected">
+        <!-- <div id="firebaseRealtimeBanner" class="firebase-live-banner connected">
           <div class="banner-left">
             <div class="firebase-live-dot"></div>
             <div class="banner-text-wrap">
@@ -160,14 +160,15 @@
               <span>Pull From Firebase</span>
             </button>
           </div>
-        </div>
+        </div> -->
 
         <!-- Firebase Permission Warning Alert -->
-        <div id="firebaseAuthWarning" class="firebase-auth-alert hidden">
+        <!-- <div id="firebaseAuthWarning" class="firebase-auth-alert hidden">
           <div class="alert-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
           <div class="alert-content">
             <h4>Firebase Database: Permission Denied (401)</h4>
-            <p>Your Firebase Realtime Database rules currently block read/write access. To enable instant real-time synchronization, open your Firebase Console Rules tab and set:</p>
+            <p>Your Firebase Realtime Database rules currently block read/write access. To enable instant real-time
+              synchronization, open your Firebase Console Rules tab and set:</p>
             <pre class="rules-snippet"><code>{
   "rules": {
     ".read": true,
@@ -184,7 +185,7 @@
               </button>
             </div>
           </div>
-        </div>
+        </div> -->
 
         <!-- Metrics Overview Cards -->
         <section class="metrics-grid">
@@ -450,7 +451,8 @@
 
                     <div class="form-group">
                       <label>Hitting Time Interval</label>
-                      <input type="text" value="Every 5 Minutes (Standard)" disabled style="opacity: 0.75; cursor: not-allowed; background: rgba(255, 255, 255, 0.05);">
+                      <input type="text" value="Every 5 Minutes (Standard)" disabled
+                        style="opacity: 0.75; cursor: not-allowed; background: rgba(255, 255, 255, 0.05);">
                     </div>
                   </div>
 
@@ -712,7 +714,8 @@
   </div>
 
   <!-- Floating Mobile Filter FAB Button -->
-  <button type="button" id="mobileFilterFab" class="mobile-filter-fab" onclick="openMobileFilterModal()" title="Open Filters">
+  <button type="button" id="mobileFilterFab" class="mobile-filter-fab" onclick="openMobileFilterModal()"
+    title="Open Filters">
     <i class="fa-solid fa-filter"></i>
   </button>
 
